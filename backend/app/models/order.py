@@ -81,7 +81,7 @@ class OrderItem(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     product_name: Mapped[str] = mapped_column(String(200), nullable=False)
     product_image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     sku: Mapped[str] = mapped_column(String(80), nullable=False)
-    size: Mapped[str] = mapped_column(String(20), nullable=False)
+    size: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # blouse size, only if stitched
     color: Mapped[str] = mapped_column(String(40), nullable=False)
     unit_price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)

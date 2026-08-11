@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard,
   ShoppingCart,
+  Undo2,
   Package,
   FolderTree,
   Boxes,
@@ -20,6 +21,7 @@ import {
 const navItems = [
   { label: 'Dashboard', to: '/admin', icon: LayoutDashboard, end: true },
   { label: 'Orders', to: '/admin/orders', icon: ShoppingCart },
+  { label: 'Returns', to: '/admin/returns', icon: Undo2 },
   { label: 'Products', to: '/admin/products', icon: Package },
   { label: 'Categories', to: '/admin/categories', icon: FolderTree },
   { label: 'Inventory', to: '/admin/inventory', icon: Boxes },
@@ -63,7 +65,7 @@ export function AdminSidebar() {
       {/* Desktop sidebar */}
       <aside className="hidden md:flex md:flex-col w-64 shrink-0 border-r border-stone/20 bg-paper h-screen sticky top-0 py-6">
         <div className="px-6 mb-8">
-          <span className="font-display text-xl">Elaanji</span>
+          <span className="font-display text-xl">ELAANJI</span>
           <p className="text-xs text-stone tracking-widest2 uppercase mt-1">Admin Panel</p>
         </div>
         <SidebarLinks />
@@ -71,7 +73,7 @@ export function AdminSidebar() {
 
       {/* Mobile drawer trigger */}
       <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-stone/20 bg-paper sticky top-0 z-30">
-        <span className="font-display text-lg">Elaanji Admin</span>
+        <span className="font-display text-lg">ELAANJI Admin</span>
         <button onClick={() => setIsMobileOpen(true)} aria-label="Open menu">
           <Menu size={22} />
         </button>
@@ -81,7 +83,7 @@ export function AdminSidebar() {
         <div className="md:hidden fixed inset-0 z-50 flex">
           <div className="w-72 bg-paper h-full py-6 overflow-y-auto">
             <div className="flex items-center justify-between px-6 mb-8">
-              <span className="font-display text-xl">Elaanji</span>
+              <span className="font-display text-xl">ELAANJI</span>
               <button onClick={() => setIsMobileOpen(false)} aria-label="Close menu">
                 <X size={22} />
               </button>

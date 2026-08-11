@@ -30,7 +30,7 @@ export function LoginPage() {
   return (
     <div className="mx-auto max-w-md px-6 py-20">
       <h1 className="font-display text-3xl mb-2">Sign In</h1>
-      <p className="text-stone text-sm mb-8">Welcome back to Elaanji.</p>
+      <p className="text-stone text-sm mb-8">Welcome back to ELAANJI.</p>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>

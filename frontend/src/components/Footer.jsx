@@ -3,8 +3,8 @@ export function Footer() {
     <footer className="bg-ink text-paper mt-24">
       <div className="mx-auto max-w-7xl px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-10">
         <div>
-          <h3 className="font-display text-xl mb-4">Elaanji</h3>
-          <p className="text-sm text-paper/70">The House of Saree.</p>
+          <h3 className="font-display text-xl mb-4">ELAANJI</h3>
+          <p className="text-sm text-paper/70">Style that defines you.</p>
         </div>
         <div>
           <h4 className="text-xs tracking-widest2 uppercase text-paper/50 mb-4">Shop</h4>
@@ -31,7 +31,7 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t border-paper/10 py-6 text-center text-xs text-paper/50">
-        © {new Date().getFullYear()} Elaanji — The House of Saree. All rights reserved.
+        © {new Date().getFullYear()} ELAANJI. All rights reserved.
       </div>
     </footer>
   )

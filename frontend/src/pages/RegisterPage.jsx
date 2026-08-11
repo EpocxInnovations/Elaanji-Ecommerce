@@ -29,7 +29,7 @@ export function RegisterPage() {
   return (
     <div className="mx-auto max-w-md px-6 py-20">
       <h1 className="font-display text-3xl mb-2">Create Account</h1>
-      <p className="text-stone text-sm mb-8">Join Elaanji for a personalized shopping experience.</p>
+      <p className="text-stone text-sm mb-8">Join ELAANJI for a personalized shopping experience.</p>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>

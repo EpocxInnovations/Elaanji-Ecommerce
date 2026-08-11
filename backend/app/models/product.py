@@ -18,10 +18,37 @@ class ProductStatus(str, enum.Enum):
 
 
 class GenderCategory(str, enum.Enum):
-    men = "men"
     women = "women"
     kids = "kids"
-    unisex = "unisex"
+
+
+class SareeType(str, enum.Enum):
+    """The weave/tradition category — the primary way saree shoppers browse."""
+    kanjivaram = "kanjivaram"
+    banarasi = "banarasi"
+    tussar = "tussar"
+    bandhani = "bandhani"
+    chanderi = "chanderi"
+    kanchipuram_silk = "kanchipuram_silk"
+    mysore_silk = "mysore_silk"
+    linen = "linen"
+    organza = "organza"
+    georgette = "georgette"
+    chiffon = "chiffon"
+    cotton = "cotton"
+    tissue = "tissue"
+    designer = "designer"
+    other = "other"
+
+
+class Occasion(str, enum.Enum):
+    wedding = "wedding"
+    festive = "festive"
+    casual = "casual"
+    party = "party"
+    office = "office"
+    puja = "puja"
+    reception = "reception"
 
 
 class Category(Base, UUIDPrimaryKeyMixin, TimestampMixin):
@@ -72,6 +99,15 @@ class Product(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     gender: Mapped[GenderCategory] = mapped_column(Enum(GenderCategory, name="gender_category"), nullable=False)
 
+    saree_type: Mapped[Optional[SareeType]] = mapped_column(Enum(SareeType, name="saree_type"), nullable=True)
+    occasion: Mapped[Optional[Occasion]] = mapped_column(Enum(Occasion, name="occasion"), nullable=True)
+    border_type: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)  # e.g. "Zari Border", "Temple Border"
+    pallu_style: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
+    work_type: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)  # e.g. "Zari", "Embroidery", "Stone Work", "Plain"
+    saree_length_meters: Mapped[Optional[float]] = mapped_column(Numeric(4, 2), default=6.3, nullable=True)
+    blouse_piece_included: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    blouse_stitched: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
     price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
     discount_price: Mapped[Optional[float]] = mapped_column(Numeric(10, 2), nullable=True)
     tax_percent: Mapped[float] = mapped_column(Numeric(5, 2), default=0, nullable=False)
@@ -104,14 +140,16 @@ class Product(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
 
 class ProductVariant(Base, UUIDPrimaryKeyMixin, TimestampMixin):
-    """One SKU per size/color combination. This is the unit inventory is tracked against."""
+    """One SKU per color (and, when the blouse is pre-stitched, blouse size).
+    Color is the primary variant axis for sarees — size only applies when
+    `blouse_stitched` is true on the parent product."""
     __tablename__ = "product_variants"
 
     product_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("products.id", ondelete="CASCADE"))
     sku: Mapped[str] = mapped_column(String(80), unique=True, index=True, nullable=False)
-    size: Mapped[str] = mapped_column(String(20), nullable=False)
     color: Mapped[str] = mapped_column(String(40), nullable=False)
     color_hex: Mapped[Optional[str]] = mapped_column(String(7), nullable=True)
+    blouse_size: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # only when blouse_stitched=True
 
     price_override: Mapped[Optional[float]] = mapped_column(Numeric(10, 2), nullable=True)
 

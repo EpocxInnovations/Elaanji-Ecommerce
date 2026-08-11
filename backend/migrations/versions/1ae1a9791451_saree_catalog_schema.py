@@ -1,8 +1,8 @@
-"""initial schema
+"""saree catalog schema
 
-Revision ID: 98637c543611
+Revision ID: 1ae1a9791451
 Revises: 
-Create Date: 2026-08-08 16:06:35.166507
+Create Date: 2026-08-08 18:36:53.436031
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '98637c543611'
+revision: str = '1ae1a9791451'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -204,7 +204,15 @@ def upgrade() -> None:
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('category_id', sa.UUID(), nullable=False),
     sa.Column('brand_id', sa.UUID(), nullable=True),
-    sa.Column('gender', sa.Enum('men', 'women', 'kids', 'unisex', name='gender_category'), nullable=False),
+    sa.Column('gender', sa.Enum('women', 'kids', name='gender_category'), nullable=False),
+    sa.Column('saree_type', sa.Enum('kanjivaram', 'banarasi', 'tussar', 'bandhani', 'chanderi', 'kanchipuram_silk', 'mysore_silk', 'linen', 'organza', 'georgette', 'chiffon', 'cotton', 'tissue', 'designer', 'other', name='saree_type'), nullable=True),
+    sa.Column('occasion', sa.Enum('wedding', 'festive', 'casual', 'party', 'office', 'puja', 'reception', name='occasion'), nullable=True),
+    sa.Column('border_type', sa.String(length=120), nullable=True),
+    sa.Column('pallu_style', sa.String(length=120), nullable=True),
+    sa.Column('work_type', sa.String(length=120), nullable=True),
+    sa.Column('saree_length_meters', sa.Numeric(precision=4, scale=2), nullable=True),
+    sa.Column('blouse_piece_included', sa.Boolean(), nullable=False),
+    sa.Column('blouse_stitched', sa.Boolean(), nullable=False),
     sa.Column('price', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.Column('discount_price', sa.Numeric(precision=10, scale=2), nullable=True),
     sa.Column('tax_percent', sa.Numeric(precision=5, scale=2), nullable=False),
@@ -294,9 +302,9 @@ def upgrade() -> None:
     op.create_table('product_variants',
     sa.Column('product_id', sa.UUID(), nullable=False),
     sa.Column('sku', sa.String(length=80), nullable=False),
-    sa.Column('size', sa.String(length=20), nullable=False),
     sa.Column('color', sa.String(length=40), nullable=False),
     sa.Column('color_hex', sa.String(length=7), nullable=True),
+    sa.Column('blouse_size', sa.String(length=20), nullable=True),
     sa.Column('price_override', sa.Numeric(precision=10, scale=2), nullable=True),
     sa.Column('stock_quantity', sa.Integer(), nullable=False),
     sa.Column('reserved_quantity', sa.Integer(), nullable=False),
@@ -353,7 +361,7 @@ def upgrade() -> None:
     sa.Column('product_name', sa.String(length=200), nullable=False),
     sa.Column('product_image_url', sa.String(length=500), nullable=True),
     sa.Column('sku', sa.String(length=80), nullable=False),
-    sa.Column('size', sa.String(length=20), nullable=False),
+    sa.Column('size', sa.String(length=20), nullable=True),
     sa.Column('color', sa.String(length=40), nullable=False),
     sa.Column('unit_price', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.Column('quantity', sa.Integer(), nullable=False),

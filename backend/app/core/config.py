@@ -13,20 +13,6 @@ class Settings(BaseSettings):
     # Database
     database_url: str = "postgresql+psycopg2://garments_user:garments_pass@localhost:5432/garments_db"
 
-    @property
-    def effective_database_url(self) -> str:
-        """Normalize the database URL for SQLAlchemy.
-
-        Render (and many other providers) supply ``postgres://…`` or
-        ``postgresql://…``, but SQLAlchemy needs the driver suffix.
-        """
-        url = self.database_url
-        if url.startswith("postgres://"):
-            url = url.replace("postgres://", "postgresql+psycopg2://", 1)
-        elif url.startswith("postgresql://"):
-            url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
-        return url
-
     # JWT auth
     jwt_secret_key: str = "dev-secret-change-me"
     jwt_algorithm: str = "HS256"
@@ -34,7 +20,7 @@ class Settings(BaseSettings):
     refresh_token_expire_days: int = 7
 
     # CORS
-    frontend_origins: str = "http://localhost:5173"
+    frontend_origin: str = "http://localhost:5173"
 
     # Cloudinary
     cloudinary_cloud_name: str = ""

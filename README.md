@@ -79,3 +79,16 @@ UPDATE users SET role = 'admin' WHERE email = 'you@example.com';
   banners, homepage content, reviews.
 - **Phase 6** — Reports/analytics, store settings, SEO, performance, and a
   full responsiveness/error-state pass.
+
+## Seeding test data (Phase 2)
+
+To populate the catalog with realistic saree products for local testing:
+
+```bash
+cd backend
+python3 scripts/seed_catalog.py
+```
+
+This seeds 5 categories, 1 brand, and 4 products (Kanjivaram, Banarasi,
+Cotton, and a stitched-blouse Designer saree) with color variants, stock,
+and images. Safe to re-run — it clears and reseeds catalog tables only.
