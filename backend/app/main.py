@@ -32,13 +32,20 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+cors_origins = [origin.strip() for origin in settings.frontend_origin.split(",") if origin.strip()]
+if "https://elaanji-website.vercel.app" not in cors_origins:
+    cors_origins.append("https://elaanji-website.vercel.app")
+if "http://localhost:5173" not in cors_origins:
+    cors_origins.append("http://localhost:5173")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.frontend_origin],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 app.include_router(auth.router)
 app.include_router(products.router)
