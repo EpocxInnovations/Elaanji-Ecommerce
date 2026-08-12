@@ -294,9 +294,11 @@ def delete_category(db: Session, admin: User, category_id: uuid.UUID):
     if category is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
 
-    in_use = db.execute(select(Product).where(Product.category_id == category_id)).first()
-    if in_use:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot delete a category that has products assigned to it")
+    # Unassign products from this category
+    db.query(Product).filter(Product.category_id == category_id).update({Product.category_id: None}, synchronize_session=False)
+
+    # Unassign parent category from child subcategories
+    db.query(Category).filter(Category.parent_id == category_id).update({Category.parent_id: None}, synchronize_session=False)
 
     log_action(db, admin, "deleted category", "category", str(category_id), category.name)
     db.delete(category)

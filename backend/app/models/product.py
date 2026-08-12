@@ -92,7 +92,9 @@ class Product(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     sku: Mapped[str] = mapped_column(String(80), unique=True, index=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
-    category_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("categories.id"))
+    category_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("categories.id", ondelete="SET NULL"), nullable=True
+    )
     brand_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True), ForeignKey("brands.id"), nullable=True
     )

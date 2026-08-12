@@ -85,7 +85,7 @@ class ProductDetailOut(BaseModel):
     slug: str
     sku: str
     description: Optional[str] = None
-    category: CategoryOut
+    category: Optional[CategoryOut] = None
     brand: Optional[BrandOut] = None
     gender: GenderCategory
     saree_type: Optional[SareeType] = None
