@@ -98,10 +98,18 @@ def send_via_resend_api(to_email: str, otp: str, html_body: str, text_body: str)
 
 def send_password_reset_otp_email(to_email: str, otp: str) -> bool:
     """
-    Sends a 6-digit OTP to the specified email address via Gmail SMTP or Resend API.
-    If SMTP fails due to cloud container port blocks, logs the OTP code to Render console logs.
+    Handles 6-digit OTP code for password reset.
+    Always logs the generated random 6-digit code to the server console.
     """
+    print(f"\n========================================================", flush=True)
+    print(f"[CONSOLE OTP CODE] Random 6-digit OTP for {to_email}: {otp}", flush=True)
+    print(f"========================================================\n", flush=True)
+    logger.warning("========================================================")
+    logger.warning("[CONSOLE OTP CODE] Random 6-digit OTP for %s: %s", to_email, otp)
+    logger.warning("========================================================")
+
     current_year = datetime.now().year
+
 
     html_body = f"""<!DOCTYPE html>
 <html>
