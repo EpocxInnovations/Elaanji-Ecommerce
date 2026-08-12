@@ -75,8 +75,9 @@ export function ForgotPasswordPage() {
     }
 
     setIsSubmitting(true)
-    try:
+    try {
       const res = await authApi.forgotPassword({ email: email.trim() })
+
       setStep('otp')
       setCooldown(60)
       if (res?.dev_otp) {
