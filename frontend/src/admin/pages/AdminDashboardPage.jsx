@@ -20,7 +20,6 @@ export function AdminDashboardPage() {
 
   return (
     <div>
-      <p className="label-eyebrow mb-2">Phase 6</p>
       <h1 className="font-display text-3xl mb-2">Dashboard</h1>
       <p className="text-stone text-sm mb-8">Welcome back, {user?.name}.</p>
 

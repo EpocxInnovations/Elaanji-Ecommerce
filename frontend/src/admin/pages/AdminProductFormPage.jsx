@@ -97,7 +97,6 @@ export function AdminProductFormPage() {
 
   return (
     <div className="max-w-4xl">
-      <p className="label-eyebrow mb-2">Phase 4</p>
       <h1 className="font-display text-3xl mb-8">{isEditing ? 'Edit Product' : 'Add Product'}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-8">

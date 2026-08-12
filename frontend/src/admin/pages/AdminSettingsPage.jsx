@@ -38,7 +38,6 @@ export function AdminSettingsPage() {
 
   return (
     <div className="max-w-2xl">
-      <p className="label-eyebrow mb-2">Phase 6</p>
       <h1 className="font-display text-3xl mb-6">Settings</h1>
 
       <div className="flex gap-1 mb-8 border-b border-stone/20 overflow-x-auto">

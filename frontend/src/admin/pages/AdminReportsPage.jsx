@@ -15,7 +15,6 @@ export function AdminReportsPage() {
 
   return (
     <div>
-      <p className="label-eyebrow mb-2">Phase 6</p>
       <h1 className="font-display text-3xl mb-8">Reports &amp; Analytics</h1>
 
       <div className="flex items-center justify-between mb-6">

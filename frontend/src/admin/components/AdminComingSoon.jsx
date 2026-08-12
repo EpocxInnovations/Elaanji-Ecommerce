@@ -1,11 +1,10 @@
-export function AdminComingSoon({ title, phase }) {
+export function AdminComingSoon({ title }) {
   return (
     <div>
-      <p className="label-eyebrow mb-2">{phase}</p>
+      <p className="label-eyebrow mb-2">Coming Soon</p>
       <h1 className="font-display text-3xl mb-4">{title}</h1>
       <p className="text-stone text-sm max-w-md">
-        This section is routed and protected by admin auth, and will be built out with real
-        data and actions in {phase}.
+        This section is coming soon and will be available in an upcoming update.
       </p>
     </div>
   )

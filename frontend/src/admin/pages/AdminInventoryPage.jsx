@@ -26,7 +26,6 @@ export function AdminInventoryPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <p className="label-eyebrow mb-2">Phase 4</p>
           <h1 className="font-display text-3xl">Inventory</h1>
         </div>
         <label className="flex items-center gap-2 text-sm">

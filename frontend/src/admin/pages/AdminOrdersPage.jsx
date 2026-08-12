@@ -12,7 +12,6 @@ export function AdminOrdersPage() {
 
   return (
     <div>
-      <p className="label-eyebrow mb-2">Phase 5</p>
       <h1 className="font-display text-3xl mb-6">Orders</h1>
 
       <div className="flex gap-3 mb-6">

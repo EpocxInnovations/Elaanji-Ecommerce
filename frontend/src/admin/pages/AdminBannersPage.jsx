@@ -29,7 +29,6 @@ export function AdminBannersPage() {
 
   return (
     <div className="max-w-3xl">
-      <p className="label-eyebrow mb-2">Phase 5</p>
       <h1 className="font-display text-3xl mb-8">Banners</h1>
 
       <form onSubmit={handleSubmit} className="border border-stone/20 p-4 mb-8 space-y-3">

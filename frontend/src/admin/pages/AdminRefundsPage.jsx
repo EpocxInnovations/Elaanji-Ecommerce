@@ -23,7 +23,6 @@ export function AdminRefundsPage() {
 
   return (
     <div>
-      <p className="label-eyebrow mb-2">Phase 5</p>
       <h1 className="font-display text-3xl mb-6">Returns &amp; Refunds</h1>
 
       <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="input max-w-xs mb-6">

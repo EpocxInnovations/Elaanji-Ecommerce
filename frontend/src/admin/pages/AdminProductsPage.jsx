@@ -16,7 +16,6 @@ export function AdminProductsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <p className="label-eyebrow mb-2">Phase 4</p>
           <h1 className="font-display text-3xl">Products</h1>
         </div>
         <Link to="/admin/products/new" className="btn-primary flex items-center gap-2">
