@@ -47,6 +47,15 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def api_path_rewrite_middleware(request: Request, call_next):
+    path = request.scope.get("path", "")
+    if not path.startswith("/api") and not path.startswith("/docs") and not path.startswith("/openapi.json") and path != "/":
+        request.scope["path"] = f"/api{path}"
+    return await call_next(request)
+
+
+
 app.include_router(auth.router)
 app.include_router(products.router)
 app.include_router(categories.router)
