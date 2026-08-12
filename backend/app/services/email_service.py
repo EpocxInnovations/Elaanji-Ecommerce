@@ -172,21 +172,29 @@ If you did not request a password reset, you can safely ignore this email.
 
     try:
         if settings.smtp_port == 465:
-            with IPv4SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=10) as server:
+            with IPv4SMTP_SSL(settings.smtp_host, 465, timeout=8) as server:
                 if settings.smtp_username and settings.smtp_password:
                     server.login(settings.smtp_username, settings.smtp_password)
                 server.send_message(msg)
         else:
-            with IPv4SMTP(settings.smtp_host, settings.smtp_port, timeout=10) as server:
-                server.ehlo()
-                server.starttls()
-                server.ehlo()
-                if settings.smtp_username and settings.smtp_password:
-                    server.login(settings.smtp_username, settings.smtp_password)
-                server.send_message(msg)
+            try:
+                with IPv4SMTP(settings.smtp_host, settings.smtp_port, timeout=5) as server:
+                    server.ehlo()
+                    server.starttls()
+                    server.ehlo()
+                    if settings.smtp_username and settings.smtp_password:
+                        server.login(settings.smtp_username, settings.smtp_password)
+                    server.send_message(msg)
+            except (socket.timeout, TimeoutError, socket.error) as timeout_err:
+                logger.info("SMTP Port %s timed out (%s). Retrying via SSL on Port 465...", settings.smtp_port, timeout_err)
+                with IPv4SMTP_SSL(settings.smtp_host, 465, timeout=8) as server:
+                    if settings.smtp_username and settings.smtp_password:
+                        server.login(settings.smtp_username, settings.smtp_password)
+                    server.send_message(msg)
         logger.info("Password reset OTP email sent successfully to %s", to_email)
         return True
     except Exception as e:
         logger.error("Failed to send OTP email via SMTP to %s: %s", to_email, str(e))
         return False
+
 
