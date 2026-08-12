@@ -11,12 +11,15 @@ logger = logging.getLogger(__name__)
 
 import socket
 
+import ssl
+
 class IPv4SMTP(smtplib.SMTP):
     """SMTP client that forces IPv4 address resolution to prevent Network Unreachable errors on containers."""
     def _get_socket(self, host, port, timeout):
         res = socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)
         err = None
         for af, socktype, proto, canonname, sa in res:
+            s = None
             try:
                 s = socket.socket(af, socktype, proto)
                 if timeout is not None:
@@ -33,21 +36,23 @@ class IPv4SMTP(smtplib.SMTP):
 
 
 class IPv4SMTP_SSL(smtplib.SMTP_SSL):
-    """SMTP_SSL client that forces IPv4 address resolution to prevent Network Unreachable errors on containers."""
+    """SMTP_SSL client that forces IPv4 address resolution and SSL context wrapping for Gmail."""
     def _get_socket(self, host, port, timeout):
         res = socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)
         err = None
         for af, socktype, proto, canonname, sa in res:
+            raw_sock = None
             try:
-                s = socket.socket(af, socktype, proto)
+                raw_sock = socket.socket(af, socktype, proto)
                 if timeout is not None:
-                    s.settimeout(timeout)
-                s.connect(sa)
-                return s
+                    raw_sock.settimeout(timeout)
+                raw_sock.connect(sa)
+                ctx = getattr(self, "context", None) or ssl.create_default_context()
+                return ctx.wrap_socket(raw_sock, server_hostname=host)
             except socket.error as e:
                 err = e
-                if s:
-                    s.close()
+                if raw_sock:
+                    raw_sock.close()
         if err:
             raise err
         raise socket.error("No IPv4 address found for SMTP host")
@@ -93,7 +98,7 @@ def send_via_resend_api(to_email: str, otp: str, html_body: str, text_body: str)
 
 def send_password_reset_otp_email(to_email: str, otp: str) -> bool:
     """
-    Sends a 6-digit OTP to the specified email address via Resend HTTPS API or SMTP.
+    Sends a 6-digit OTP to the specified email address via Gmail SMTP or Resend API.
     If SMTP fails due to cloud container port blocks, logs the OTP code to Render console logs.
     """
     current_year = datetime.now().year
@@ -205,7 +210,7 @@ If you did not request a password reset, you can safely ignore this email.
         print(f"========================================================\n", flush=True)
         return False
 
-    # 3. Try standard SMTP
+    # 3. Try standard SMTP with SSL Context
     msg = MIMEMultipart("alternative")
     msg["Subject"] = "Your Password Reset Code"
     msg["From"] = f"{settings.smtp_from_name} <{settings.smtp_from_email}>"
@@ -214,24 +219,29 @@ If you did not request a password reset, you can safely ignore this email.
     msg.attach(MIMEText(text_body, "plain", "utf-8"))
     msg.attach(MIMEText(html_body, "html", "utf-8"))
 
+    ssl_ctx = ssl.create_default_context()
+
     try:
-        if settings.smtp_port == 465:
-            with IPv4SMTP_SSL(settings.smtp_host, 465, timeout=5) as server:
+        # Default Gmail to Port 465 SSL for instant delivery
+        target_port = 465 if "gmail" in settings.smtp_host.lower() or settings.smtp_port == 465 else settings.smtp_port
+
+        if target_port == 465:
+            with IPv4SMTP_SSL(settings.smtp_host, 465, context=ssl_ctx, timeout=15) as server:
                 if settings.smtp_username and settings.smtp_password:
                     server.login(settings.smtp_username, settings.smtp_password)
                 server.send_message(msg)
         else:
             try:
-                with IPv4SMTP(settings.smtp_host, settings.smtp_port, timeout=4) as server:
+                with IPv4SMTP(settings.smtp_host, target_port, timeout=10) as server:
                     server.ehlo()
-                    server.starttls()
+                    server.starttls(context=ssl_ctx)
                     server.ehlo()
                     if settings.smtp_username and settings.smtp_password:
                         server.login(settings.smtp_username, settings.smtp_password)
                     server.send_message(msg)
-            except (socket.timeout, TimeoutError, socket.error) as timeout_err:
-                logger.info("SMTP Port %s timed out (%s). Retrying via SSL on Port 465...", settings.smtp_port, timeout_err)
-                with IPv4SMTP_SSL(settings.smtp_host, 465, timeout=5) as server:
+            except (socket.timeout, TimeoutError, socket.error, smtplib.SMTPException) as conn_err:
+                logger.info("SMTP Port %s failed (%s). Retrying via SSL Port 465...", settings.smtp_port, conn_err)
+                with IPv4SMTP_SSL(settings.smtp_host, 465, context=ssl_ctx, timeout=15) as server:
                     if settings.smtp_username and settings.smtp_password:
                         server.login(settings.smtp_username, settings.smtp_password)
                     server.send_message(msg)
@@ -244,6 +254,7 @@ If you did not request a password reset, you can safely ignore this email.
         logger.warning("========================================================")
         print(f"\n[RENDER LOG OTP CODE] OTP for {to_email}: {otp}\n", flush=True)
         return False
+
 
 
 
