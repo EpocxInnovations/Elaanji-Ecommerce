@@ -2,8 +2,11 @@
 Password hashing and JWT issuing/verification. This is the only place
 tokens get minted or decoded — routers and dependencies call into here.
 """
+import hashlib
+import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Literal
+
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -19,7 +22,9 @@ def hash_password(plain_password: str) -> str:
     return pwd_context.hash(plain_password)
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
+def verify_password(plain_password: str, hashed_password: str | None) -> bool:
+    if hashed_password is None:
+        return False  # Google-only account — no password set
     return pwd_context.verify(plain_password, hashed_password)
 
 
@@ -54,3 +59,31 @@ def decode_token(token: str) -> dict:
         return jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
     except JWTError as exc:
         raise exc
+
+
+def generate_otp() -> str:
+    """Generates a cryptographically secure 6-digit OTP using Python's secrets module."""
+    return f"{secrets.randbelow(1_000_000):06d}"
+
+
+def hash_otp(otp: str) -> str:
+    """Hashes plain OTP securely using SHA-256 with JWT secret key."""
+    return hashlib.sha256((otp + settings.jwt_secret_key).encode()).hexdigest()
+
+
+def verify_otp(plain_otp: str, hashed_otp: str) -> bool:
+    """Verifies plain OTP against stored OTP hash."""
+    return hash_otp(plain_otp) == hashed_otp
+
+
+def create_reset_authorization_token(user_id: str) -> str:
+    """Issues a short-lived authorization token valid only for resetting password."""
+    now = datetime.now(timezone.utc)
+    expire = now + timedelta(minutes=15)
+    payload = {
+        "sub": user_id,
+        "scope": "password_reset",
+        "iat": now,
+        "exp": expire,
+    }
+    return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)

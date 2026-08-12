@@ -34,7 +34,8 @@ export function ProductCard({ product }) {
           <img
             src={product.primary_image_url}
             alt={product.name}
-            className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-0"
+            className="w-full h-full object-cover transition-all duration-500 ease-out
+                       group-hover:opacity-0 group-hover:scale-[1.02]"
             loading="lazy"
           />
         )}
@@ -42,44 +43,64 @@ export function ProductCard({ product }) {
           <img
             src={product.hover_image_url}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            className="absolute inset-0 w-full h-full object-cover opacity-0
+                       transition-all duration-500 ease-out
+                       group-hover:opacity-100 group-hover:scale-[1.02]"
             loading="lazy"
           />
         )}
 
-        {!product.available && (
-          <span className="absolute top-3 left-3 bg-ink text-paper text-xs px-2 py-1 tracking-wide uppercase">
-            Out of Stock
-          </span>
-        )}
-        {hasDiscount && product.available && (
-          <span className="absolute top-3 left-3 bg-oxblood text-paper text-xs px-2 py-1 tracking-wide uppercase">
-            {discountPercent}% OFF
-          </span>
-        )}
+        {/* Badges */}
+        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
+          {!product.available && (
+            <span className="bg-ink/90 text-paper text-[10px] px-2 py-1 tracking-widest2 uppercase backdrop-blur-sm">
+              Sold Out
+            </span>
+          )}
+          {hasDiscount && product.available && (
+            <span className="bg-oxblood text-paper text-[10px] px-2 py-1 tracking-widest2 uppercase">
+              {discountPercent}% Off
+            </span>
+          )}
+        </div>
 
+        {/* Wishlist */}
         <button
           onClick={handleWishlistToggle}
           aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-          className="absolute top-3 right-3 bg-paper/90 p-2 rounded-full hover:bg-paper transition-colors"
+          className="absolute top-2.5 right-2.5 bg-paper/90 backdrop-blur-sm p-2
+                     opacity-0 group-hover:opacity-100 transition-all duration-200
+                     hover:bg-paper active:scale-95"
         >
-          <Heart size={16} className={wishlisted ? 'fill-oxblood text-oxblood' : 'text-ink'} />
+          <Heart
+            size={15}
+            strokeWidth={1.5}
+            className={wishlisted ? 'fill-oxblood text-oxblood' : 'text-ink'}
+          />
         </button>
+
+        {/* Subtle bottom gradient for depth */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-ink/[0.03] to-transparent pointer-events-none" />
       </div>
 
-      <div>
+      {/* Info */}
+      <div className="space-y-1">
         {product.saree_type && (
-          <p className="text-xs text-stone uppercase tracking-wide mb-1">
+          <p className="text-[10px] text-stone uppercase tracking-widest2 leading-none">
             {SAREE_TYPE_LABELS[product.saree_type] || product.saree_type}
           </p>
         )}
-        <h3 className="text-sm text-ink mb-1 line-clamp-2">{product.name}</h3>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">
+        <h3 className="text-sm text-ink leading-snug line-clamp-2 group-hover:text-oxblood transition-colors duration-200">
+          {product.name}
+        </h3>
+        <div className="flex items-baseline gap-2 pt-0.5">
+          <span className="text-sm font-medium tracking-tight">
             {formatINR(hasDiscount ? product.discount_price : product.price)}
           </span>
           {hasDiscount && (
-            <span className="text-xs text-stone line-through">{formatINR(product.price)}</span>
+            <span className="text-xs text-stone line-through">
+              {formatINR(product.price)}
+            </span>
           )}
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { Heart } from 'lucide-react'
+import { Heart, ShieldCheck, Truck, RotateCcw, ChevronDown, Minus, Plus } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useProduct, useRelatedProducts } from '../hooks/useProducts'
 import { useCart } from '../hooks/useCart'
 import { useWishlist } from '../hooks/useWishlist'
@@ -9,6 +10,45 @@ import { useDocumentMeta, useProductStructuredData } from '../hooks/useDocumentM
 import { useToast } from '../context/ToastContext'
 import { ProductCard } from '../components/ProductCard'
 import { formatINR, SAREE_TYPE_LABELS, OCCASION_LABELS } from '../utils/format'
+
+function AccordionSection({ title, defaultOpen = false, children }) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="border-b border-stone/15">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between w-full py-4 text-left group"
+        aria-expanded={open}
+      >
+        <span className="text-sm font-medium group-hover:text-oxblood transition-colors">{title}</span>
+        <ChevronDown size={16} className={`text-stone transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="overflow-hidden"
+          >
+            <div className="pb-4">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+function DetailRow({ label, value }) {
+  if (!value) return null
+  return (
+    <div className="flex justify-between py-1.5 text-sm">
+      <span className="text-stone">{label}</span>
+      <span className="text-ink text-right">{value}</span>
+    </div>
+  )
+}
 
 export function ProductDetailsPage() {
   const { slug } = useParams()
@@ -24,6 +64,7 @@ export function ProductDetailsPage() {
   const [selectedBlouseSize, setSelectedBlouseSize] = useState(null)
   const [activeImage, setActiveImage] = useState(null)
   const [feedback, setFeedback] = useState('')
+  const [quantity, setQuantity] = useState(1)
 
   const colors = useMemo(() => {
     if (!product) return []
@@ -66,17 +107,41 @@ export function ProductDetailsPage() {
   useProductStructuredData(product)
 
   if (isLoading) {
-    return <div className="mx-auto max-w-7xl px-6 py-20 text-stone text-sm">Loading…</div>
+    return (
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+          <div>
+            <div className="aspect-[3/4] skeleton mb-3" />
+            <div className="flex gap-2">
+              {[1, 2, 3].map((i) => <div key={i} className="w-16 h-20 skeleton" />)}
+            </div>
+          </div>
+          <div className="space-y-4 py-4">
+            <div className="h-3 skeleton w-1/4" />
+            <div className="h-6 skeleton w-3/4" />
+            <div className="h-5 skeleton w-1/3" />
+            <div className="h-12 skeleton w-full mt-6" />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (!product) {
-    return <div className="mx-auto max-w-7xl px-6 py-20 text-stone text-sm">Saree not found.</div>
+    return (
+      <div className="mx-auto max-w-2xl px-4 sm:px-6 py-24 text-center">
+        <h1 className="font-display text-3xl mb-3">Saree Not Found</h1>
+        <p className="text-stone text-sm mb-6">This product may no longer be available.</p>
+        <Link to="/shop" className="btn-primary">Browse Collection</Link>
+      </div>
+    )
   }
 
   const hasDiscount = product.discount_price && product.discount_price < product.price
   const price = hasDiscount ? product.discount_price : product.price
   const wishlisted = isAuthenticated && isWishlisted(product.id)
   const needsBlouseSize = blouseSizes.length > 0 && !selectedBlouseSize
+  const inStock = matchingVariant && matchingVariant.available_quantity > 0
 
   const handleAddToCart = () => {
     if (!isAuthenticated) {
@@ -88,7 +153,7 @@ export function ProductDetailsPage() {
       return
     }
     addItem.mutate(
-      { variantId: matchingVariant.id, quantity: 1 },
+      { variantId: matchingVariant.id, quantity },
       {
         onSuccess: () => showToast(`${product.name} added to cart`),
         onError: (err) => showToast(err.response?.data?.detail || 'Could not add to cart.', 'error'),
@@ -112,42 +177,77 @@ export function ProductDetailsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-12">
-      <div className="grid md:grid-cols-2 gap-12">
-        {/* Gallery */}
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 md:py-10">
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="mb-6">
+        <ol className="flex items-center gap-1.5 text-xs text-stone">
+          <li><Link to="/" className="hover:text-ink transition-colors">Home</Link></li>
+          <li className="text-stone/40">/</li>
+          <li><Link to="/shop" className="hover:text-ink transition-colors">Shop</Link></li>
+          <li className="text-stone/40">/</li>
+          <li className="text-ink line-clamp-1">{product.name}</li>
+        </ol>
+      </nav>
+
+      <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+        {/* ─── Gallery ─── */}
         <div>
-          <div className="aspect-[3/4] bg-beige mb-3 overflow-hidden">
-            {displayImage && <img src={displayImage} alt={product.name} className="w-full h-full object-cover" />}
+          <div className="aspect-[3/4] bg-beige mb-3 overflow-hidden group cursor-crosshair">
+            {displayImage && (
+              <img
+                src={displayImage}
+                alt={product.name}
+                className="w-full h-full object-cover transition-transform duration-500 ease-out
+                           group-hover:scale-105"
+              />
+            )}
           </div>
-          <div className="flex gap-2 overflow-x-auto">
-            {colorImages.map((img) => (
-              <button
-                key={img.id}
-                onClick={() => setActiveImage(img.image_url)}
-                className={`w-16 h-20 shrink-0 border ${displayImage === img.image_url ? 'border-ink' : 'border-transparent'}`}
-              >
-                <img src={img.image_url} alt="" className="w-full h-full object-cover" />
-              </button>
-            ))}
-          </div>
+          {colorImages.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {colorImages.map((img) => (
+                <button
+                  key={img.id}
+                  onClick={() => setActiveImage(img.image_url)}
+                  className={`w-16 h-20 shrink-0 overflow-hidden transition-all duration-200 ${
+                    displayImage === img.image_url
+                      ? 'ring-1 ring-ink ring-offset-2'
+                      : 'opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Details */}
-        <div>
+        {/* ─── Product Info ─── */}
+        <div className="md:py-2">
           {product.saree_type && (
-            <p className="label-eyebrow mb-2">{SAREE_TYPE_LABELS[product.saree_type] || product.saree_type}</p>
+            <p className="label-eyebrow mb-2">
+              {SAREE_TYPE_LABELS[product.saree_type] || product.saree_type}
+            </p>
           )}
-          <h1 className="font-display text-3xl mb-3">{product.name}</h1>
+          <h1 className="font-display text-2xl sm:text-3xl mb-4 leading-snug">{product.name}</h1>
 
-          <div className="flex items-center gap-3 mb-6">
-            <span className="text-xl font-medium">{formatINR(price)}</span>
-            {hasDiscount && <span className="text-sm text-stone line-through">{formatINR(product.price)}</span>}
+          {/* Price */}
+          <div className="flex items-baseline gap-3 mb-6">
+            <span className="text-2xl font-medium tracking-tight">{formatINR(price)}</span>
+            {hasDiscount && (
+              <>
+                <span className="text-sm text-stone line-through">{formatINR(product.price)}</span>
+                <span className="text-xs bg-oxblood/10 text-oxblood px-2 py-0.5 tracking-wide uppercase">
+                  {Math.round(((product.price - product.discount_price) / product.price) * 100)}% off
+                </span>
+              </>
+            )}
           </div>
 
+          {/* Color Selector */}
           {colors.length > 0 && (
             <div className="mb-6">
-              <p className="text-xs tracking-widest2 uppercase text-stone mb-2">
-                Color: <span className="text-ink normal-case">{activeColor}</span>
+              <p className="text-xs tracking-widest2 uppercase text-stone mb-2.5">
+                Color — <span className="text-ink normal-case tracking-normal">{activeColor}</span>
               </p>
               <div className="flex gap-2">
                 {colors.map(([color, hex]) => (
@@ -159,8 +259,11 @@ export function ProductDetailsPage() {
                       setActiveImage(null)
                     }}
                     aria-label={color}
-                    className={`w-9 h-9 rounded-full border-2 ${activeColor === color ? 'border-ink' : 'border-transparent'
-                      }`}
+                    className={`w-9 h-9 border-2 transition-all duration-150 ${
+                      activeColor === color
+                        ? 'border-ink scale-110'
+                        : 'border-transparent hover:border-stone/40'
+                    }`}
                     style={{ backgroundColor: hex || '#ccc' }}
                   />
                 ))}
@@ -168,16 +271,20 @@ export function ProductDetailsPage() {
             </div>
           )}
 
+          {/* Blouse Size */}
           {blouseSizes.length > 0 && (
             <div className="mb-6">
-              <p className="text-xs tracking-widest2 uppercase text-stone mb-2">Blouse Size</p>
-              <div className="flex gap-2">
+              <p className="text-xs tracking-widest2 uppercase text-stone mb-2.5">Blouse Size</p>
+              <div className="flex flex-wrap gap-2">
                 {blouseSizes.map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedBlouseSize(size)}
-                    className={`px-4 py-2 text-sm border ${selectedBlouseSize === size ? 'bg-ink text-paper border-ink' : 'border-stone/30'
-                      }`}
+                    className={`px-4 py-2 text-sm border transition-all duration-150 ${
+                      selectedBlouseSize === size
+                        ? 'bg-ink text-paper border-ink'
+                        : 'border-stone/30 hover:border-ink'
+                    }`}
                   >
                     {size}
                   </button>
@@ -186,67 +293,134 @@ export function ProductDetailsPage() {
             </div>
           )}
 
+          {/* Stock */}
           {matchingVariant && (
-            <p className="text-xs text-stone mb-4">
-              {matchingVariant.available_quantity > 0
-                ? `${matchingVariant.available_quantity} in stock`
+            <p className={`text-xs mb-4 ${inStock ? 'text-stone' : 'text-oxblood'}`}>
+              {inStock
+                ? matchingVariant.available_quantity <= 5
+                  ? `Only ${matchingVariant.available_quantity} left`
+                  : 'In stock'
                 : 'Out of stock for this option'}
             </p>
           )}
 
-          <div className="flex gap-3 mb-6">
+          {/* Quantity + Add to Cart */}
+          <div className="flex gap-3 mb-4">
+            <div className="flex items-center border border-stone/30">
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="px-3 py-3 hover:bg-beige/50 transition-colors"
+                aria-label="Decrease quantity"
+              >
+                <Minus size={14} strokeWidth={1.5} />
+              </button>
+              <span className="px-3 text-sm min-w-[32px] text-center">{quantity}</span>
+              <button
+                onClick={() => setQuantity(quantity + 1)}
+                className="px-3 py-3 hover:bg-beige/50 transition-colors"
+                aria-label="Increase quantity"
+              >
+                <Plus size={14} strokeWidth={1.5} />
+              </button>
+            </div>
             <button
               onClick={handleAddToCart}
-              disabled={addItem.isPending || (matchingVariant && matchingVariant.available_quantity === 0)}
-              className="btn-primary flex-1 disabled:opacity-50"
+              disabled={addItem.isPending || (matchingVariant && !inStock)}
+              className="btn-primary flex-1"
             >
               {addItem.isPending ? 'Adding…' : 'Add to Cart'}
             </button>
             <button
               onClick={handleWishlistToggle}
               aria-label="Toggle wishlist"
-              className="btn-secondary px-4"
+              className="btn-secondary !px-4"
             >
-              <Heart size={18} className={wishlisted ? 'fill-oxblood text-oxblood' : ''} />
+              <Heart size={18} strokeWidth={1.5} className={wishlisted ? 'fill-oxblood text-oxblood' : ''} />
             </button>
           </div>
 
-          {feedback && <p className="text-sm text-stone mb-6">{feedback}</p>}
+          {feedback && <p className="text-sm text-oxblood mb-4">{feedback}</p>}
 
-          <div className="border-t border-stone/20 pt-6 space-y-3 text-sm">
-            {product.fabric && <p><span className="text-stone">Fabric:</span> {product.fabric}</p>}
-            {product.border_type && <p><span className="text-stone">Border:</span> {product.border_type}</p>}
-            {product.pallu_style && <p><span className="text-stone">Pallu:</span> {product.pallu_style}</p>}
-            {product.work_type && <p><span className="text-stone">Work:</span> {product.work_type}</p>}
-            {product.occasion && (
-              <p><span className="text-stone">Occasion:</span> {OCCASION_LABELS[product.occasion] || product.occasion}</p>
-            )}
-            <p>
-              <span className="text-stone">Blouse Piece:</span>{' '}
-              {product.blouse_piece_included ? (product.blouse_stitched ? 'Included, stitched' : 'Included, unstitched') : 'Not included'}
-            </p>
-            {product.care_instructions && (
-              <p><span className="text-stone">Care:</span> {product.care_instructions}</p>
-            )}
+          {/* Trust Signals */}
+          <div className="flex flex-wrap gap-x-6 gap-y-2 py-4 border-t border-stone/10 mb-2">
+            <div className="flex items-center gap-1.5 text-xs text-stone">
+              <ShieldCheck size={14} strokeWidth={1.5} />
+              <span>Secure Payment</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-stone">
+              <Truck size={14} strokeWidth={1.5} />
+              <span>Free Shipping ₹999+</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-stone">
+              <RotateCcw size={14} strokeWidth={1.5} />
+              <span>Easy Returns</span>
+            </div>
           </div>
 
-          {product.description && (
-            <div className="border-t border-stone/20 pt-6 mt-6">
-              <p className="text-sm text-ink/80 leading-relaxed">{product.description}</p>
-            </div>
-          )}
+          {/* Accordion Details */}
+          <div className="border-t border-stone/15">
+            <AccordionSection title="Product Details" defaultOpen={true}>
+              <div className="divide-y divide-stone/10">
+                <DetailRow label="Fabric" value={product.fabric} />
+                <DetailRow label="Border" value={product.border_type} />
+                <DetailRow label="Pallu" value={product.pallu_style} />
+                <DetailRow label="Work" value={product.work_type} />
+                <DetailRow label="Occasion" value={product.occasion ? (OCCASION_LABELS[product.occasion] || product.occasion) : null} />
+                <DetailRow
+                  label="Blouse Piece"
+                  value={
+                    product.blouse_piece_included
+                      ? product.blouse_stitched
+                        ? 'Included, stitched'
+                        : 'Included, unstitched'
+                      : 'Not included'
+                  }
+                />
+              </div>
+            </AccordionSection>
+
+            {product.description && (
+              <AccordionSection title="Description">
+                <p className="text-sm text-ink/80 leading-relaxed">{product.description}</p>
+              </AccordionSection>
+            )}
+
+            {product.care_instructions && (
+              <AccordionSection title="Care Instructions">
+                <p className="text-sm text-ink/80 leading-relaxed">{product.care_instructions}</p>
+              </AccordionSection>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* ─── Mobile Sticky CTA ─── */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-paper border-t border-stone/10 px-4 py-3 z-30 shadow-luxury">
+        <div className="flex items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{product.name}</p>
+            <p className="text-sm tracking-tight">{formatINR(price)}</p>
+          </div>
+          <button
+            onClick={handleAddToCart}
+            disabled={addItem.isPending || (matchingVariant && !inStock)}
+            className="btn-primary text-xs !py-2.5 whitespace-nowrap"
+          >
+            {addItem.isPending ? 'Adding…' : 'Add to Cart'}
+          </button>
+        </div>
+      </div>
+
+      {/* ─── Related Products ─── */}
       {related?.length > 0 && (
-        <div className="mt-20">
-          <h2 className="font-display text-2xl mb-6">You May Also Like</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10">
+        <section className="mt-16 md:mt-24 pb-20 md:pb-0">
+          <h2 className="font-display text-2xl mb-8">You May Also Like</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-8">
             {related.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
-        </div>
+        </section>
       )}
     </div>
   )

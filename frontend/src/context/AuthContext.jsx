@@ -35,6 +35,13 @@ export function AuthProvider({ children }) {
     return data.user
   }
 
+  const loginWithGoogle = async (credential) => {
+    const data = await authApi.loginWithGoogle(credential)
+    tokenStorage.setTokens(data.tokens.access_token, data.tokens.refresh_token)
+    setUser(data.user)
+    return data.user
+  }
+
   const register = async (payload) => {
     const data = await authApi.register(payload)
     tokenStorage.setTokens(data.tokens.access_token, data.tokens.refresh_token)
@@ -58,6 +65,7 @@ export function AuthProvider({ children }) {
     isAuthenticated: Boolean(user),
     isAdmin: user?.role === 'admin',
     login,
+    loginWithGoogle,
     register,
     logout,
   }

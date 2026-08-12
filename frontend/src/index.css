@@ -17,33 +17,121 @@
     outline-offset: 2px;
   }
 
+  /* Scrollbar styling for webkit browsers */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #8A8578;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #14120F;
+  }
+
   @keyframes toast-in {
     from {
       opacity: 0;
-      transform: translateY(8px);
+      transform: translateX(16px);
     }
-
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateX(0);
     }
   }
 }
 
 @layer components {
+  /* ---------- Buttons ---------- */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 bg-ink text-paper px-6 py-3 text-sm tracking-wide uppercase hover:bg-oxblood transition-colors duration-300;
+    @apply inline-flex items-center justify-center gap-2 bg-ink text-paper px-6 py-3 text-sm tracking-wide uppercase
+           hover:bg-oxblood transition-all duration-300 ease-out
+           active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 border border-ink text-ink px-6 py-3 text-sm tracking-wide uppercase hover:bg-ink hover:text-paper transition-colors duration-300;
+    @apply inline-flex items-center justify-center gap-2 border border-ink text-ink px-6 py-3 text-sm tracking-wide uppercase
+           hover:bg-ink hover:text-paper transition-all duration-300 ease-out
+           active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
   }
 
+  /* ---------- Typography ---------- */
   .label-eyebrow {
     @apply text-xs tracking-widest2 uppercase text-stone;
   }
 
+  /* ---------- Form Controls ---------- */
   .input {
-    @apply w-full border border-stone/30 px-3 py-2 text-sm bg-transparent focus:border-ink transition-colors;
+    @apply w-full border border-stone/30 px-4 py-3 text-sm bg-transparent
+           focus:border-ink focus:ring-0 transition-colors duration-200
+           placeholder:text-stone/50;
+  }
+
+  /* ---------- Skeleton Loading ---------- */
+  .skeleton {
+    @apply relative overflow-hidden bg-beige;
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(250, 249, 246, 0.5),
+      transparent
+    );
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* ---------- Decorative Ornament ---------- */
+  .divider-ornament {
+    @apply flex items-center gap-4 text-stone/40;
+  }
+  .divider-ornament::before,
+  .divider-ornament::after {
+    content: '';
+    @apply flex-1 h-px bg-stone/20;
+  }
+
+  /* ---------- Card Hover ---------- */
+  .card-hover {
+    @apply transition-all duration-300 ease-out;
+  }
+  .card-hover:hover {
+    @apply shadow-card-hover;
+    transform: translateY(-2px);
+  }
+
+  /* ---------- Overlay Backdrop ---------- */
+  .overlay-backdrop {
+    @apply fixed inset-0 bg-ink/40 z-50;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+}
+
+/* ---------- Reduced Motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .skeleton::after {
+    animation: none !important;
+    display: none;
   }
 }

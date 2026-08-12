@@ -15,7 +15,9 @@ import { OrderDetailPage } from './pages/OrderDetailPage'
 import { AccountPage } from './pages/AccountPage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import { NotFoundPage } from './pages/NotFoundPage'
+
 
 // The admin panel (and its charting library) is only ever needed by admins,
 // so it's split into its own chunk rather than shipping in the storefront
@@ -53,6 +55,8 @@ export default function App() {
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
 
         <Route
           path="/checkout"

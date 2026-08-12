@@ -19,10 +19,13 @@ from app.models.coupon import Coupon, CouponUsage
 from app.models.review import Review
 from app.models.content import Banner, HomepageSection, Notification, StoreSetting
 from app.models.activity_log import AdminActivityLog
+from app.models.password_reset_otp import PasswordResetOTP
 
 __all__ = [
     "User",
     "Address",
+    "PasswordResetOTP",
+
     "Category",
     "Brand",
     "Product",

@@ -31,6 +31,17 @@ class Settings(BaseSettings):
     razorpay_key_id: str = ""
     razorpay_key_secret: str = ""
 
+    # Google OAuth
+    google_client_id: str = ""
+
+    # SMTP Email
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_email: str = "noreply@elaanji.com"
+    smtp_from_name: str = "Elaanji"
+
     # Store defaults (overridden at runtime by store_settings table once seeded)
     free_shipping_threshold: float = 999
     default_shipping_fee: float = 79
@@ -38,9 +49,13 @@ class Settings(BaseSettings):
     environment: str = "development"
 
 
-@lru_cache
 def get_settings() -> Settings:
     return Settings()
 
 
-settings = get_settings()
+class SettingsProxy:
+    def __getattr__(self, name):
+        return getattr(get_settings(), name)
+
+
+settings = SettingsProxy()

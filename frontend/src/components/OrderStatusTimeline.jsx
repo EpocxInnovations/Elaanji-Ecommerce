@@ -1,3 +1,5 @@
+import { Check } from 'lucide-react'
+
 const HAPPY_PATH = ['pending', 'confirmed', 'processing', 'packed', 'shipped', 'out_for_delivery', 'delivered']
 
 const LABELS = {
@@ -19,7 +21,7 @@ export function OrderStatusTimeline({ status, statusHistory = [] }) {
 
   if (isTerminalException) {
     return (
-      <div className="border border-stone/20 p-4">
+      <div className="border border-oxblood/20 bg-oxblood/5 p-4">
         <p className="text-sm font-medium text-oxblood">{LABELS[status]}</p>
         {statusHistory.length > 0 && (
           <p className="text-xs text-stone mt-1">
@@ -36,19 +38,32 @@ export function OrderStatusTimeline({ status, statusHistory = [] }) {
     <div className="flex flex-col gap-0">
       {HAPPY_PATH.map((step, idx) => {
         const isDone = idx <= currentIndex
+        const isCurrent = idx === currentIndex
         const historyEntry = statusHistory.find((h) => h.status === step)
         return (
           <div key={step} className="flex gap-3">
             <div className="flex flex-col items-center">
-              <div className={`w-3 h-3 rounded-full ${isDone ? 'bg-ink' : 'bg-stone/30'}`} />
+              <div
+                className={`w-6 h-6 flex items-center justify-center shrink-0 transition-colors ${
+                  isDone
+                    ? 'bg-ink'
+                    : 'border border-stone/30'
+                }`}
+              >
+                {isDone && <Check size={12} className="text-paper" strokeWidth={2.5} />}
+              </div>
               {idx < HAPPY_PATH.length - 1 && (
-                <div className={`w-px flex-1 min-h-[24px] ${isDone ? 'bg-ink' : 'bg-stone/30'}`} />
+                <div className={`w-px flex-1 min-h-[20px] transition-colors ${isDone ? 'bg-ink' : 'bg-stone/20'}`} />
               )}
             </div>
-            <div className="pb-6">
-              <p className={`text-sm ${isDone ? 'text-ink font-medium' : 'text-stone'}`}>{LABELS[step]}</p>
+            <div className="pb-5">
+              <p className={`text-sm ${isDone ? 'text-ink font-medium' : 'text-stone'}`}>
+                {LABELS[step]}
+              </p>
               {historyEntry && (
-                <p className="text-xs text-stone">{new Date(historyEntry.created_at).toLocaleString('en-IN')}</p>
+                <p className="text-xs text-stone mt-0.5">
+                  {new Date(historyEntry.created_at).toLocaleString('en-IN')}
+                </p>
               )}
             </div>
           </div>

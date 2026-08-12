@@ -21,7 +21,8 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     phone: Mapped[Optional[str]] = mapped_column(String(20), unique=True, nullable=True)
-    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    hashed_password: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)  # null for Google-only accounts
+    google_id: Mapped[Optional[str]] = mapped_column(String(255), unique=True, index=True, nullable=True)
     role: Mapped[UserRole] = mapped_column(
         Enum(UserRole, name="user_role"), default=UserRole.customer, nullable=False
     )
@@ -33,6 +34,7 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     cart: Mapped[Optional["Cart"]] = relationship(back_populates="user", uselist=False)  # noqa: F821
     wishlist: Mapped[Optional["Wishlist"]] = relationship(back_populates="user", uselist=False)  # noqa: F821
     reviews: Mapped[list["Review"]] = relationship(back_populates="user")  # noqa: F821
+    password_reset_otps: Mapped[list["PasswordResetOTP"]] = relationship(back_populates="user", cascade="all, delete-orphan")  # noqa: F821
 
 
 class Address(Base, UUIDPrimaryKeyMixin, TimestampMixin):
