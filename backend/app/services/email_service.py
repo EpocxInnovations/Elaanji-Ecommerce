@@ -9,6 +9,50 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
+import socket
+
+class IPv4SMTP(smtplib.SMTP):
+    """SMTP client that forces IPv4 address resolution to prevent Network Unreachable errors on containers."""
+    def _get_socket(self, host, port, timeout):
+        res = socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)
+        err = None
+        for af, socktype, proto, canonname, sa in res:
+            try:
+                s = socket.socket(af, socktype, proto)
+                if timeout is not None:
+                    s.settimeout(timeout)
+                s.connect(sa)
+                return s
+            except socket.error as e:
+                err = e
+                if s:
+                    s.close()
+        if err:
+            raise err
+        raise socket.error("No IPv4 address found for SMTP host")
+
+
+class IPv4SMTP_SSL(smtplib.SMTP_SSL):
+    """SMTP_SSL client that forces IPv4 address resolution to prevent Network Unreachable errors on containers."""
+    def _get_socket(self, host, port, timeout):
+        res = socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)
+        err = None
+        for af, socktype, proto, canonname, sa in res:
+            try:
+                s = socket.socket(af, socktype, proto)
+                if timeout is not None:
+                    s.settimeout(timeout)
+                s.connect(sa)
+                return s
+            except socket.error as e:
+                err = e
+                if s:
+                    s.close()
+        if err:
+            raise err
+        raise socket.error("No IPv4 address found for SMTP host")
+
+
 def send_password_reset_otp_email(to_email: str, otp: str) -> bool:
     """
     Sends a 6-digit OTP to the specified email address via SMTP.
@@ -25,8 +69,6 @@ def send_password_reset_otp_email(to_email: str, otp: str) -> bool:
         print(f"[DEV MODE] OTP Code for {to_email}: {otp}", flush=True)
         print(f"========================================================\n", flush=True)
         return False
-
-
 
     current_year = datetime.now().year
 
@@ -130,12 +172,12 @@ If you did not request a password reset, you can safely ignore this email.
 
     try:
         if settings.smtp_port == 465:
-            with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=10) as server:
+            with IPv4SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=10) as server:
                 if settings.smtp_username and settings.smtp_password:
                     server.login(settings.smtp_username, settings.smtp_password)
                 server.send_message(msg)
         else:
-            with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=10) as server:
+            with IPv4SMTP(settings.smtp_host, settings.smtp_port, timeout=10) as server:
                 server.ehlo()
                 server.starttls()
                 server.ehlo()
@@ -147,3 +189,4 @@ If you did not request a password reset, you can safely ignore this email.
     except Exception as e:
         logger.error("Failed to send OTP email via SMTP to %s: %s", to_email, str(e))
         return False
+
