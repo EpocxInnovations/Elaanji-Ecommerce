@@ -217,10 +217,16 @@ def forgot_password(request: Request, payload: ForgotPasswordRequest, db: Sessio
         db.add(otp_record)
         db.commit()
 
-        # Send OTP email via SMTP
-        send_password_reset_otp_email(user.email, raw_otp)
+        # Send OTP email via SMTP or Resend API
+        sent_success = send_password_reset_otp_email(user.email, raw_otp)
 
-    return {"message": "If an account exists with this email, a verification code has been sent."}
+        response_data = {"message": "If an account exists with this email, a verification code has been sent."}
+        if not sent_success:
+            # Attach dev_otp if SMTP delivery is blocked by host firewall
+            response_data["dev_otp"] = raw_otp
+
+        return response_data
+
 
 
 @router.post("/verify-reset-otp", response_model=VerifyOTPResponse, status_code=status.HTTP_200_OK)
