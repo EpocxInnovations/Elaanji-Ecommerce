@@ -32,6 +32,17 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+
+@app.on_event("startup")
+def on_startup():
+    try:
+        from scripts.run_migrations import sync_schema_columns, auto_seed_catalog_if_empty
+        sync_schema_columns()
+        auto_seed_catalog_if_empty()
+    except Exception as exc:
+        print(f"Startup migration sync warning: {exc}")
+
+
 cors_origins = [origin.strip() for origin in settings.frontend_origin.split(",") if origin.strip()]
 if "https://elaanji-website.vercel.app" not in cors_origins:
     cors_origins.append("https://elaanji-website.vercel.app")
