@@ -53,23 +53,49 @@ class IPv4SMTP_SSL(smtplib.SMTP_SSL):
         raise socket.error("No IPv4 address found for SMTP host")
 
 
+import json
+import os
+import urllib.request
+
+
+def send_via_resend_api(to_email: str, otp: str, html_body: str, text_body: str) -> bool:
+    """Sends email via Resend HTTPS REST API (Port 443). Bypasses outbound SMTP port blocks."""
+    resend_key = os.environ.get("RESEND_API_KEY", "")
+    if not resend_key:
+        return False
+    try:
+        url = "https://api.resend.com/emails"
+        sender_address = (
+            "onboarding@resend.dev"
+            if "resend.dev" in settings.smtp_from_email or not settings.smtp_from_email or "gmail.com" in settings.smtp_from_email
+            else settings.smtp_from_email
+        )
+        payload = {
+            "from": f"{settings.smtp_from_name} <{sender_address}>",
+            "to": [to_email],
+            "subject": "Your Password Reset Code",
+            "html": html_body,
+            "text": text_body,
+        }
+        headers = {
+            "Authorization": f"Bearer {resend_key}",
+            "Content-Type": "application/json",
+        }
+        req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST")
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            if resp.status in (200, 201):
+                logger.info("Password reset OTP email sent via Resend HTTPS API to %s", to_email)
+                return True
+    except Exception as e:
+        logger.error("Failed to send email via Resend HTTPS API to %s: %s", to_email, str(e))
+    return False
+
+
 def send_password_reset_otp_email(to_email: str, otp: str) -> bool:
     """
-    Sends a 6-digit OTP to the specified email address via SMTP.
-    Never logs the plaintext OTP.
-    Returns True if sent successfully, False if SMTP is unconfigured or failed.
+    Sends a 6-digit OTP to the specified email address via Resend HTTPS API or SMTP.
+    If SMTP fails due to cloud container port blocks, logs the OTP code to Render console logs.
     """
-    if not settings.smtp_host:
-        logger.warning(
-            "SMTP_HOST is not configured. OTP email delivery skipped for recipient: %s. [DEV MODE OTP CODE: %s]",
-            to_email,
-            otp,
-        )
-        print(f"\n========================================================", flush=True)
-        print(f"[DEV MODE] OTP Code for {to_email}: {otp}", flush=True)
-        print(f"========================================================\n", flush=True)
-        return False
-
     current_year = datetime.now().year
 
     html_body = f"""<!DOCTYPE html>
@@ -162,6 +188,24 @@ This code expires in 5 minutes.
 If you did not request a password reset, you can safely ignore this email.
 """
 
+    # 1. Try Resend HTTPS REST API if key is present
+    if os.environ.get("RESEND_API_KEY"):
+        if send_via_resend_api(to_email, otp, html_body, text_body):
+            return True
+
+    # 2. Check if SMTP is configured
+    if not settings.smtp_host:
+        logger.warning(
+            "SMTP_HOST is not configured. OTP email delivery skipped for recipient: %s. [RENDER LOG OTP CODE: %s]",
+            to_email,
+            otp,
+        )
+        print(f"\n========================================================", flush=True)
+        print(f"[RENDER LOG OTP CODE] OTP for {to_email}: {otp}", flush=True)
+        print(f"========================================================\n", flush=True)
+        return False
+
+    # 3. Try standard SMTP
     msg = MIMEMultipart("alternative")
     msg["Subject"] = "Your Password Reset Code"
     msg["From"] = f"{settings.smtp_from_name} <{settings.smtp_from_email}>"
@@ -172,13 +216,13 @@ If you did not request a password reset, you can safely ignore this email.
 
     try:
         if settings.smtp_port == 465:
-            with IPv4SMTP_SSL(settings.smtp_host, 465, timeout=8) as server:
+            with IPv4SMTP_SSL(settings.smtp_host, 465, timeout=5) as server:
                 if settings.smtp_username and settings.smtp_password:
                     server.login(settings.smtp_username, settings.smtp_password)
                 server.send_message(msg)
         else:
             try:
-                with IPv4SMTP(settings.smtp_host, settings.smtp_port, timeout=5) as server:
+                with IPv4SMTP(settings.smtp_host, settings.smtp_port, timeout=4) as server:
                     server.ehlo()
                     server.starttls()
                     server.ehlo()
@@ -187,7 +231,7 @@ If you did not request a password reset, you can safely ignore this email.
                     server.send_message(msg)
             except (socket.timeout, TimeoutError, socket.error) as timeout_err:
                 logger.info("SMTP Port %s timed out (%s). Retrying via SSL on Port 465...", settings.smtp_port, timeout_err)
-                with IPv4SMTP_SSL(settings.smtp_host, 465, timeout=8) as server:
+                with IPv4SMTP_SSL(settings.smtp_host, 465, timeout=5) as server:
                     if settings.smtp_username and settings.smtp_password:
                         server.login(settings.smtp_username, settings.smtp_password)
                     server.send_message(msg)
@@ -195,6 +239,11 @@ If you did not request a password reset, you can safely ignore this email.
         return True
     except Exception as e:
         logger.error("Failed to send OTP email via SMTP to %s: %s", to_email, str(e))
+        logger.warning("========================================================")
+        logger.warning("[RENDER LOG OTP CODE FOR %s]: %s", to_email, otp)
+        logger.warning("========================================================")
+        print(f"\n[RENDER LOG OTP CODE] OTP for {to_email}: {otp}\n", flush=True)
         return False
+
 
 
