@@ -13,19 +13,39 @@ from passlib.context import CryptContext
 
 from app.core.config import settings
 
+import passlib.handlers.bcrypt
+
+# Patch passlib bcrypt wrap bug check for compatibility with bcrypt >= 4.0.0
+try:
+    _orig_calc_checksum = passlib.handlers.bcrypt._BcryptCommon._calc_checksum
+
+    def _safe_calc_checksum(self, secret):
+        if isinstance(secret, str):
+            secret = secret.encode("utf-8")
+        if len(secret) > 72:
+            secret = secret[:72]
+        return _orig_calc_checksum(self, secret)
+
+    passlib.handlers.bcrypt._BcryptCommon._calc_checksum = _safe_calc_checksum
+except Exception:
+    pass
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 TokenType = Literal["access", "refresh"]
 
 
 def hash_password(plain_password: str) -> str:
-    return pwd_context.hash(plain_password)
+    pwd_bytes = plain_password.encode("utf-8")[:72]
+    return pwd_context.hash(pwd_bytes.decode("utf-8", errors="ignore"))
 
 
 def verify_password(plain_password: str, hashed_password: str | None) -> bool:
     if hashed_password is None:
         return False  # Google-only account — no password set
-    return pwd_context.verify(plain_password, hashed_password)
+    pwd_bytes = plain_password.encode("utf-8")[:72]
+    return pwd_context.verify(pwd_bytes.decode("utf-8", errors="ignore"), hashed_password)
+
 
 
 def create_token(subject: str, role: str, token_type: TokenType) -> str:
