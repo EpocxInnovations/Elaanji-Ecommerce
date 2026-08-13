@@ -39,7 +39,7 @@ export function AdminRefundsPage() {
             <div key={r.id} className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <div>
-                  <p className="text-sm font-medium">{r.order_number} — {r.customer_name}</p>
+                  <p className="text-sm font-medium">{r.order_number} | {r.customer_name}</p>
                   <p className="text-xs text-stone mt-1">{r.reason}</p>
                 </div>
                 <div className="text-right">

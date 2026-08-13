@@ -89,7 +89,7 @@ export function AdminOrderDetailPage() {
 
         <div>
           <h2 className="text-sm tracking-widest2 uppercase mb-3">Shipping</h2>
-          <p className="text-sm">{order.shipping_name} — {order.shipping_phone}</p>
+          <p className="text-sm">{order.shipping_name} | {order.shipping_phone}</p>
           <p className="text-sm text-stone mt-1">
             {order.shipping_address_line}, {order.shipping_city}, {order.shipping_state} {order.shipping_pin_code}
           </p>
@@ -109,7 +109,7 @@ export function AdminOrderDetailPage() {
         <div className="space-y-2">
           {order.status_history.map((h, idx) => (
             <p key={idx} className="text-sm text-stone">
-              {new Date(h.created_at).toLocaleString('en-IN')} — <span className="text-ink">{h.status.replace(/_/g, ' ')}</span>
+              {new Date(h.created_at).toLocaleString('en-IN')} | <span className="text-ink">{h.status.replace(/_/g, ' ')}</span>
               {h.note ? ` (${h.note})` : ''}
             </p>
           ))}

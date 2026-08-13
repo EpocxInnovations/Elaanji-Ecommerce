@@ -52,7 +52,7 @@ export function RegisterPage() {
             <div className="w-px h-16 bg-stone/30 mx-auto mb-6" />
             <h2 className="font-display text-4xl leading-tight mb-3">Join Elaanji</h2>
             <p className="text-stone text-sm leading-relaxed">
-              Create your account for a personalised shopping experience — track orders, save favourites, and enjoy exclusive offers.
+              Create your account for a personalised shopping experience: track orders, save favourites, and enjoy exclusive offers.
             </p>
             <div className="w-px h-16 bg-stone/30 mx-auto mt-6" />
           </div>

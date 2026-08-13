@@ -190,7 +190,7 @@ def send_password_reset_otp_email(to_email: str, otp: str) -> bool:
 </body>
 </html>"""
 
-    text_body = f"""ELAANJI — Password Reset Code
+    text_body = f"""ELAANJI: Password Reset Code
 
 Your password reset verification code is:
 

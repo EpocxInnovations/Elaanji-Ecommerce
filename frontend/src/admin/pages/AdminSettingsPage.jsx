@@ -77,7 +77,7 @@ export function AdminSettingsPage() {
             <Field label="Express Delivery (days)"><input type="number" className="input" value={shipping.estimated_delivery_days_express} onChange={(e) => setShipping({ ...shipping, estimated_delivery_days_express: Number(e.target.value) })} /></Field>
           </div>
           <button onClick={() => saveAndNotify(updateShipping, shipping)} className="btn-primary">Save</button>
-          <p className="text-xs text-stone">Changes apply to checkout immediately — no redeploy needed.</p>
+          <p className="text-xs text-stone">Changes apply to checkout immediately (no redeploy needed).</p>
         </div>
       )}
 

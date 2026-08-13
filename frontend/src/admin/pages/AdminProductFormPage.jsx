@@ -129,13 +129,13 @@ export function AdminProductFormPage() {
           <div className="grid grid-cols-2 gap-4">
             <Field label="Saree Type">
               <select value={form.saree_type} onChange={(e) => handleChange('saree_type', e.target.value)} className="input">
-                <option value="">—</option>
+                <option value="">Select Saree Type</option>
                 {Object.entries(SAREE_TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             </Field>
             <Field label="Occasion">
               <select value={form.occasion} onChange={(e) => handleChange('occasion', e.target.value)} className="input">
-                <option value="">—</option>
+                <option value="">Select Occasion</option>
                 {Object.entries(OCCASION_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             </Field>

@@ -73,7 +73,7 @@ def approve_refund(db: Session, admin: User, refund_id: uuid.UUID, note: str | N
 
     refund.status = RefundStatus.approved
     refund.admin_note = note
-    db.add(Notification(user_id=refund.order.user_id, title=f"Return approved — {refund.order.order_number}", message="Your return request has been approved. Please ship the item back."))
+    db.add(Notification(user_id=refund.order.user_id, title=f"Return approved: {refund.order.order_number}", message="Your return request has been approved. Please ship the item back."))
     log_action(db, admin, "approved refund", "refund", str(refund.id), refund.order.order_number)
     db.commit()
     return _serialize_refund(_load_refund(db, refund_id))
@@ -89,7 +89,7 @@ def reject_refund(db: Session, admin: User, refund_id: uuid.UUID, note: str | No
     order = refund.order
     order.status = OrderStatus.delivered
     write_status_history(db, order, OrderStatus.delivered, note="Return request rejected")
-    db.add(Notification(user_id=order.user_id, title=f"Return rejected — {order.order_number}", message=note or "Your return request was not approved."))
+    db.add(Notification(user_id=order.user_id, title=f"Return rejected: {order.order_number}", message=note or "Your return request was not approved."))
     log_action(db, admin, "rejected refund", "refund", str(refund.id), order.order_number)
     db.commit()
     return _serialize_refund(_load_refund(db, refund_id))
@@ -143,7 +143,7 @@ def complete_refund(db: Session, admin: User, refund_id: uuid.UUID, note: str | 
     elif order.payment:
         order.payment.status = PaymentStatus.refunded
 
-    db.add(Notification(user_id=order.user_id, title=f"Refund completed — {order.order_number}", message=f"Your refund of ₹{refund.refund_amount:.0f} has been processed."))
+    db.add(Notification(user_id=order.user_id, title=f"Refund completed: {order.order_number}", message=f"Your refund of ₹{refund.refund_amount:.0f} has been processed."))
     log_action(db, admin, "completed refund", "refund", str(refund.id), order.order_number)
     db.commit()
     return _serialize_refund(_load_refund(db, refund_id))

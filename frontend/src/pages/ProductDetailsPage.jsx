@@ -100,7 +100,7 @@ export function ProductDetailsPage() {
   const displayImage = activeImage || colorImages[0]?.image_url
 
   useDocumentMeta({
-    title: product ? `${product.name} | Elaanji` : 'Elaanji — The House of Saree',
+    title: product ? `${product.name} | Elaanji` : 'Elaanji: The House of Saree',
     description: product?.description || 'Handpicked sarees for every occasion.',
     image: displayImage,
   })
@@ -247,7 +247,7 @@ export function ProductDetailsPage() {
           {colors.length > 0 && (
             <div className="mb-6">
               <p className="text-xs tracking-widest2 uppercase text-stone mb-2.5">
-                Color — <span className="text-ink normal-case tracking-normal">{activeColor}</span>
+                Color: <span className="text-ink normal-case tracking-normal">{activeColor}</span>
               </p>
               <div className="flex gap-2">
                 {colors.map(([color, hex]) => (

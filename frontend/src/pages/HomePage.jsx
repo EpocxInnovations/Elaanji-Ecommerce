@@ -53,7 +53,7 @@ export function HomePage() {
   const { data, isLoading } = useProducts({ filter: 'new-arrivals', page_size: 8 })
 
   useDocumentMeta({
-    title: 'Elaanji — The House of Saree',
+    title: 'Elaanji | The House of Saree',
     description: 'Handpicked Kanjivaram, Banarasi, and designer sarees for every occasion, with premium finishing and pan-India delivery.',
   })
 
@@ -80,7 +80,7 @@ export function HomePage() {
                 The House<br />of Saree
               </motion.h1>
               <motion.p variants={fadeUp} className="mt-5 text-stone text-[15px] leading-relaxed max-w-md">
-                Handpicked Kanjivaram, Banarasi, and designer weaves — curated for elegance, crafted with tradition.
+                Handpicked Kanjivaram, Banarasi, and designer weaves curated for elegance, crafted with tradition.
               </motion.p>
               <motion.div variants={fadeUp} className="mt-8 flex flex-wrap items-center gap-3">
                 <Link to="/shop" className="btn-primary">

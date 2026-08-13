@@ -56,7 +56,7 @@ export function VariantBuilder({ variants, onChange, blouseStitched }) {
               value={v.id ? undefined : v.stock_quantity}
               disabled={Boolean(v.id)}
               onChange={(e) => updateVariant(idx, 'stock_quantity', Number(e.target.value))}
-              title={v.id ? 'Existing variant stock — adjust from the Inventory page' : 'Initial stock'}
+              title={v.id ? 'Existing variant stock: adjust from the Inventory page' : 'Initial stock'}
               className={`${blouseStitched ? 'col-span-2' : 'col-span-4'} border border-stone/30 px-2 py-1.5 text-sm bg-transparent disabled:opacity-40`}
             />
             <button
@@ -80,7 +80,7 @@ export function VariantBuilder({ variants, onChange, blouseStitched }) {
       </button>
 
       <p className="text-xs text-stone mt-2">
-        Stock for existing variants is locked here — adjust it from the Inventory page so every
+        Stock for existing variants is locked here: adjust it from the Inventory page so every
         change is logged.
       </p>
     </div>

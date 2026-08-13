@@ -13,7 +13,7 @@ export function Footer() {
           <div className="col-span-2 md:col-span-1">
             <h3 className="font-display text-xl mb-3">ELAANJI</h3>
             <p className="text-sm text-paper/60 leading-relaxed max-w-[240px]">
-              Handpicked sarees for every occasion — crafted with tradition, delivered with care.
+              Handpicked sarees for every occasion: crafted with tradition, delivered with care.
             </p>
             <div className="flex items-center gap-4 mt-5">
               <a
