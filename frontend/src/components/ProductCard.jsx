@@ -37,9 +37,10 @@ export function ProductCard({ product }) {
         whileHover="hover"
         initial="rest"
       >
-        {/* Primary Image with Silk Zoom */}
+        {/* Primary Image with Silk Zoom & Shared Element layoutId */}
         {product.primary_image_url && (
           <motion.img
+            layoutId={`product-image-${product.id}`}
             src={product.primary_image_url}
             alt={product.name}
             variants={{
@@ -97,8 +98,13 @@ export function ProductCard({ product }) {
           />
         </motion.button>
 
+        {/* Quick View Bar */}
+        <div className="absolute inset-x-0 bottom-0 z-10 bg-ink/90 text-paper text-[10px] uppercase tracking-widest2 py-2.5 text-center backdrop-blur-md transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out font-medium">
+          Explore Drape Details →
+        </div>
+
         {/* Subtle Bottom Vignette Gradient */}
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-ink/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-ink/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
       </motion.div>
 
       {/* Info Section */}

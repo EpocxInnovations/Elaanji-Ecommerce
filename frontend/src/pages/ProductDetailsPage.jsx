@@ -196,6 +196,7 @@ export function ProductDetailsPage() {
             <AnimatePresence mode="wait">
               {displayImage && (
                 <motion.img
+                  layoutId={`product-image-${product.id}`}
                   key={displayImage}
                   src={displayImage}
                   alt={product.name}

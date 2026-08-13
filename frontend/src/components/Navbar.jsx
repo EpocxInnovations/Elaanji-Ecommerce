@@ -5,12 +5,14 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../hooks/useCart'
 
+import { menuCurtainVariants } from '../utils/motion'
+
 const navLinks = [
-  { label: 'Kanjivaram', to: '/shop?saree_type=kanjivaram' },
-  { label: 'Banarasi', to: '/shop?saree_type=banarasi' },
-  { label: 'Designer', to: '/shop?saree_type=designer' },
-  { label: 'New Arrivals', to: '/shop?filter=new-arrivals' },
-  { label: 'Sale', to: '/shop?filter=sale' },
+  { label: 'Kanjivaram', to: '/shop?saree_type=kanjivaram', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=800&auto=format&fit=crop' },
+  { label: 'Banarasi', to: '/shop?saree_type=banarasi', image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=800&auto=format&fit=crop' },
+  { label: 'Designer', to: '/shop?saree_type=designer', image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?q=80&w=800&auto=format&fit=crop' },
+  { label: 'New Arrivals', to: '/shop?filter=new-arrivals', image: 'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?q=80&w=800&auto=format&fit=crop' },
+  { label: 'Sale', to: '/shop?filter=sale', image: 'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?q=80&w=800&auto=format&fit=crop' },
 ]
 
 export function Navbar() {
@@ -19,6 +21,7 @@ export function Navbar() {
   const navigate = useNavigate()
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [hoveredLinkImage, setHoveredLinkImage] = useState(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [scrolled, setScrolled] = useState(false)
@@ -187,77 +190,95 @@ export function Navbar() {
         </AnimatePresence>
       </header>
 
-      {/* Mobile Menu Drawer */}
+      {/* Full-Screen Luxury Magazine Menu Overlay */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overlay-backdrop md:hidden"
-              onClick={() => setMobileMenuOpen(false)}
-            />
-            <motion.div
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'tween', duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
-              className="fixed inset-y-0 left-0 w-[280px] bg-paper z-50 flex flex-col shadow-overlay md:hidden"
-            >
-              <div className="flex items-center justify-between px-5 py-4 border-b border-stone/10">
-                <span className="font-display text-lg tracking-wide">ELAANJI</span>
+          <motion.div
+            variants={menuCurtainVariants}
+            initial="closed"
+            animate="open"
+            exit="closed"
+            className="fixed inset-0 bg-ink text-paper z-50 flex flex-col justify-between p-6 sm:p-12 overflow-y-auto"
+          >
+            {/* Header in Overlay */}
+            <div className="flex items-center justify-between border-b border-paper/15 pb-6">
+              <Link to="/" onClick={() => setMobileMenuOpen(false)} className="font-display text-2xl tracking-widest uppercase">
+                ELAANJI
+              </Link>
+              <div className="flex items-center gap-6">
+                <span className="text-[10px] uppercase tracking-widest2 text-gold-light hidden sm:inline-block">
+                  Pure Silk &amp; Heritage Couture
+                </span>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
                   aria-label="Close menu"
-                  className="p-2 -mr-2 hover:text-oxblood transition-colors"
+                  className="p-2 -mr-2 text-paper hover:text-gold-light transition-colors cursor-pointer"
                 >
-                  <X size={20} strokeWidth={1.5} />
+                  <X size={26} strokeWidth={1.5} />
                 </button>
               </div>
+            </div>
 
-              <nav className="flex-1 overflow-y-auto py-4" aria-label="Mobile navigation">
+            {/* Menu Content Grid */}
+            <div className="grid md:grid-cols-12 gap-8 my-auto py-10 items-center">
+              {/* Navigation Links Column */}
+              <div className="md:col-span-7 space-y-4">
+                <p className="text-[10px] text-paper/40 uppercase tracking-widest2 mb-4 font-medium">
+                  Curated Catalogues
+                </p>
                 {navLinks.map((link, idx) => (
                   <motion.div
                     key={link.label}
-                    initial={{ opacity: 0, x: -12 }}
+                    initial={{ opacity: 0, x: -24 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05, duration: 0.2 }}
+                    transition={{ delay: 0.15 + idx * 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   >
                     <Link
                       to={link.to}
-                      className="flex items-center justify-between px-5 py-3.5 text-sm tracking-wide uppercase
-                                 text-ink/80 hover:text-oxblood hover:bg-beige/40 transition-colors"
+                      onMouseEnter={() => setHoveredLinkImage(link.image)}
                       onClick={() => setMobileMenuOpen(false)}
+                      className="group flex items-center gap-4 text-3xl sm:text-5xl font-display text-paper/80 hover:text-paper hover:italic transition-all duration-300"
                     >
-                      {link.label}
-                      <ChevronRight size={14} className="text-stone/40" />
+                      <span className="text-xs font-body text-gold-light opacity-0 group-hover:opacity-100 transition-opacity">0{idx + 1}</span>
+                      <span className="group-hover:translate-x-2 transition-transform duration-300">{link.label}</span>
                     </Link>
                   </motion.div>
                 ))}
-              </nav>
+              </div>
 
-              <div className="border-t border-stone/10 px-5 py-4 space-y-3">
-                <Link
-                  to="/wishlist"
-                  className="flex items-center gap-3 text-sm text-ink/80 hover:text-oxblood transition-colors py-1"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Heart size={18} strokeWidth={1.5} />
-                  Wishlist
-                </Link>
-                <Link
-                  to={isAuthenticated ? '/account' : '/login'}
-                  className="flex items-center gap-3 text-sm text-ink/80 hover:text-oxblood transition-colors py-1"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <User size={18} strokeWidth={1.5} />
+              {/* Dynamic Editorial Visual Column */}
+              <div className="hidden md:block md:col-span-5 relative aspect-[3/4] overflow-hidden rounded-sm border border-paper/15 shadow-luxury">
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={hoveredLinkImage || navLinks[0].image}
+                    src={hoveredLinkImage || navLinks[0].image}
+                    alt="Category Preview"
+                    initial={{ opacity: 0, scale: 1.06 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
+                    className="w-full h-full object-cover"
+                  />
+                </AnimatePresence>
+                <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute bottom-4 left-4 text-paper text-xs tracking-widest2 uppercase">
+                  Handcrafted Heritage
+                </div>
+              </div>
+            </div>
+
+            {/* Footer in Overlay */}
+            <div className="border-t border-paper/15 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-paper/50 gap-4">
+              <div className="flex gap-6">
+                <Link to="/wishlist" onClick={() => setMobileMenuOpen(false)} className="hover:text-paper transition-colors">Wishlist</Link>
+                <Link to={isAuthenticated ? '/account' : '/login'} onClick={() => setMobileMenuOpen(false)} className="hover:text-paper transition-colors">
                   {isAuthenticated ? 'My Account' : 'Sign In'}
                 </Link>
+                <Link to="/orders" onClick={() => setMobileMenuOpen(false)} className="hover:text-paper transition-colors">Track Order</Link>
               </div>
-            </motion.div>
-          </>
+              <p className="tracking-widest uppercase text-[10px]">© 2026 ELAANJI — All Rights Reserved</p>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </>

@@ -60,9 +60,37 @@ export function ShopPage() {
         </ol>
       </nav>
 
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="font-display text-3xl md:text-4xl">All Sarees</h1>
+      {/* Editorial Header */}
+      <div className="mb-10 border-b border-stone/15 pb-8">
+        <p className="label-eyebrow text-oxblood mb-2 font-medium">Full Catalogue</p>
+        <h1 className="font-display text-4xl sm:text-5xl text-ink">The Saree Catalogue</h1>
+        <p className="text-stone text-sm max-w-lg mt-3 font-light leading-relaxed">
+          Handloom Kanjivaram silk, Banarasi brocades, and modern designer creations. Crafted by master artisans across India.
+        </p>
+
+        {/* Weave Quick Filter Pills */}
+        <div className="flex flex-wrap items-center gap-2 mt-6">
+          {[
+            { label: 'All Weaves', value: undefined },
+            { label: 'Kanjivaram', value: 'kanjivaram' },
+            { label: 'Banarasi', value: 'banarasi' },
+            { label: 'Designer', value: 'designer' },
+            { label: 'Silk', value: 'silk' },
+            { label: 'Cotton', value: 'cotton' },
+          ].map((type) => (
+            <button
+              key={type.label}
+              onClick={() => handleFilterChange({ ...filters, saree_type: type.value })}
+              className={`px-4 py-1.5 text-xs tracking-widest2 uppercase transition-all duration-300 ${
+                filters.saree_type === type.value || (!filters.saree_type && type.value === undefined)
+                  ? 'bg-oxblood text-paper font-medium shadow-sm'
+                  : 'bg-beige/60 text-stone hover:bg-beige hover:text-ink'
+              }`}
+            >
+              {type.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-8 md:gap-10">

@@ -250,6 +250,72 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* ─── Editorial Craft Storytelling Section ─── */}
+      <section className="bg-ink text-paper py-24 md:py-32 relative overflow-hidden my-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 relative z-10">
+          <div className="grid md:grid-cols-12 gap-12 items-center">
+            {/* Story Image Grid */}
+            <motion.div
+              className="md:col-span-6 grid grid-cols-2 gap-4 relative"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="aspect-[3/4] overflow-hidden rounded-sm border border-paper/15 shadow-luxury">
+                <img
+                  src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=800&auto=format&fit=crop"
+                  alt="Zari Detail"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+              <div className="aspect-[3/4] overflow-hidden rounded-sm border border-paper/15 shadow-luxury mt-8">
+                <img
+                  src="https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=800&auto=format&fit=crop"
+                  alt="Handloom Weave"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+            </motion.div>
+
+            {/* Story Text Content */}
+            <motion.div
+              className="md:col-span-6 space-y-6"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-60px' }}
+              variants={staggerContainer(0.12)}
+            >
+              <motion.p variants={fadeUpLuxury} className="text-xs uppercase tracking-widest2 text-gold-light font-medium">
+                The Heritage Atelier
+              </motion.p>
+              <motion.h2 variants={fadeUpLuxury} className="font-display text-3xl sm:text-5xl leading-tight text-paper">
+                240 Hours of Pure Zari &amp; Silk Artistry
+              </motion.h2>
+              <motion.p variants={fadeUpLuxury} className="text-paper/70 text-sm sm:text-base leading-relaxed font-light">
+                Every Elaanji saree is born on traditional handlooms in Kanchipuram and Varanasi. Master weavers spend over three weeks intertwining pure mulberry silk with real gold-tested zari, preserving temple motif heirlooms for generations.
+              </motion.p>
+              <motion.div variants={fadeUpLuxury} className="pt-4 flex items-center gap-8 text-xs tracking-widest2 uppercase text-paper/80">
+                <div>
+                  <span className="block font-display text-3xl text-gold-light mb-1">100%</span>
+                  <span>Pure Mulberry Silk</span>
+                </div>
+                <div className="h-10 w-px bg-paper/20" />
+                <div>
+                  <span className="block font-display text-3xl text-gold-light mb-1">240+</span>
+                  <span>Hours Per Saree</span>
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Ambient Overlay Background Watermark */}
+        <div className="absolute right-[-5%] top-1/2 -translate-y-1/2 font-display text-[220px] text-paper/[0.03] select-none pointer-events-none leading-none">
+          एलांजी
+        </div>
+      </section>
+
       {/* ─── New Arrivals ─── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 pb-24 md:pb-32">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4 border-b border-stone/15 pb-6">
