@@ -63,11 +63,28 @@ export function AdminProductFormPage() {
     })
   }
 
+  const [selectedFiles, setSelectedFiles] = useState([])
+  const fileInputRef = useRef(null)
+
+  const handleFileSelection = (e) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length > 0) {
+      const newItems = files.map((file, idx) => ({
+        file,
+        previewUrl: URL.createObjectURL(file),
+        is_hover_image: selectedFiles.length === 0 && idx === 1,
+      }))
+      setSelectedFiles((prev) => [...prev, ...newItems])
+    }
+  }
+
+  const removeSelectedFile = (index) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index))
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-
-    const validImages = initialImages.filter((img) => img.image_url.trim())
 
     const payload = {
       ...form,
@@ -79,7 +96,6 @@ export function AdminProductFormPage() {
       discount_price: form.discount_price ? Number(form.discount_price) : null,
       tax_percent: Number(form.tax_percent),
       saree_length_meters: Number(form.saree_length_meters),
-      images: validImages,
       variants: variants.map((v) => ({
         ...v,
         stock_quantity: v.id ? 0 : Number(v.stock_quantity) || 0,
@@ -87,13 +103,21 @@ export function AdminProductFormPage() {
     }
 
     try {
+      let productId = id
       if (isEditing) {
         await updateProduct.mutateAsync({ id, payload })
       } else {
         const created = await createProduct.mutateAsync(payload)
-        navigate(`/admin/products/${created.id}/edit`)
-        return
+        productId = created.id
       }
+
+      // Upload any local selected files
+      if (selectedFiles.length > 0) {
+        for (const item of selectedFiles) {
+          await uploadImage.mutateAsync({ productId, file: item.file })
+        }
+      }
+
       navigate('/admin/products')
     } catch (err) {
       setError(err.response?.data?.detail || 'Could not save product.')
@@ -218,42 +242,72 @@ export function AdminProductFormPage() {
         <section className="space-y-4">
           <h2 className="text-sm tracking-widest2 uppercase text-stone">Product Images</h2>
 
-          {!isEditing && (
-            <div className="space-y-3 bg-beige/40 p-4 border border-stone/20">
-              <p className="text-xs text-stone mb-2">Provide image URLs below (e.g. Unsplash / CDN image link):</p>
+          <div className="bg-beige/40 p-4 border border-stone/20 space-y-4">
+            {/* Local File Picker Button */}
+            <div>
+              <p className="text-xs text-stone mb-3">Select saree photos directly from your computer / local storage:</p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFileSelection}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="btn-secondary !py-2 !px-4 text-xs font-medium"
+              >
+                📁 Select Image Files from Computer
+              </button>
+            </div>
+
+            {/* Selected File Previews */}
+            {selectedFiles.length > 0 && (
+              <div>
+                <p className="text-xs text-ink font-medium mb-2">Files Ready to Upload ({selectedFiles.length}):</p>
+                <div className="flex flex-wrap gap-3">
+                  {selectedFiles.map((item, idx) => (
+                    <div key={idx} className="relative w-24 h-28 border border-stone/30 bg-paper p-1 group flex flex-col items-center">
+                      <img src={item.previewUrl} alt="Preview" className="w-full h-20 object-cover mb-1" />
+                      <div className="flex items-center justify-between w-full px-1">
+                        <span className="text-[9px] text-stone truncate max-w-[50px]">{item.file.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeSelectedFile(idx)}
+                          className="text-[10px] text-oxblood hover:underline font-bold"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* URL Input Option */}
+            <div className="pt-3 border-t border-stone/20">
+              <p className="text-xs text-stone mb-2">Or paste Image URLs (optional):</p>
               {initialImages.map((img, idx) => (
-                <div key={idx} className="flex items-center gap-3">
-                  <div className="flex-1">
-                    <input
-                      type="url"
-                      placeholder={idx === 0 ? "Primary Image URL (e.g. https://images.unsplash.com/...)" : "Hover Image URL"}
-                      value={img.image_url}
-                      onChange={(e) => {
-                        const next = [...initialImages]
-                        next[idx].image_url = e.target.value
-                        setInitialImages(next)
-                      }}
-                      className="input text-xs"
-                    />
-                  </div>
-                  <label className="flex items-center gap-1 text-xs whitespace-nowrap text-stone">
-                    <input
-                      type="checkbox"
-                      checked={img.is_hover_image}
-                      onChange={(e) => {
-                        const next = [...initialImages]
-                        next[idx].is_hover_image = e.target.checked
-                        setInitialImages(next)
-                      }}
-                      className="accent-oxblood"
-                    />
-                    Hover image
-                  </label>
+                <div key={idx} className="flex items-center gap-3 mb-2">
+                  <input
+                    type="url"
+                    placeholder={idx === 0 ? "Primary Image URL (optional)" : "Hover Image URL (optional)"}
+                    value={img.image_url}
+                    onChange={(e) => {
+                      const next = [...initialImages]
+                      next[idx].image_url = e.target.value
+                      setInitialImages(next)
+                    }}
+                    className="input text-xs flex-1"
+                  />
                   {initialImages.length > 1 && (
                     <button
                       type="button"
                       onClick={() => setInitialImages(initialImages.filter((_, i) => i !== idx))}
-                      className="text-xs text-oxblood hover:underline px-2"
+                      className="text-xs text-oxblood hover:underline px-1"
                     >
                       Remove
                     </button>
@@ -263,20 +317,23 @@ export function AdminProductFormPage() {
               <button
                 type="button"
                 onClick={() => setInitialImages([...initialImages, { image_url: '', is_hover_image: false }])}
-                className="text-xs text-ink hover:text-oxblood font-medium tracking-wide uppercase pt-1"
+                className="text-xs text-stone hover:text-ink tracking-wide uppercase pt-1"
               >
-                + Add Another Image URL
+                + Add Another URL
               </button>
             </div>
-          )}
+          </div>
 
-          {isEditing && existing && (
-            <ImageUploader
-              images={existing.images || []}
-              isUploading={uploadImage.isPending}
-              onUpload={(file) => uploadImage.mutate({ productId: id, file })}
-              onDelete={(imageId) => deleteImage.mutate({ productId: id, imageId })}
-            />
+          {isEditing && existing && existing.images?.length > 0 && (
+            <div className="pt-4">
+              <p className="text-xs text-stone mb-2">Uploaded Saree Photos:</p>
+              <ImageUploader
+                images={existing.images || []}
+                isUploading={uploadImage.isPending}
+                onUpload={(file) => uploadImage.mutate({ productId: id, file })}
+                onDelete={(imageId) => deleteImage.mutate({ productId: id, imageId })}
+              />
+            </div>
           )}
         </section>
 

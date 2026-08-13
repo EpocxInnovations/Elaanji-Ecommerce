@@ -61,10 +61,18 @@ app.add_middleware(
 )
 
 
+from fastapi.staticfiles import StaticFiles
+import os
+
+UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
+
 @app.middleware("http")
 async def api_path_rewrite_middleware(request: Request, call_next):
     path = request.scope.get("path", "")
-    if not path.startswith("/api") and not path.startswith("/docs") and not path.startswith("/openapi.json") and path != "/":
+    if not path.startswith("/api") and not path.startswith("/uploads") and not path.startswith("/docs") and not path.startswith("/openapi.json") and path != "/":
         request.scope["path"] = f"/api{path}"
     return await call_next(request)
 
