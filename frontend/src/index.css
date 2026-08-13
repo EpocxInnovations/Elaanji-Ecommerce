@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --ease-silk: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -48,14 +53,14 @@
 @layer components {
   /* ---------- Buttons ---------- */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 bg-ink text-paper px-6 py-3 text-sm tracking-wide uppercase
-           hover:bg-oxblood transition-all duration-300 ease-out
-           active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
+    @apply inline-flex items-center justify-center gap-2 bg-ink text-paper px-7 py-3.5 text-xs tracking-widest2 uppercase font-medium
+           hover:bg-oxblood transition-all duration-300 ease-[var(--ease-silk)]
+           active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer shadow-sm;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 border border-ink text-ink px-6 py-3 text-sm tracking-wide uppercase
-           hover:bg-ink hover:text-paper transition-all duration-300 ease-out
+    @apply inline-flex items-center justify-center gap-2 border border-ink text-ink px-7 py-3.5 text-xs tracking-widest2 uppercase font-medium
+           hover:bg-ink hover:text-paper transition-all duration-300 ease-[var(--ease-silk)]
            active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
   }
 

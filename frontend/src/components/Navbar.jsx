@@ -92,14 +92,20 @@ export function Navbar() {
                   key={link.label}
                   to={link.to}
                   className={({ isActive }) =>
-                    `text-[13px] tracking-wide uppercase transition-colors duration-200 relative py-1 ${
-                      isActive
-                        ? 'text-oxblood after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-oxblood'
-                        : 'text-ink/70 hover:text-ink'
+                    `text-[13px] tracking-wide uppercase transition-colors duration-300 relative py-1 group ${
+                      isActive ? 'text-oxblood font-medium' : 'text-ink/75 hover:text-ink'
                     }`
                   }
                 >
-                  {link.label}
+                  {({ isActive }) => (
+                    <>
+                      {link.label}
+                      {/* Underline center-out hover expand */}
+                      <span className={`absolute bottom-0 left-0 right-0 h-px bg-oxblood transform origin-center transition-transform duration-300 ${
+                        isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                      }`} />
+                    </>
+                  )}
                 </NavLink>
               ))}
             </nav>
@@ -109,27 +115,36 @@ export function Navbar() {
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
                 aria-label="Search"
-                className="p-2.5 hover:text-oxblood transition-colors"
+                className="p-2.5 text-ink/80 hover:text-oxblood transition-colors cursor-pointer"
               >
                 <Search size={20} strokeWidth={1.5} />
               </button>
-              <Link to="/wishlist" aria-label="Wishlist" className="p-2.5 hover:text-oxblood transition-colors hidden sm:flex">
+              <Link to="/wishlist" aria-label="Wishlist" className="p-2.5 text-ink/80 hover:text-oxblood transition-colors hidden sm:flex">
                 <Heart size={20} strokeWidth={1.5} />
               </Link>
               <Link
                 to={isAuthenticated ? '/account' : '/login'}
                 aria-label="Account"
-                className="p-2.5 hover:text-oxblood transition-colors hidden sm:flex"
+                className="p-2.5 text-ink/80 hover:text-oxblood transition-colors hidden sm:flex"
               >
                 <User size={20} strokeWidth={1.5} />
               </Link>
-              <Link to="/cart" aria-label="Cart" className="p-2.5 hover:text-oxblood transition-colors relative">
+              <Link to="/cart" aria-label="Cart" className="p-2.5 text-ink/80 hover:text-oxblood transition-colors relative">
                 <ShoppingBag size={20} strokeWidth={1.5} />
-                {cartCount > 0 && (
-                  <span className="absolute top-1 right-0.5 bg-oxblood text-paper text-[10px] font-medium leading-none min-w-[16px] h-4 flex items-center justify-center px-1">
-                    {cartCount > 9 ? '9+' : cartCount}
-                  </span>
-                )}
+                <AnimatePresence>
+                  {cartCount > 0 && (
+                    <motion.span
+                      key={cartCount}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      exit={{ scale: 0 }}
+                      transition={{ type: 'spring', damping: 15, stiffness: 350 }}
+                      className="absolute top-1 right-0.5 bg-oxblood text-paper text-[10px] font-medium leading-none min-w-[16px] h-4 flex items-center justify-center px-1 rounded-full shadow-sm"
+                    >
+                      {cartCount > 9 ? '9+' : cartCount}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </Link>
             </div>
           </div>
@@ -142,8 +157,8 @@ export function Navbar() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
-              className="border-b border-stone/10 overflow-hidden"
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="border-b border-stone/15 bg-paper/98 overflow-hidden shadow-inner"
             >
               <form onSubmit={handleSearch} className="mx-auto max-w-7xl px-4 sm:px-6 py-4">
                 <div className="relative">

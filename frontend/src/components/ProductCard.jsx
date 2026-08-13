@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { Heart } from 'lucide-react'
 import { formatINR, SAREE_TYPE_LABELS } from '../utils/format'
 import { useWishlist } from '../hooks/useWishlist'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
+import { SPRING_LUXURY, EASE_EXPO_OUT } from '../utils/motion'
 
 export function ProductCard({ product }) {
   const { isAuthenticated } = useAuth()
@@ -13,6 +15,7 @@ export function ProductCard({ product }) {
 
   const handleWishlistToggle = (e) => {
     e.preventDefault()
+    e.stopPropagation()
     if (!isAuthenticated) return
     if (wishlisted) {
       const itemId = findItemId(product.id)
@@ -28,77 +31,92 @@ export function ProductCard({ product }) {
     : null
 
   return (
-    <Link to={`/products/${product.slug}`} className="group block">
-      <div className="relative aspect-[3/4] bg-beige overflow-hidden mb-3">
+    <Link to={`/products/${product.slug}`} className="group block relative">
+      <motion.div
+        className="relative aspect-[3/4] bg-beige overflow-hidden mb-3.5"
+        whileHover="hover"
+        initial="rest"
+      >
+        {/* Primary Image with Silk Zoom */}
         {product.primary_image_url && (
-          <img
+          <motion.img
             src={product.primary_image_url}
             alt={product.name}
-            className="w-full h-full object-cover transition-all duration-500 ease-out
-                       group-hover:opacity-0 group-hover:scale-[1.02]"
+            variants={{
+              rest: { scale: 1 },
+              hover: { scale: 1.06, transition: { duration: 0.8, ease: EASE_EXPO_OUT } },
+            }}
+            className="w-full h-full object-cover"
             loading="lazy"
           />
         )}
+
+        {/* Hover Secondary Image (Unfolding Curtain Clip-Path Wipe) */}
         {product.hover_image_url && (
-          <img
+          <motion.img
             src={product.hover_image_url}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover opacity-0
-                       transition-all duration-500 ease-out
-                       group-hover:opacity-100 group-hover:scale-[1.02]"
+            variants={{
+              rest: { opacity: 0, scale: 1.04 },
+              hover: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: EASE_EXPO_OUT } },
+            }}
+            className="absolute inset-0 w-full h-full object-cover"
             loading="lazy"
           />
         )}
 
         {/* Badges */}
-        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
+        <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5 pointer-events-none">
           {!product.available && (
-            <span className="bg-ink/90 text-paper text-[10px] px-2 py-1 tracking-widest2 uppercase backdrop-blur-sm">
+            <span className="bg-ink/90 text-paper text-[9px] px-2 py-1 tracking-widest2 uppercase backdrop-blur-sm font-medium">
               Sold Out
             </span>
           )}
           {hasDiscount && product.available && (
-            <span className="bg-oxblood text-paper text-[10px] px-2 py-1 tracking-widest2 uppercase">
+            <span className="bg-oxblood text-paper text-[9px] px-2 py-1 tracking-widest2 uppercase font-medium shadow-sm">
               {discountPercent}% Off
             </span>
           )}
         </div>
 
-        {/* Wishlist */}
-        <button
+        {/* Wishlist Button with Spring Physics */}
+        <motion.button
           onClick={handleWishlistToggle}
           aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-          className="absolute top-2.5 right-2.5 bg-paper/90 backdrop-blur-sm p-2
-                     opacity-0 group-hover:opacity-100 transition-all duration-200
-                     hover:bg-paper active:scale-95"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          transition={SPRING_LUXURY}
+          className="absolute top-3 right-3 z-10 bg-paper/90 backdrop-blur-md p-2.5
+                     shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300
+                     hover:bg-paper cursor-pointer"
         >
           <Heart
-            size={15}
+            size={14}
             strokeWidth={1.5}
             className={wishlisted ? 'fill-oxblood text-oxblood' : 'text-ink'}
           />
-        </button>
+        </motion.button>
 
-        {/* Subtle bottom gradient for depth */}
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-ink/[0.03] to-transparent pointer-events-none" />
-      </div>
+        {/* Subtle Bottom Vignette Gradient */}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-ink/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      </motion.div>
 
-      {/* Info */}
-      <div className="space-y-1">
+      {/* Info Section */}
+      <div className="space-y-1 transition-transform duration-300 ease-out group-hover:-translate-y-0.5">
         {product.saree_type && (
-          <p className="text-[10px] text-stone uppercase tracking-widest2 leading-none">
+          <p className="text-[10px] text-stone uppercase tracking-widest2 leading-none font-medium">
             {SAREE_TYPE_LABELS[product.saree_type] || product.saree_type}
           </p>
         )}
-        <h3 className="text-sm text-ink leading-snug line-clamp-2 group-hover:text-oxblood transition-colors duration-200">
+        <h3 className="text-sm font-body text-ink leading-snug line-clamp-2 group-hover:text-oxblood transition-colors duration-300">
           {product.name}
         </h3>
         <div className="flex items-baseline gap-2 pt-0.5">
-          <span className="text-sm font-medium tracking-tight">
+          <span className="text-sm font-medium tracking-tight text-ink">
             {formatINR(hasDiscount ? product.discount_price : product.price)}
           </span>
           {hasDiscount && (
-            <span className="text-xs text-stone line-through">
+            <span className="text-xs text-stone line-through font-normal">
               {formatINR(product.price)}
             </span>
           )}

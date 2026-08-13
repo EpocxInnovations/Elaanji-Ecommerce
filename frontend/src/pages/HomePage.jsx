@@ -4,29 +4,33 @@ import { ArrowRight, Truck, ShieldCheck, Sparkles } from 'lucide-react'
 import { useProducts } from '../hooks/useProducts'
 import { ProductCard } from '../components/ProductCard'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
+import { fadeUpLuxury, wordReveal, staggerContainer, clipPathWipe, EASE_EXPO_OUT, EASE_SILK } from '../utils/motion'
 
 const CATEGORIES = [
   {
     label: 'Kanjivaram',
     description: 'Temple-woven silk heritage',
     to: '/shop?saree_type=kanjivaram',
+    image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=800&auto=format&fit=crop',
   },
   {
     label: 'Banarasi',
     description: 'Mughal-inspired brocade',
     to: '/shop?saree_type=banarasi',
+    image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=800&auto=format&fit=crop',
   },
   {
     label: 'Designer',
     description: 'Contemporary couture weaves',
     to: '/shop?saree_type=designer',
+    image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?q=80&w=800&auto=format&fit=crop',
   },
 ]
 
 const TRUST_ITEMS = [
-  { icon: ShieldCheck, label: '100% Authentic' },
-  { icon: Truck, label: 'Pan-India Delivery' },
-  { icon: Sparkles, label: 'Premium Finishing' },
+  { icon: ShieldCheck, label: '100% Authentic Handloom' },
+  { icon: Truck, label: 'Pan-India Express Shipping' },
+  { icon: Sparkles, label: 'Bespoke Blouse Finishing' },
 ]
 
 function SkeletonCard() {
@@ -40,15 +44,6 @@ function SkeletonCard() {
   )
 }
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  visible: (i = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.08, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
-  }),
-}
-
 export function HomePage() {
   const { data, isLoading } = useProducts({ filter: 'new-arrivals', page_size: 8 })
 
@@ -58,107 +53,195 @@ export function HomePage() {
   })
 
   return (
-    <div>
+    <div className="overflow-hidden">
       {/* ─── Hero Section ─── */}
-      <section className="relative bg-beige overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="grid md:grid-cols-2 gap-8 items-center min-h-[480px] md:min-h-[560px]">
-            {/* Text */}
+      <section className="relative bg-beige min-h-[520px] md:min-h-[620px] flex items-center justify-center border-b border-stone/15">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 w-full py-16 md:py-24">
+          <div className="grid md:grid-cols-12 gap-8 items-center">
+            {/* Text Choreography */}
             <motion.div
-              className="py-16 md:py-24 max-w-lg"
+              className="md:col-span-7 max-w-xl z-10"
               initial="hidden"
               animate="visible"
-              variants={{
-                hidden: {},
-                visible: { transition: { staggerChildren: 0.1 } },
-              }}
+              variants={staggerContainer(0.12, 0.05)}
             >
-              <motion.p variants={fadeUp} className="label-eyebrow mb-4">
-                Handloom &amp; Designer Collection
+              <motion.div variants={fadeUpLuxury} className="flex items-center gap-2 mb-4">
+                <span className="h-px w-8 bg-oxblood/60 inline-block" />
+                <p className="label-eyebrow tracking-widest2 text-oxblood">
+                  Handloom &amp; Designer Couture
+                </p>
+              </motion.div>
+
+              <h1 className="font-display text-4xl sm:text-6xl md:text-7xl leading-[1.05] tracking-tight text-ink mb-6">
+                <span className="block overflow-hidden py-1">
+                  <motion.span variants={wordReveal} custom={0} className="inline-block">
+                    The House
+                  </motion.span>
+                </span>
+                <span className="block overflow-hidden py-1 italic font-normal text-oxblood">
+                  <motion.span variants={wordReveal} custom={1} className="inline-block">
+                    of Saree
+                  </motion.span>
+                </span>
+              </h1>
+
+              <motion.p
+                variants={fadeUpLuxury}
+                className="text-stone text-base sm:text-lg leading-relaxed max-w-md mb-8 font-body font-light"
+              >
+                Handpicked Kanjivaram, Banarasi, and designer weaves curated for elegance, crafted with century-old tradition.
               </motion.p>
-              <motion.h1 variants={fadeUp} className="font-display text-4xl sm:text-5xl md:text-6xl leading-[1.1] tracking-tight">
-                The House<br />of Saree
-              </motion.h1>
-              <motion.p variants={fadeUp} className="mt-5 text-stone text-[15px] leading-relaxed max-w-md">
-                Handpicked Kanjivaram, Banarasi, and designer weaves curated for elegance, crafted with tradition.
-              </motion.p>
-              <motion.div variants={fadeUp} className="mt-8 flex flex-wrap items-center gap-3">
-                <Link to="/shop" className="btn-primary">
-                  Shop Now
-                  <ArrowRight size={16} strokeWidth={1.5} />
+
+              <motion.div variants={fadeUpLuxury} className="flex flex-wrap items-center gap-4">
+                <Link to="/shop" className="btn-primary group relative overflow-hidden">
+                  <span className="relative z-10 flex items-center gap-2">
+                    Shop Collection
+                    <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" />
+                  </span>
                 </Link>
                 <Link to="/shop?filter=new-arrivals" className="btn-secondary">
-                  Explore Collection
+                  Explore New Arrivals
                 </Link>
               </motion.div>
             </motion.div>
 
-            {/* Hero Visual — Decorative geometric pattern */}
-            <div className="hidden md:flex items-center justify-center">
-              <div className="relative w-full max-w-[400px] aspect-[3/4]">
-                {/* Layered decorative rectangles evoking a saree fold/drape */}
-                <div className="absolute inset-0 border border-stone/20" />
-                <div className="absolute inset-4 bg-gradient-to-br from-oxblood/5 to-transparent border border-oxblood/10" />
-                <div className="absolute inset-8 border border-stone/15" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <p className="font-display text-7xl text-ink/[0.06] leading-none">ए</p>
-                    <div className="w-16 h-px bg-oxblood/30 mx-auto mt-4" />
-                    <p className="text-xs tracking-widest2 uppercase text-stone/50 mt-3">Est. 2024</p>
+            {/* Editorial Visual Composition */}
+            <motion.div
+              className="hidden md:flex md:col-span-5 items-center justify-center relative"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1, ease: EASE_EXPO_OUT, delay: 0.2 }}
+            >
+              <div className="relative w-full max-w-[380px] aspect-[3/4]">
+                {/* Outer Decorative Gold Line Frame */}
+                <motion.div
+                  className="absolute inset-0 border border-oxblood/20 z-0"
+                  initial={{ opacity: 0, rotate: 2 }}
+                  animate={{ opacity: 1, rotate: 0 }}
+                  transition={{ duration: 1.2, ease: EASE_SILK }}
+                />
+
+                {/* Inner Canvas Image Mask */}
+                <motion.div
+                  className="absolute inset-4 overflow-hidden bg-stone/10 shadow-luxury z-10"
+                  variants={clipPathWipe}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=1000&auto=format&fit=crop"
+                    alt="Elaanji Luxury Saree Weave"
+                    className="w-full h-full object-cover transform scale-105 hover:scale-110 transition-transform duration-1000 ease-out"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink/40 via-transparent to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4 text-paper text-center">
+                    <p className="font-display text-2xl tracking-wide">एलांजी</p>
+                    <p className="text-[10px] uppercase tracking-widest2 text-paper/80">Pure Silk &amp; Zari Heritage</p>
                   </div>
-                </div>
+                </motion.div>
+
+                {/* Floating Monogram Stamp Badge */}
+                <motion.div
+                  className="absolute -bottom-4 -left-4 z-20 bg-oxblood text-paper w-20 h-20 rounded-full flex flex-col items-center justify-center shadow-luxury border border-paper/20"
+                  initial={{ scale: 0, rotate: -20 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ delay: 0.8, ...SPRING_LUXURY }}
+                >
+                  <span className="font-display text-xl leading-none">ए</span>
+                  <span className="text-[8px] uppercase tracking-widest2 text-paper/80 mt-0.5">EST 2024</span>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* ─── Trust Strip ─── */}
-      <section className="border-b border-stone/10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6">
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
-            {TRUST_ITEMS.map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-2.5 text-stone">
-                <Icon size={18} strokeWidth={1.5} />
-                <span className="text-xs tracking-widest2 uppercase">{label}</span>
-              </div>
+      {/* ─── Trust Banner ─── */}
+      <section className="border-b border-stone/15 bg-paper">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-50px' }}
+            variants={staggerContainer(0.1)}
+          >
+            {TRUST_ITEMS.map(({ icon: Icon, label }, i) => (
+              <motion.div
+                key={label}
+                variants={fadeUpLuxury}
+                custom={i}
+                className="flex items-center justify-center gap-3 text-stone py-2 group cursor-default"
+              >
+                <div className="p-2 rounded-full bg-beige/60 text-oxblood group-hover:scale-110 transition-transform duration-300">
+                  <Icon size={18} strokeWidth={1.5} />
+                </div>
+                <span className="text-xs tracking-widest2 uppercase font-medium text-ink/80 group-hover:text-oxblood transition-colors">
+                  {label}
+                </span>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* ─── Shop by Category ─── */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-16 md:py-20">
-        <div className="text-center mb-10">
-          <p className="label-eyebrow mb-2">Curated Collections</p>
-          <h2 className="font-display text-3xl">Shop by Category</h2>
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-20 md:py-28">
+        <div className="text-center max-w-xl mx-auto mb-14">
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="label-eyebrow text-oxblood mb-2.5"
+          >
+            Curated Masterpieces
+          </motion.p>
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="font-display text-3xl sm:text-4xl text-ink"
+          >
+            Explore Weave Traditions
+          </motion.h2>
+          <div className="w-12 h-px bg-oxblood/40 mx-auto mt-4" />
         </div>
 
-        <div className="grid md:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid md:grid-cols-3 gap-6 md:gap-8">
           {CATEGORIES.map((cat, i) => (
             <motion.div
               key={cat.label}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, margin: '-40px' }}
+              viewport={{ once: true, margin: '-60px' }}
               custom={i}
-              variants={fadeUp}
+              variants={fadeUpLuxury}
             >
               <Link
                 to={cat.to}
-                className="group block relative bg-beige aspect-[4/5] overflow-hidden"
+                className="group block relative bg-beige aspect-[3/4] overflow-hidden shadow-card hover:shadow-luxury transition-shadow duration-500"
               >
-                {/* Pattern overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/10 to-transparent z-10" />
-                <div className="absolute inset-0 border border-stone/10" />
+                {/* Background Image */}
+                <img
+                  src={cat.image}
+                  alt={cat.label}
+                  className="w-full h-full object-cover transform scale-100 group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
+
+                {/* Dark Vignette Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent transition-opacity duration-300 group-hover:opacity-90" />
 
                 {/* Content */}
-                <div className="absolute bottom-0 left-0 right-0 z-20 p-6">
-                  <h3 className="font-display text-2xl text-paper mb-1">{cat.label}</h3>
-                  <p className="text-paper/70 text-sm mb-3">{cat.description}</p>
-                  <span className="inline-flex items-center gap-1.5 text-xs tracking-widest2 uppercase text-paper/80 group-hover:text-paper transition-colors">
-                    Explore
-                    <ArrowRight size={12} className="transition-transform group-hover:translate-x-1" />
+                <div className="absolute bottom-0 left-0 right-0 p-8 z-10 transform group-hover:-translate-y-1 transition-transform duration-300">
+                  <span className="text-[10px] text-gold-light uppercase tracking-widest2 block mb-1">
+                    Authentic Collection
+                  </span>
+                  <h3 className="font-display text-2xl sm:text-3xl text-paper mb-1.5">{cat.label}</h3>
+                  <p className="text-paper/80 text-xs sm:text-sm mb-4 font-light leading-relaxed">{cat.description}</p>
+                  <span className="inline-flex items-center gap-2 text-xs tracking-widest2 uppercase text-paper font-medium group-hover:text-gold-light transition-colors">
+                    Explore Sarees
+                    <ArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1.5" />
                   </span>
                 </div>
               </Link>
@@ -168,23 +251,23 @@ export function HomePage() {
       </section>
 
       {/* ─── New Arrivals ─── */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-16 md:py-20">
-        <div className="flex items-end justify-between mb-8">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 pb-24 md:pb-32">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4 border-b border-stone/15 pb-6">
           <div>
-            <p className="label-eyebrow mb-2">Just In</p>
-            <h2 className="font-display text-3xl">New Arrivals</h2>
+            <p className="label-eyebrow text-oxblood mb-2">Just Unveiled</p>
+            <h2 className="font-display text-3xl sm:text-4xl text-ink">New Arrivals</h2>
           </div>
           <Link
             to="/shop?filter=new-arrivals"
-            className="hidden sm:inline-flex items-center gap-1.5 text-sm text-ink/70 hover:text-ink transition-colors"
+            className="inline-flex items-center gap-2 text-xs tracking-widest2 uppercase text-ink hover:text-oxblood font-medium transition-colors group"
           >
-            View All
-            <ArrowRight size={14} />
+            View Full Catalogue
+            <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
 
         {isLoading && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-10">
             {Array.from({ length: 4 }).map((_, i) => (
               <SkeletonCard key={i} />
             ))}
@@ -192,34 +275,28 @@ export function HomePage() {
         )}
 
         {!isLoading && data?.items?.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-stone text-sm">New arrivals will appear here as soon as they're added.</p>
+          <div className="text-center py-16 bg-beige/30 border border-stone/15">
+            <p className="text-stone text-sm font-body">New arrivals will appear here as soon as they're added.</p>
           </div>
         )}
 
         {!isLoading && data?.items?.length > 0 && (
           <motion.div
-            className="grid grid-cols-2 md:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-8"
+            className="grid grid-cols-2 md:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-10"
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: '-40px' }}
-            variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
+            viewport={{ once: true, margin: '-60px' }}
+            variants={staggerContainer(0.08)}
           >
             {data.items.map((product, i) => (
-              <motion.div key={product.id} variants={fadeUp} custom={i}>
+              <motion.div key={product.id} variants={fadeUpLuxury} custom={i}>
                 <ProductCard product={product} />
               </motion.div>
             ))}
           </motion.div>
         )}
-
-        <div className="sm:hidden text-center mt-8">
-          <Link to="/shop?filter=new-arrivals" className="btn-secondary text-xs">
-            View All Arrivals
-            <ArrowRight size={14} />
-          </Link>
-        </div>
       </section>
     </div>
   )
 }
+

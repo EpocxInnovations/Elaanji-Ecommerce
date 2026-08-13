@@ -192,15 +192,21 @@ export function ProductDetailsPage() {
       <div className="grid md:grid-cols-2 gap-8 md:gap-12">
         {/* ─── Gallery ─── */}
         <div>
-          <div className="aspect-[3/4] bg-beige mb-3 overflow-hidden group cursor-crosshair">
-            {displayImage && (
-              <img
-                src={displayImage}
-                alt={product.name}
-                className="w-full h-full object-cover transition-transform duration-500 ease-out
-                           group-hover:scale-105"
-              />
-            )}
+          <div className="aspect-[3/4] bg-beige mb-3 overflow-hidden group cursor-crosshair relative">
+            <AnimatePresence mode="wait">
+              {displayImage && (
+                <motion.img
+                  key={displayImage}
+                  src={displayImage}
+                  alt={product.name}
+                  initial={{ opacity: 0, scale: 1.03 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
+                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                />
+              )}
+            </AnimatePresence>
           </div>
           {colorImages.length > 1 && (
             <div className="flex gap-2 overflow-x-auto pb-1">
@@ -208,9 +214,9 @@ export function ProductDetailsPage() {
                 <button
                   key={img.id}
                   onClick={() => setActiveImage(img.image_url)}
-                  className={`w-16 h-20 shrink-0 overflow-hidden transition-all duration-200 ${
+                  className={`w-16 h-20 shrink-0 overflow-hidden transition-all duration-300 ${
                     displayImage === img.image_url
-                      ? 'ring-1 ring-ink ring-offset-2'
+                      ? 'ring-2 ring-oxblood ring-offset-2 opacity-100 scale-105'
                       : 'opacity-60 hover:opacity-100'
                   }`}
                 >
@@ -224,19 +230,19 @@ export function ProductDetailsPage() {
         {/* ─── Product Info ─── */}
         <div className="md:py-2">
           {product.saree_type && (
-            <p className="label-eyebrow mb-2">
+            <p className="label-eyebrow text-oxblood mb-2 font-medium">
               {SAREE_TYPE_LABELS[product.saree_type] || product.saree_type}
             </p>
           )}
-          <h1 className="font-display text-2xl sm:text-3xl mb-4 leading-snug">{product.name}</h1>
+          <h1 className="font-display text-2xl sm:text-4xl mb-4 leading-snug text-ink">{product.name}</h1>
 
           {/* Price */}
           <div className="flex items-baseline gap-3 mb-6">
-            <span className="text-2xl font-medium tracking-tight">{formatINR(price)}</span>
+            <span className="text-2xl sm:text-3xl font-medium tracking-tight text-ink">{formatINR(price)}</span>
             {hasDiscount && (
               <>
-                <span className="text-sm text-stone line-through">{formatINR(product.price)}</span>
-                <span className="text-xs bg-oxblood/10 text-oxblood px-2 py-0.5 tracking-wide uppercase">
+                <span className="text-sm text-stone line-through font-normal">{formatINR(product.price)}</span>
+                <span className="text-xs bg-oxblood/10 text-oxblood px-2 py-0.5 tracking-wide uppercase font-medium">
                   {Math.round(((product.price - product.discount_price) / product.price) * 100)}% off
                 </span>
               </>
@@ -246,23 +252,25 @@ export function ProductDetailsPage() {
           {/* Color Selector */}
           {colors.length > 0 && (
             <div className="mb-6">
-              <p className="text-xs tracking-widest2 uppercase text-stone mb-2.5">
-                Color: <span className="text-ink normal-case tracking-normal">{activeColor}</span>
+              <p className="text-xs tracking-widest2 uppercase text-stone mb-2.5 font-medium">
+                Color: <span className="text-ink normal-case tracking-normal font-semibold">{activeColor}</span>
               </p>
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 {colors.map(([color, hex]) => (
-                  <button
+                  <motion.button
                     key={color}
                     onClick={() => {
                       setSelectedColor(color)
                       setSelectedBlouseSize(null)
                       setActiveImage(null)
                     }}
+                    whileHover={{ scale: 1.12 }}
+                    whileTap={{ scale: 0.9 }}
                     aria-label={color}
-                    className={`w-9 h-9 border-2 transition-all duration-150 ${
+                    className={`w-9 h-9 rounded-full border-2 transition-all duration-200 shadow-sm ${
                       activeColor === color
-                        ? 'border-ink scale-110'
-                        : 'border-transparent hover:border-stone/40'
+                        ? 'border-oxblood ring-2 ring-oxblood/30 ring-offset-2 scale-110'
+                        : 'border-paper hover:border-stone/40'
                     }`}
                     style={{ backgroundColor: hex || '#ccc' }}
                   />
@@ -323,20 +331,22 @@ export function ProductDetailsPage() {
                 <Plus size={14} strokeWidth={1.5} />
               </button>
             </div>
-            <button
+            <motion.button
+              whileTap={{ scale: 0.97 }}
               onClick={handleAddToCart}
               disabled={addItem.isPending || (matchingVariant && !inStock)}
               className="btn-primary flex-1"
             >
-              {addItem.isPending ? 'Adding…' : 'Add to Cart'}
-            </button>
-            <button
+              {addItem.isPending ? 'Adding to Bag…' : 'Add to Shopping Bag'}
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.92 }}
               onClick={handleWishlistToggle}
               aria-label="Toggle wishlist"
               className="btn-secondary !px-4"
             >
               <Heart size={18} strokeWidth={1.5} className={wishlisted ? 'fill-oxblood text-oxblood' : ''} />
-            </button>
+            </motion.button>
           </div>
 
           {feedback && <p className="text-sm text-oxblood mb-4">{feedback}</p>}

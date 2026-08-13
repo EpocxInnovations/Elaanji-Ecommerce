@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useProducts } from '../hooks/useProducts'
 import { ProductCard } from '../components/ProductCard'
 import { ShopFilters } from '../components/ShopFilters'
+import { fadeUpLuxury, staggerContainer } from '../utils/motion'
 
 const SORT_OPTIONS = [
   { value: 'featured', label: 'Featured' },
@@ -183,11 +184,19 @@ export function ShopPage() {
           {/* Products */}
           {!isLoading && data?.items?.length > 0 && (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 sm:gap-x-6 gap-y-8">
-                {data.items.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+              <motion.div
+                key={`${sort}-${page}-${JSON.stringify(filters)}`}
+                className="grid grid-cols-2 md:grid-cols-3 gap-x-4 sm:gap-x-6 gap-y-10"
+                initial="hidden"
+                animate="visible"
+                variants={staggerContainer(0.05)}
+              >
+                {data.items.map((product, i) => (
+                  <motion.div key={product.id} variants={fadeUpLuxury} custom={i}>
+                    <ProductCard product={product} />
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
 
               {/* Pagination */}
               {data.total_pages > 1 && (
