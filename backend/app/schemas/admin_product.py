@@ -20,6 +20,12 @@ class VariantInput(BaseModel):
     is_active: bool = True
 
 
+class ImageInput(BaseModel):
+    image_url: str
+    is_hover_image: bool = False
+    color: Optional[str] = None
+
+
 class ProductCreateRequest(BaseModel):
     name: str = Field(min_length=2, max_length=200)
     slug: str = Field(min_length=2, max_length=220)
@@ -51,6 +57,7 @@ class ProductCreateRequest(BaseModel):
     is_on_sale: bool = False
     tags: Optional[str] = Field(default=None, max_length=400)
     variants: list[VariantInput] = Field(default_factory=list)
+    images: list[ImageInput] = Field(default_factory=list)
 
 
 class ProductUpdateRequest(ProductCreateRequest):

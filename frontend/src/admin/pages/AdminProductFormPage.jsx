@@ -33,6 +33,10 @@ export function AdminProductFormPage() {
   const [variants, setVariants] = useState([])
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const [error, setError] = useState('')
+  const [initialImages, setInitialImages] = useState([
+    { image_url: '', is_hover_image: false },
+    { image_url: '', is_hover_image: true },
+  ])
 
   useEffect(() => {
     if (existing) {
@@ -63,6 +67,8 @@ export function AdminProductFormPage() {
     e.preventDefault()
     setError('')
 
+    const validImages = initialImages.filter((img) => img.image_url.trim())
+
     const payload = {
       ...form,
       category_id: form.category_id || null,
@@ -73,6 +79,7 @@ export function AdminProductFormPage() {
       discount_price: form.discount_price ? Number(form.discount_price) : null,
       tax_percent: Number(form.tax_percent),
       saree_length_meters: Number(form.saree_length_meters),
+      images: validImages,
       variants: variants.map((v) => ({
         ...v,
         stock_quantity: v.id ? 0 : Number(v.stock_quantity) || 0,
@@ -207,20 +214,71 @@ export function AdminProductFormPage() {
           <VariantBuilder variants={variants} onChange={setVariants} blouseStitched={form.blouse_stitched} />
         </section>
 
-        {isEditing && existing && (
-          <section className="space-y-4">
-            <h2 className="text-sm tracking-widest2 uppercase text-stone">Images</h2>
+        {/* Product Images Section */}
+        <section className="space-y-4">
+          <h2 className="text-sm tracking-widest2 uppercase text-stone">Product Images</h2>
+
+          {!isEditing && (
+            <div className="space-y-3 bg-beige/40 p-4 border border-stone/20">
+              <p className="text-xs text-stone mb-2">Provide image URLs below (e.g. Unsplash / CDN image link):</p>
+              {initialImages.map((img, idx) => (
+                <div key={idx} className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <input
+                      type="url"
+                      placeholder={idx === 0 ? "Primary Image URL (e.g. https://images.unsplash.com/...)" : "Hover Image URL"}
+                      value={img.image_url}
+                      onChange={(e) => {
+                        const next = [...initialImages]
+                        next[idx].image_url = e.target.value
+                        setInitialImages(next)
+                      }}
+                      className="input text-xs"
+                    />
+                  </div>
+                  <label className="flex items-center gap-1 text-xs whitespace-nowrap text-stone">
+                    <input
+                      type="checkbox"
+                      checked={img.is_hover_image}
+                      onChange={(e) => {
+                        const next = [...initialImages]
+                        next[idx].is_hover_image = e.target.checked
+                        setInitialImages(next)
+                      }}
+                      className="accent-oxblood"
+                    />
+                    Hover image
+                  </label>
+                  {initialImages.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => setInitialImages(initialImages.filter((_, i) => i !== idx))}
+                      className="text-xs text-oxblood hover:underline px-2"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setInitialImages([...initialImages, { image_url: '', is_hover_image: false }])}
+                className="text-xs text-ink hover:text-oxblood font-medium tracking-wide uppercase pt-1"
+              >
+                + Add Another Image URL
+              </button>
+            </div>
+          )}
+
+          {isEditing && existing && (
             <ImageUploader
               images={existing.images || []}
               isUploading={uploadImage.isPending}
               onUpload={(file) => uploadImage.mutate({ productId: id, file })}
               onDelete={(imageId) => deleteImage.mutate({ productId: id, imageId })}
             />
-          </section>
-        )}
-        {!isEditing && (
-          <p className="text-xs text-stone">Save the product first, then you can upload images from the edit page.</p>
-        )}
+          )}
+        </section>
 
         {error && <p className="text-sm text-oxblood">{error}</p>}
 

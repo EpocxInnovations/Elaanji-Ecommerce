@@ -51,13 +51,25 @@ def create_product(db: Session, admin: User, payload) -> Product:
     if existing_sku:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A product with this SKU already exists")
 
-    data = payload.model_dump(exclude={"variants"})
+    data = payload.model_dump(exclude={"variants", "images"})
     product = Product(**data)
     db.add(product)
     db.flush()
 
     for v in payload.variants:
         _upsert_variant(db, product.id, v)
+
+    for idx, img in enumerate(getattr(payload, "images", [])):
+        if img.image_url.strip():
+            db.add(
+                ProductImage(
+                    product_id=product.id,
+                    image_url=img.image_url.strip(),
+                    is_hover_image=img.is_hover_image,
+                    display_order=idx,
+                    color=img.color,
+                )
+            )
 
     log_action(db, admin, "created product", "product", str(product.id), product.name)
     db.commit()
