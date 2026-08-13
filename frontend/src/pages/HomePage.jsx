@@ -4,7 +4,7 @@ import { ArrowRight, Truck, ShieldCheck, Sparkles } from 'lucide-react'
 import { useProducts } from '../hooks/useProducts'
 import { ProductCard } from '../components/ProductCard'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
-import { fadeUpLuxury, wordReveal, staggerContainer, clipPathWipe, EASE_EXPO_OUT, EASE_SILK } from '../utils/motion'
+import { fadeUpLuxury, wordReveal, staggerContainer, clipPathWipe, EASE_EXPO_OUT, EASE_SILK, SPRING_LUXURY } from '../utils/motion'
 
 const CATEGORIES = [
   {
