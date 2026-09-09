@@ -74,6 +74,10 @@ def verify_and_confirm_payment(
     if payment is None or payment.provider_order_id != razorpay_order_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Payment record mismatch")
 
+    # Idempotency: If already confirmed, return success safely
+    if payment.status == PaymentStatus.successful and order.status == OrderStatus.confirmed:
+        return {"verified": True, "message": "Payment verified successfully"}
+
     expected_signature = hmac.new(
         key=settings.razorpay_key_secret.encode(),
         msg=f"{razorpay_order_id}|{razorpay_payment_id}".encode(),

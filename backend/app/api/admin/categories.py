@@ -54,3 +54,4 @@ def reorder_categories(
     current_admin: User = Depends(require_admin),
 ):
     return admin_product_service.reorder_categories(db, current_admin, payload.categories)
+    

@@ -1,153 +1,156 @@
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { Instagram, Facebook, Mail } from 'lucide-react'
-import { useState } from 'react'
+
+const SHOP_LINKS = [
+  { label: 'New Arrivals', to: '/shop?filter=new-arrivals' },
+  { label: 'Best Sellers', to: '/shop?sort=best_selling' },
+  { label: 'Kanjivaram', to: '/shop?saree_type=kanjivaram' },
+  { label: 'Banarasi', to: '/shop?saree_type=banarasi' },
+  { label: 'Sale', to: '/shop?filter=sale' },
+]
+
+const SUPPORT_LINKS = [
+  { label: 'Track Order', to: '/orders' },
+  { label: 'Returns', to: '/orders' },
+  { label: 'Contact Us', to: 'mailto:hello@elaanji.com', external: true },
+]
+
+const ABOUT_LINKS = [
+  { label: 'Our Story', to: '/' },
+  { label: 'Craft & Heritage', to: '/' },
+]
 
 export function Footer() {
-  const [subscribed, setSubscribed] = useState(false)
-  const [email, setEmail] = useState('')
-
-  const handleSubscribe = (e) => {
-    e.preventDefault()
-    if (email.trim()) {
-      setSubscribed(true)
-      setEmail('')
-      setTimeout(() => setSubscribed(false), 4000)
-    }
-  }
-
   return (
-    <footer className="bg-ink text-paper mt-24 border-t border-paper/15 relative overflow-hidden">
-      {/* Subtle Ambient Heritage Graphic */}
-      <div className="absolute right-0 bottom-0 text-[180px] font-display text-paper/[0.02] select-none pointer-events-none leading-none leading-[0.8]">
-        ए
-      </div>
+    <footer className="bg-ink-gradient text-paper mt-24 relative overflow-hidden">
+      {/* Gold gradient top border */}
+      <div className="h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-20 pb-12 relative z-10">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-10 md:gap-12 pb-16 border-b border-paper/15">
+      {/* Ambient glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-gold/10 blur-[120px] pointer-events-none" />
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-16 pb-10 relative">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-12">
           {/* Brand */}
-          <div className="col-span-2">
-            <h3 className="font-display text-2xl tracking-widest uppercase mb-4 text-paper">ELAANJI</h3>
-            <p className="text-sm text-paper/70 leading-relaxed max-w-xs font-light">
-              The House of Indian Saree Heritage. Handwoven Kanjivaram, Banarasi brocades &amp; contemporary couture weaves.
+          <div className="col-span-2 md:col-span-1">
+            <h3 className="font-display text-2xl tracking-[0.18em] mb-3">ELAANJI</h3>
+            <div className="w-10 h-px bg-gold/50 mb-4" />
+            <p className="text-sm text-paper/60 leading-relaxed max-w-[240px]">
+              Handpicked sarees for every occasion: crafted with tradition, delivered with care.
             </p>
-            <div className="flex items-center gap-5 mt-6">
+            <div className="flex items-center gap-4 mt-6">
               <a
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
-                className="p-2 rounded-full border border-paper/20 text-paper/60 hover:text-paper hover:border-paper transition-all duration-300"
+                className="text-paper/50 hover:text-gold-soft transition-colors"
               >
-                <Instagram size={16} strokeWidth={1.5} />
+                <Instagram size={18} strokeWidth={1.5} />
               </a>
               <a
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
-                className="p-2 rounded-full border border-paper/20 text-paper/60 hover:text-paper hover:border-paper transition-all duration-300"
+                className="text-paper/50 hover:text-gold-soft transition-colors"
               >
-                <Facebook size={16} strokeWidth={1.5} />
+                <Facebook size={18} strokeWidth={1.5} />
               </a>
               <a
                 href="mailto:hello@elaanji.com"
                 aria-label="Email"
-                className="p-2 rounded-full border border-paper/20 text-paper/60 hover:text-paper hover:border-paper transition-all duration-300"
+                className="text-paper/50 hover:text-gold-soft transition-colors"
               >
-                <Mail size={16} strokeWidth={1.5} />
+                <Mail size={18} strokeWidth={1.5} />
               </a>
             </div>
           </div>
 
           {/* Shop */}
           <div>
-            <h4 className="text-[10px] tracking-widest2 uppercase text-gold-light mb-5 font-medium">Collections</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/shop?filter=new-arrivals" className="text-xs text-paper/70 hover:text-paper transition-colors font-light">
-                  New Arrivals
-                </Link>
-              </li>
-              <li>
-                <Link to="/shop?sort=best_selling" className="text-xs text-paper/70 hover:text-paper transition-colors font-light">
-                  Best Sellers
-                </Link>
-              </li>
-              <li>
-                <Link to="/shop?saree_type=kanjivaram" className="text-xs text-paper/70 hover:text-paper transition-colors font-light">
-                  Kanjivaram Silk
-                </Link>
-              </li>
-              <li>
-                <Link to="/shop?saree_type=banarasi" className="text-xs text-paper/70 hover:text-paper transition-colors font-light">
-                  Banarasi Brocade
-                </Link>
-              </li>
-              <li>
-                <Link to="/shop?filter=sale" className="text-xs text-paper/70 hover:text-paper transition-colors font-light">
-                  Special Edit
-                </Link>
-              </li>
+            <h4 className="text-xs tracking-widest2 uppercase text-gold-soft/70 mb-4">Shop</h4>
+            <ul className="space-y-2.5">
+              {SHOP_LINKS.map((link) => (
+                <li key={link.label}>
+                  <Link to={link.to} className="text-sm text-paper/70 hover:text-gold-soft transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Concierge */}
+          {/* Support */}
           <div>
-            <h4 className="text-[10px] tracking-widest2 uppercase text-gold-light mb-5 font-medium">Concierge</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/orders" className="text-xs text-paper/70 hover:text-paper transition-colors font-light">
-                  Track Order
-                </Link>
-              </li>
-              <li>
-                <Link to="/orders" className="text-xs text-paper/70 hover:text-paper transition-colors font-light">
-                  Complimentary Returns
-                </Link>
-              </li>
-              <li>
-                <a href="mailto:hello@elaanji.com" className="text-xs text-paper/70 hover:text-paper transition-colors font-light">
-                  Bespoke Consultations
-                </a>
-              </li>
+            <h4 className="text-xs tracking-widest2 uppercase text-gold-soft/70 mb-4">Support</h4>
+            <ul className="space-y-2.5">
+              {SUPPORT_LINKS.map((link) =>
+                link.external ? (
+                  <li key={link.label}>
+                    <a href={link.to} className="text-sm text-paper/70 hover:text-gold-soft transition-colors">
+                      {link.label}
+                    </a>
+                  </li>
+                ) : (
+                  <li key={link.label}>
+                    <Link to={link.to} className="text-sm text-paper/70 hover:text-gold-soft transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                )
+              )}
             </ul>
           </div>
 
-          {/* Newsletter */}
-          <div className="col-span-2 md:col-span-1">
-            <h4 className="text-[10px] tracking-widest2 uppercase text-gold-light mb-5 font-medium">Private Journal</h4>
-            <p className="text-xs text-paper/60 mb-4 font-light leading-relaxed">
-              Subscribe to receive private invitations to new weave unveilings.
-            </p>
-            <form onSubmit={handleSubscribe} className="space-y-2">
-              <div className="relative">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter email address"
-                  className="w-full bg-transparent border border-paper/20 px-3.5 py-2.5 text-xs text-paper
-                             placeholder:text-paper/30 focus:border-gold-light focus:outline-none transition-colors"
-                  required
-                />
-              </div>
-              <motion.button
-                whileTap={{ scale: 0.97 }}
+          {/* The House */}
+          <div className="col-span-2 sm:col-span-1">
+            <h4 className="text-xs tracking-widest2 uppercase text-gold-soft/70 mb-4">The House</h4>
+            <ul className="flex flex-wrap gap-x-6 gap-y-2 sm:block sm:space-y-2.5">
+              {ABOUT_LINKS.map((link) => (
+                <li key={link.label}>
+                  <Link to={link.to} className="text-sm text-paper/70 hover:text-gold-soft transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Newsletter */}
+        <div className="border-t border-paper/10 mt-12 pt-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="max-w-md">
+              <p className="text-xs tracking-widest2 uppercase text-gold-soft/70 mb-2">
+                The Elaanji Edit
+              </p>
+              <p className="text-paper/60 text-sm mb-3 leading-relaxed">
+                Subscribe for new arrivals, weaving stories and private previews.
+              </p>
+            </div>
+            <form onSubmit={(e) => e.preventDefault()} className="flex flex-col sm:flex-row gap-2.5 sm:gap-0 w-full md:w-auto">
+              <input
+                type="email"
+                placeholder="Your email address"
+                className="w-full sm:w-64 md:w-72 bg-paper/5 border border-paper/20 px-4 py-3 text-sm text-paper
+                           placeholder:text-paper/30 focus:border-gold/60 focus:outline-none transition-colors"
+              />
+              <button
                 type="submit"
-                className="w-full bg-paper text-ink px-4 py-2.5 text-[10px] tracking-widest2 uppercase font-medium hover:bg-gold-light transition-colors"
+                className="bg-gold-gradient text-ink-deep px-6 py-3 text-xs tracking-widest2 uppercase font-semibold
+                           hover:shadow-gold-glow transition-all cursor-pointer shrink-0 text-center justify-center inline-flex items-center"
               >
-                {subscribed ? 'Invited ✓' : 'Subscribe'}
-              </motion.button>
+                Subscribe
+              </button>
             </form>
           </div>
         </div>
+      </div>
 
-        {/* Copyright */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-paper/40 tracking-wider">
-          <p>© {new Date().getFullYear()} ELAANJI. All rights reserved.</p>
-          <p className="mt-2 sm:mt-0">Handcrafted with Heritage in Kanchipuram &amp; Varanasi</p>
-        </div>
+      {/* Copyright */}
+      <div className="border-t border-paper/10 py-5 text-center text-xs text-paper/40 tracking-wide">
+        © {new Date().getFullYear()} ELAANJI · The House of Saree. All rights reserved.
       </div>
     </footer>
   )

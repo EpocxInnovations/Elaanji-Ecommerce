@@ -2,7 +2,7 @@ import enum
 import uuid
 from typing import Optional
 
-from sqlalchemy import String, Integer, Enum, ForeignKey, Text
+from sqlalchemy import String, Integer, Enum, ForeignKey, Text, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -41,3 +41,7 @@ class InventoryTransaction(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     )
 
     variant: Mapped["ProductVariant"] = relationship(back_populates="inventory_transactions")  # noqa: F821
+
+    __table_args__ = (
+        Index("ix_inventory_transactions_variant_created", "variant_id", "created_at"),
+    )

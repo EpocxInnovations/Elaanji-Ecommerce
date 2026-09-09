@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -8,14 +8,21 @@ from app.middleware.auth import require_admin
 from app.models.review import ReviewStatus
 from app.models.user import User
 from app.schemas.admin_review import AdminReviewOut, ReviewStatusUpdateRequest, ReviewRespondRequest
+from app.schemas.common import PaginatedResponse
 from app.services import admin_review_service
 
 router = APIRouter(prefix="/api/admin/reviews", tags=["admin-reviews"])
 
 
-@router.get("", response_model=list[AdminReviewOut])
-def list_reviews(db: Session = Depends(get_db), current_admin: User = Depends(require_admin), status: ReviewStatus | None = None):
-    return admin_review_service.list_reviews(db, status)
+@router.get("", response_model=PaginatedResponse[AdminReviewOut])
+def list_reviews(
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_admin),
+    status: ReviewStatus | None = None,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
+):
+    return admin_review_service.list_reviews(db, status, page, page_size)
 
 
 @router.patch("/{review_id}/status", response_model=AdminReviewOut)

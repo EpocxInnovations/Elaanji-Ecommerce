@@ -44,12 +44,24 @@ export function useAdminReviewActions() {
 export function useAdminBanners() {
   const queryClient = useQueryClient()
   const bannersQuery = useQuery({ queryKey: ['admin-banners'], queryFn: adminBannersApi.list })
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['admin-banners'] })
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ['admin-banners'] })
+    queryClient.invalidateQueries({ queryKey: ['banners'] })
+  }
 
   const createBanner = useMutation({ mutationFn: (payload) => adminBannersApi.create(payload), onSuccess: invalidate })
   const updateBanner = useMutation({ mutationFn: ({ id, payload }) => adminBannersApi.update(id, payload), onSuccess: invalidate })
   const removeBanner = useMutation({ mutationFn: (id) => adminBannersApi.remove(id), onSuccess: invalidate })
+  const reorderBanners = useMutation({ mutationFn: (items) => adminBannersApi.reorder(items), onSuccess: invalidate })
   const uploadImage = useMutation({ mutationFn: (file) => adminBannersApi.uploadImage(file) })
 
-  return { banners: bannersQuery.data || [], isLoading: bannersQuery.isLoading, createBanner, updateBanner, removeBanner, uploadImage }
+  return {
+    banners: bannersQuery.data || [],
+    isLoading: bannersQuery.isLoading,
+    createBanner,
+    updateBanner,
+    removeBanner,
+    reorderBanners,
+    uploadImage,
+  }
 }

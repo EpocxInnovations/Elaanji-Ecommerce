@@ -37,16 +37,16 @@ export function AdminSettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl">
-      <h1 className="font-display text-3xl mb-6">Settings</h1>
+    <div className="max-w-2xl pb-16">
+      <h1 className="font-display text-2xl sm:text-3xl mb-4 sm:mb-6 text-ink">Settings</h1>
 
-      <div className="flex gap-1 mb-8 border-b border-stone/20 overflow-x-auto">
+      <div className="flex gap-1 mb-6 sm:mb-8 border-b border-stone/20 overflow-x-auto no-scrollbar">
         {TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-xs tracking-widest2 uppercase whitespace-nowrap ${
-              activeTab === tab ? 'border-b-2 border-ink text-ink' : 'text-stone'
+            className={`px-3 sm:px-4 py-2 text-xs tracking-widest2 uppercase whitespace-nowrap cursor-pointer transition-colors ${
+              activeTab === tab ? 'border-b-2 border-ink text-ink font-semibold' : 'text-stone hover:text-ink'
             }`}
           >
             {tab}

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, Link } from 'react-router-dom'
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -16,6 +16,7 @@ import {
   Settings,
   Menu,
   X,
+  ExternalLink,
 } from 'lucide-react'
 
 const navItems = [
@@ -45,14 +46,31 @@ function SidebarLinks({ onNavigate }) {
           onClick={onNavigate}
           className={({ isActive }) =>
             `flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors ${
-              isActive ? 'bg-ink text-paper' : 'text-ink/70 hover:bg-beige'
+              isActive ? 'bg-ink-gradient text-paper shadow-card font-medium' : 'text-ink/75 hover:bg-beige/60 hover:text-ink'
             }`
           }
         >
-          <Icon size={18} />
-          {label}
+          <Icon size={18} className="shrink-0" />
+          <span className="truncate">{label}</span>
         </NavLink>
       ))}
+
+      <div className="pt-4 mt-2 border-t border-stone/15">
+        <Link
+          to="/"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center justify-between px-3 py-2 rounded-md text-xs text-gold hover:text-oxblood hover:bg-gold/5 transition-colors font-medium"
+        >
+          <span className="flex items-center gap-2">
+            <ExternalLink size={14} />
+            View Live Store
+          </span>
+          <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-gold/10 text-gold-dark">
+            Live
+          </span>
+        </Link>
+      </div>
     </nav>
   )
 }
@@ -63,34 +81,71 @@ export function AdminSidebar() {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:flex-col w-64 shrink-0 border-r border-stone/20 bg-paper h-screen sticky top-0 py-6">
-        <div className="px-6 mb-8">
-          <span className="font-display text-xl">ELAANJI</span>
-          <p className="text-xs text-stone tracking-widest2 uppercase mt-1">Admin Panel</p>
+      <aside className="hidden md:flex md:flex-col w-64 shrink-0 border-r border-stone/20 bg-paper h-screen sticky top-0 py-6 overflow-y-auto no-scrollbar">
+        <div className="px-6 mb-6 flex items-center justify-between">
+          <div>
+            <span className="font-display text-xl tracking-wider text-ink">ELAANJI</span>
+            <p className="text-[10px] text-stone tracking-widest2 uppercase mt-0.5 font-semibold">Admin Panel</p>
+          </div>
         </div>
         <SidebarLinks />
       </aside>
 
-      {/* Mobile drawer trigger */}
-      <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-stone/20 bg-paper sticky top-0 z-30">
-        <span className="font-display text-lg">ELAANJI Admin</span>
-        <button onClick={() => setIsMobileOpen(true)} aria-label="Open menu">
-          <Menu size={22} />
-        </button>
+      {/* Mobile top navigation bar */}
+      <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-stone/20 bg-paper/95 backdrop-blur-md sticky top-0 z-40 shadow-sm">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsMobileOpen(true)}
+            aria-label="Open menu"
+            className="p-1.5 -ml-1 text-ink hover:bg-stone/10 rounded-md transition-colors"
+          >
+            <Menu size={22} />
+          </button>
+          <div>
+            <span className="font-display text-lg tracking-wide text-ink">ELAANJI</span>
+            <span className="text-[10px] text-gold font-mono uppercase ml-2 tracking-wider">Admin</span>
+          </div>
+        </div>
+
+        <Link
+          to="/"
+          target="_blank"
+          rel="noreferrer"
+          className="text-xs text-stone hover:text-ink inline-flex items-center gap-1 px-2.5 py-1 rounded border border-stone/20 hover:border-stone/40 transition-colors"
+        >
+          <span>Store</span>
+          <ExternalLink size={12} />
+        </Link>
       </div>
 
+      {/* Mobile drawer with backdrop blur */}
       {isMobileOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex">
-          <div className="w-72 bg-paper h-full py-6 overflow-y-auto">
-            <div className="flex items-center justify-between px-6 mb-8">
-              <span className="font-display text-xl">ELAANJI</span>
-              <button onClick={() => setIsMobileOpen(false)} aria-label="Close menu">
-                <X size={22} />
-              </button>
+          <div
+            className="fixed inset-0 bg-ink/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsMobileOpen(false)}
+          />
+          <div className="relative w-72 max-w-[85vw] bg-paper h-full py-6 overflow-y-auto z-10 shadow-2xl no-scrollbar flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between px-6 mb-6">
+                <div>
+                  <span className="font-display text-xl tracking-wider text-ink">ELAANJI</span>
+                  <p className="text-[10px] text-stone tracking-widest2 uppercase mt-0.5">Admin Panel</p>
+                </div>
+                <button
+                  onClick={() => setIsMobileOpen(false)}
+                  aria-label="Close menu"
+                  className="p-1.5 text-stone hover:text-ink rounded-md hover:bg-stone/10 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <SidebarLinks onNavigate={() => setIsMobileOpen(false)} />
             </div>
-            <SidebarLinks onNavigate={() => setIsMobileOpen(false)} />
+            <div className="px-6 pt-4 text-[11px] text-stone/60 border-t border-stone/10">
+              Elaanji Saree Atelier © 2026
+            </div>
           </div>
-          <div className="flex-1 bg-ink/40" onClick={() => setIsMobileOpen(false)} />
         </div>
       )}
     </>

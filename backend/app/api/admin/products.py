@@ -13,21 +13,24 @@ from app.schemas.admin_product import (
     ProductStatusUpdateRequest,
     ImageReorderRequest,
 )
+from app.schemas.common import PaginatedResponse
 from app.schemas.product import ProductDetailOut
 from app.services import admin_product_service
 
 router = APIRouter(prefix="/api/admin/products", tags=["admin-products"])
 
 
-@router.get("", response_model=list[ProductDetailOut])
+@router.get("", response_model=PaginatedResponse[ProductDetailOut])
 def list_products(
     db: Session = Depends(get_db),
     current_admin: User = Depends(require_admin),
     search: str | None = None,
     status: ProductStatus | None = None,
     category_id: uuid.UUID | None = None,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
 ):
-    return admin_product_service.list_products_admin(db, search, status, category_id)
+    return admin_product_service.list_products_admin(db, search, status, category_id, page, page_size)
 
 
 @router.get("/{product_id}", response_model=ProductDetailOut)

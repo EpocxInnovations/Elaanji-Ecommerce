@@ -4,6 +4,7 @@ map so an order can't jump from 'pending' straight to 'delivered', and every
 change writes both an OrderStatusHistory row and a customer-facing
 Notification — never just a silent column update.
 """
+import math
 import uuid
 
 from fastapi import HTTPException, status
@@ -54,10 +55,12 @@ def _load_order(db: Session, order_id: uuid.UUID) -> Order:
     return order
 
 
-def list_orders_admin(db: Session, status_filter: OrderStatus | None, search: str | None):
+def list_orders_admin(db: Session, status_filter: OrderStatus | None, search: str | None, page: int = 1, page_size: int = 20):
     query = select(Order).options(selectinload(Order.items), selectinload(Order.payment), selectinload(Order.user))
+    count_query = select(func.count()).select_from(Order)
     if status_filter:
         query = query.where(Order.status == status_filter)
+        count_query = count_query.where(Order.status == status_filter)
     if search:
         like = f"%{search}%"
         query = query.join(Order.user).where(
@@ -66,10 +69,17 @@ def list_orders_admin(db: Session, status_filter: OrderStatus | None, search: st
             | (User.email.ilike(like))
             | (User.phone.ilike(like))
         )
-    query = query.order_by(Order.created_at.desc())
+        count_query = count_query.join(Order.user).where(
+            (Order.order_number.ilike(like))
+            | (User.name.ilike(like))
+            | (User.email.ilike(like))
+            | (User.phone.ilike(like))
+        )
+    total = db.execute(count_query).scalar_one()
+    query = query.order_by(Order.created_at.desc()).offset((page - 1) * page_size).limit(page_size)
     orders = db.execute(query).scalars().unique().all()
 
-    return [
+    items = [
         {
             "id": o.id,
             "order_number": o.order_number,
@@ -85,6 +95,7 @@ def list_orders_admin(db: Session, status_filter: OrderStatus | None, search: st
         }
         for o in orders
     ]
+    return {"items": items, "total": total, "page": page, "page_size": page_size, "total_pages": math.ceil(total / page_size) if page_size else 0}
 
 
 def get_order_admin(db: Session, order_id: uuid.UUID) -> Order:

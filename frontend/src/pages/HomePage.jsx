@@ -1,36 +1,74 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { ArrowRight, Truck, ShieldCheck, Sparkles } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ArrowRight, Truck, ShieldCheck, Sparkles, Feather, Layers, Award } from 'lucide-react'
 import { useProducts } from '../hooks/useProducts'
+import { useBanners } from '../hooks/useBanners'
 import { ProductCard } from '../components/ProductCard'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
-import { fadeUpLuxury, wordReveal, staggerContainer, clipPathWipe, EASE_EXPO_OUT, EASE_SILK, SPRING_LUXURY } from '../utils/motion'
+import { SplitText } from '../components/SplitText'
+import { TextRevealCard } from '../components/TextRevealCard'
+import { HeroBannerSlideshow, PromotionBannerSlideshow } from '../components/BannerSlideshow'
+
+import { luxuryEase, staggerGridContainer, staggerGridItem } from '../utils/motion'
+
+const HOME_PRODUCTS_PARAMS = { filter: 'new-arrivals', page_size: 8 }
 
 const CATEGORIES = [
   {
     label: 'Kanjivaram',
     description: 'Temple-woven silk heritage',
     to: '/shop?saree_type=kanjivaram',
-    image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=800&auto=format&fit=crop',
+    tag: 'Tamil Nadu',
+    index: '01',
   },
   {
     label: 'Banarasi',
     description: 'Mughal-inspired brocade',
     to: '/shop?saree_type=banarasi',
-    image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=800&auto=format&fit=crop',
+    tag: 'Varanasi',
+    index: '02',
   },
   {
     label: 'Designer',
     description: 'Contemporary couture weaves',
     to: '/shop?saree_type=designer',
-    image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?q=80&w=800&auto=format&fit=crop',
+    tag: 'Modern Atelier',
+    index: '03',
   },
 ]
 
 const TRUST_ITEMS = [
-  { icon: ShieldCheck, label: '100% Authentic Handloom' },
-  { icon: Truck, label: 'Pan-India Express Shipping' },
-  { icon: Sparkles, label: 'Bespoke Blouse Finishing' },
+  { icon: ShieldCheck, label: '100% Authentic' },
+  { icon: Truck, label: 'Pan-India Delivery' },
+  { icon: Sparkles, label: 'Premium Finishing' },
+]
+
+const HERITAGE_STEPS = [
+  {
+    id: 'step-1',
+    icon: Feather,
+    number: '01',
+    title: 'Pure Mulberry & Real Zari',
+    desc: 'Each thread is hand-selected, combining pure mulberry silk with real gold and silver zari plating for radiant, enduring luster.',
+    tagline: 'Craftsmanship Heritage',
+  },
+  {
+    id: 'step-2',
+    icon: Layers,
+    number: '02',
+    title: 'The Master Handloom',
+    desc: 'Interlocking warp and weft created over weeks by master weavers using centuries-old jacquard and pit loom techniques.',
+    tagline: 'Artisanal Integrity',
+  },
+  {
+    id: 'step-3',
+    icon: Award,
+    number: '03',
+    title: 'The Sacred 6-Yard Drape',
+    desc: 'Unfolding timeless grace that moves with fluid beauty — engineered to hold structure while feeling feather-light.',
+    tagline: 'Timeless Couture',
+  },
 ]
 
 function SkeletonCard() {
@@ -44,8 +82,43 @@ function SkeletonCard() {
   )
 }
 
+function SectionHeader({ eyebrow, title, subtitle, dark = false }) {
+  return (
+    <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-14">
+      <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+        <span className="w-8 sm:w-10 h-px bg-gradient-to-r from-transparent to-gold/60" />
+        <p className={`label-eyebrow text-[10px] sm:text-[11px] ${dark ? 'text-gold-soft/80' : ''}`}>{eyebrow}</p>
+        <span className="w-8 sm:w-10 h-px bg-gradient-to-l from-transparent to-gold/60" />
+      </div>
+      <h2 className={`font-display text-2xl sm:text-4xl md:text-5xl leading-tight ${dark ? 'text-paper' : 'text-ink'}`}>
+        {title}
+      </h2>
+      {subtitle && (
+        <p className={`mt-3 sm:mt-4 text-xs sm:text-[15px] leading-relaxed ${dark ? 'text-paper/60' : 'text-stone'}`}>
+          {subtitle}
+        </p>
+      )}
+    </div>
+  )
+}
+
 export function HomePage() {
-  const { data, isLoading } = useProducts({ filter: 'new-arrivals', page_size: 8 })
+  const { data, isLoading, isError, error } = useProducts(HOME_PRODUCTS_PARAMS, {
+    staleTime: 60 * 1000,
+    refetchOnMount: true,
+  })
+  const { data: banners } = useBanners()
+  const heroBanners = banners?.filter((b) => b.placement === 'hero' && b.is_active) || []
+  const promoBanners = banners?.filter((b) => b.placement === 'promo' && b.is_active) || []
+  const saleBanners = banners?.filter((b) => b.placement === 'sale' && b.is_active) || []
+  const [activeTab, setActiveTab] = useState(0)
+
+
+  useEffect(() => {
+    if (isError && error) {
+      console.error('Failed to load new arrivals:', error)
+    }
+  }, [isError, error])
 
   useDocumentMeta({
     title: 'Elaanji | The House of Saree',
@@ -53,316 +126,365 @@ export function HomePage() {
   })
 
   return (
-    <div className="overflow-hidden">
+    <div>
       {/* ─── Hero Section ─── */}
-      <section className="relative bg-beige min-h-[520px] md:min-h-[620px] flex items-center justify-center border-b border-stone/15">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 w-full py-16 md:py-24">
-          <div className="grid md:grid-cols-12 gap-8 items-center">
-            {/* Text Choreography */}
-            <motion.div
-              className="md:col-span-7 max-w-xl z-10"
-              initial="hidden"
-              animate="visible"
-              variants={staggerContainer(0.12, 0.05)}
+      {heroBanners.length > 0 ? (
+        <section className="relative w-full bg-paper overflow-hidden">
+          {/* Ambient gold glow */}
+          <div className="absolute -top-24 -right-24 w-[480px] h-[480px] rounded-full bg-gold/15 blur-[140px] pointer-events-none animate-glow-pulse" />
+          <div className="absolute bottom-0 -left-24 w-[420px] h-[420px] rounded-full bg-oxblood/10 blur-[140px] pointer-events-none" />
+
+          {/* Full-Width Edge-to-Edge Banner Slideshow (Fade Out Effect, Zero Buffers) */}
+          <div className="w-full">
+            <HeroBannerSlideshow banners={heroBanners} />
+          </div>
+
+          {/* Brand Statement with Interactive Text Reveal Transition */}
+          <div className="w-full mx-auto max-w-5xl px-4 sm:px-6 py-10 md:py-14 text-center">
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="label-eyebrow mb-4 flex items-center justify-center gap-3"
             >
-              <motion.div variants={fadeUpLuxury} className="flex items-center gap-2 mb-4">
-                <span className="h-px w-8 bg-oxblood/60 inline-block" />
-                <p className="label-eyebrow tracking-widest2 text-oxblood">
-                  Handloom &amp; Designer Couture
-                </p>
-              </motion.div>
+              <span className="w-8 h-px bg-gold/60" />
+              <Feather size={14} className="text-oxblood" />
+              Handloom &amp; Designer Atelier
+              <span className="w-8 h-px bg-gold/60" />
+            </motion.p>
 
-              <h1 className="font-display text-4xl sm:text-6xl md:text-7xl leading-[1.05] tracking-tight text-ink mb-6">
-                <span className="block overflow-hidden py-1">
-                  <motion.span variants={wordReveal} custom={0} className="inline-block">
-                    The House
-                  </motion.span>
-                </span>
-                <span className="block overflow-hidden py-1 italic font-normal text-oxblood">
-                  <motion.span variants={wordReveal} custom={1} className="inline-block">
-                    of Saree
-                  </motion.span>
-                </span>
-              </h1>
-
-              <motion.p
-                variants={fadeUpLuxury}
-                className="text-stone text-base sm:text-lg leading-relaxed max-w-md mb-8 font-body font-light"
-              >
-                Handpicked Kanjivaram, Banarasi, and designer weaves curated for elegance, crafted with century-old tradition.
-              </motion.p>
-
-              <motion.div variants={fadeUpLuxury} className="flex flex-wrap items-center gap-4">
-                <Link to="/shop" className="btn-primary group relative overflow-hidden">
-                  <span className="relative z-10 flex items-center gap-2">
-                    Shop Collection
-                    <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" />
-                  </span>
-                </Link>
-                <Link to="/shop?filter=new-arrivals" className="btn-secondary">
-                  Explore New Arrivals
-                </Link>
-              </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, ease: luxuryEase }}
+              className="my-4"
+            >
+              <TextRevealCard text="The House of Saree" revealText="ELAANJI" />
             </motion.div>
 
-            {/* Editorial Visual Composition */}
-            <motion.div
-              className="hidden md:flex md:col-span-5 items-center justify-center relative"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, ease: EASE_EXPO_OUT, delay: 0.2 }}
-            >
-              <div className="relative w-full max-w-[380px] aspect-[3/4]">
-                {/* Outer Decorative Gold Line Frame */}
-                <motion.div
-                  className="absolute inset-0 border border-oxblood/20 z-0"
-                  initial={{ opacity: 0, rotate: 2 }}
-                  animate={{ opacity: 1, rotate: 0 }}
-                  transition={{ duration: 1.2, ease: EASE_SILK }}
-                />
 
-                {/* Inner Canvas Image Mask */}
-                <motion.div
-                  className="absolute inset-4 overflow-hidden bg-stone/10 shadow-luxury z-10"
-                  variants={clipPathWipe}
-                  initial="hidden"
-                  animate="visible"
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2, ease: luxuryEase }}
+              className="mt-4 text-stone text-[15px] sm:text-base leading-relaxed max-w-xl mx-auto"
+            >
+              Handpicked Kanjivaram, Banarasi, and designer weaves curated for timeless elegance, woven with sacred heritage.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.35, ease: luxuryEase }}
+              className="mt-8 flex flex-wrap items-center justify-center gap-4"
+            >
+              <Link to="/shop" className="btn-primary">
+                Shop Now
+                <ArrowRight size={16} strokeWidth={1.5} />
+              </Link>
+              <Link to="/shop?filter=new-arrivals" className="btn-secondary">
+                Explore Collection
+              </Link>
+            </motion.div>
+          </div>
+        </section>
+      ) : (
+        <section className="relative bg-paper-gradient overflow-hidden min-h-[500px] md:min-h-[600px] flex items-center">
+          {/* Ambient gold glow */}
+          <div className="absolute -top-24 -right-24 w-[480px] h-[480px] rounded-full bg-gold/15 blur-[140px] pointer-events-none animate-glow-pulse" />
+          <div className="absolute bottom-0 -left-24 w-[420px] h-[420px] rounded-full bg-oxblood/10 blur-[140px] pointer-events-none" />
+
+          {/* Vertical ornament lines */}
+          <div className="absolute inset-y-0 left-8 hidden lg:block w-px bg-gradient-to-b from-transparent via-gold/30 to-transparent" />
+          <div className="absolute inset-y-0 right-8 hidden lg:block w-px bg-gradient-to-b from-transparent via-gold/30 to-transparent" />
+
+          <div className="w-full mx-auto max-w-[1600px] px-6 sm:px-10 lg:px-12 xl:px-16 py-12 md:py-16 relative">
+            <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
+              {/* Text Column — Undisturbed, elegant width */}
+              <div className="lg:col-span-5 max-w-lg">
+                <motion.p
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="label-eyebrow mb-4 flex items-center gap-3"
                 >
-                  <img
-                    src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=1000&auto=format&fit=crop"
-                    alt="Elaanji Luxury Saree Weave"
-                    className="w-full h-full object-cover transform scale-105 hover:scale-110 transition-transform duration-1000 ease-out"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink/40 via-transparent to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4 text-paper text-center">
-                    <p className="font-display text-2xl tracking-wide">एलांजी</p>
-                    <p className="text-[10px] uppercase tracking-widest2 text-paper/80">Pure Silk &amp; Zari Heritage</p>
-                  </div>
+                  <span className="w-8 h-px bg-gold/60" />
+                  <Feather size={14} className="text-oxblood" />
+                  Handloom &amp; Designer Atelier
+                </motion.p>
+
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.6, ease: luxuryEase }}
+                  className="my-3"
+                >
+                  <TextRevealCard text="The House of Saree" revealText="ELAANJI" />
                 </motion.div>
 
-                {/* Floating Monogram Stamp Badge */}
-                <motion.div
-                  className="absolute -bottom-4 -left-4 z-20 bg-oxblood text-paper w-20 h-20 rounded-full flex flex-col items-center justify-center shadow-luxury border border-paper/20"
-                  initial={{ scale: 0, rotate: -20 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ delay: 0.8, ...SPRING_LUXURY }}
+
+                <motion.p
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.2, ease: luxuryEase }}
+                  className="mt-6 text-stone text-[15px] sm:text-base leading-relaxed max-w-md"
                 >
-                  <span className="font-display text-xl leading-none">ए</span>
-                  <span className="text-[8px] uppercase tracking-widest2 text-paper/80 mt-0.5">EST 2024</span>
+                  Handpicked Kanjivaram, Banarasi, and designer weaves curated for timeless elegance, woven with sacred heritage.
+                </motion.p>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.35, ease: luxuryEase }}
+                  className="mt-9 flex flex-wrap items-center gap-4"
+                >
+                  <Link to="/shop" className="btn-primary">
+                    Shop Now
+                    <ArrowRight size={16} strokeWidth={1.5} />
+                  </Link>
+                  <Link to="/shop?filter=new-arrivals" className="btn-secondary">
+                    Explore Collection
+                  </Link>
                 </motion.div>
               </div>
-            </motion.div>
+
+              {/* Hero Visual Column */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.15, ease: luxuryEase }}
+                className="hidden md:flex items-center justify-center lg:justify-end lg:col-span-7 w-full"
+              >
+                <div className="relative w-full max-w-[400px] aspect-[3/4] p-6">
+                  {/* Layered gold frames */}
+                  <div className="absolute inset-0 frame-gold" />
+                  <div className="absolute inset-4 bg-gradient-to-br from-oxblood/10 via-transparent to-gold/10 border border-gold/20" />
+                  <div className="absolute inset-8 border border-gold/15" />
+
+                  {/* Rotating ornament */}
+                  <div className="absolute inset-6 border border-dashed border-gold/20 rounded-full animate-spin-slow pointer-events-none" />
+
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="glass-light p-8 max-w-[260px] shadow-luxury">
+                      <span className="text-[10px] tracking-widest2 uppercase text-oxblood font-medium block mb-2">
+                        Heritage Atelier
+                      </span>
+                      <p className="font-display text-7xl text-gold-gradient leading-none my-3">ए</p>
+                      <div className="w-12 h-px bg-gold/50 mx-auto my-4" />
+                      <p className="text-[11px] tracking-widest2 uppercase text-stone">
+                        Est. 2024 · India
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ─── Trust Strip ─── */}
+      <section className="border-y border-stone/10 bg-ink-gradient text-paper">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6">
+          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-20">
+            {TRUST_ITEMS.map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-center gap-3 text-paper/80 group">
+                <Icon size={18} strokeWidth={1.5} className="text-gold-soft group-hover:text-gold-light transition-colors" />
+                <span className="text-xs tracking-widest2 uppercase">{label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ─── Trust Banner ─── */}
-      <section className="border-b border-stone/15 bg-paper">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
-          <motion.div
-            className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-50px' }}
-            variants={staggerContainer(0.1)}
-          >
-            {TRUST_ITEMS.map(({ icon: Icon, label }, i) => (
-              <motion.div
-                key={label}
-                variants={fadeUpLuxury}
-                custom={i}
-                className="flex items-center justify-center gap-3 text-stone py-2 group cursor-default"
-              >
-                <div className="p-2 rounded-full bg-beige/60 text-oxblood group-hover:scale-110 transition-transform duration-300">
-                  <Icon size={18} strokeWidth={1.5} />
-                </div>
-                <span className="text-xs tracking-widest2 uppercase font-medium text-ink/80 group-hover:text-oxblood transition-colors">
-                  {label}
-                </span>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+      {/* ─── Shop by Category (Optimized Grid Reveal) ─── */}
+      <section className="section-container section-pad">
+        <SectionHeader
+          eyebrow="Curated Weaves"
+          title="Shop by Category"
+        />
 
-      {/* ─── Shop by Category ─── */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-20 md:py-28">
-        <div className="text-center max-w-xl mx-auto mb-14">
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="label-eyebrow text-oxblood mb-2.5"
-          >
-            Curated Masterpieces
-          </motion.p>
-          <motion.h2
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="font-display text-3xl sm:text-4xl text-ink"
-          >
-            Explore Weave Traditions
-          </motion.h2>
-          <div className="w-12 h-px bg-oxblood/40 mx-auto mt-4" />
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-6 md:gap-8">
-          {CATEGORIES.map((cat, i) => (
-            <motion.div
-              key={cat.label}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: '-60px' }}
-              custom={i}
-              variants={fadeUpLuxury}
-            >
+        <motion.div
+          className="grid md:grid-cols-3 gap-6 md:gap-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-40px' }}
+          variants={staggerGridContainer}
+        >
+          {CATEGORIES.map((cat) => (
+            <motion.div key={cat.label} variants={staggerGridItem} className="transform-gpu">
               <Link
                 to={cat.to}
-                className="group block relative bg-beige aspect-[3/4] overflow-hidden shadow-card hover:shadow-luxury transition-shadow duration-500"
+                className="group block relative bg-beige aspect-[4/5] overflow-hidden shadow-card transition-all duration-500 hover:shadow-luxury"
               >
-                {/* Background Image */}
-                <img
-                  src={cat.image}
-                  alt={cat.label}
-                  className="w-full h-full object-cover transform scale-100 group-hover:scale-105 transition-transform duration-700 ease-out"
-                />
+                {/* Visual Gradient Layer */}
+                <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/30 to-transparent z-10" />
+                <div className="absolute inset-0 border border-gold/0 group-hover:border-gold/40 transition-colors duration-500 z-20 pointer-events-none" />
 
-                {/* Dark Vignette Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent transition-opacity duration-300 group-hover:opacity-90" />
+                {/* Index */}
+                <span className="absolute top-6 right-6 font-display text-5xl text-paper/15 z-20 group-hover:text-gold-soft/40 transition-colors duration-500">
+                  {cat.index}
+                </span>
 
-                {/* Content */}
-                <div className="absolute bottom-0 left-0 right-0 p-8 z-10 transform group-hover:-translate-y-1 transition-transform duration-300">
-                  <span className="text-[10px] text-gold-light uppercase tracking-widest2 block mb-1">
-                    Authentic Collection
+                {/* Content Overlay */}
+                <div className="absolute bottom-0 left-0 right-0 z-20 p-8 transform-gpu transition-transform duration-500 group-hover:-translate-y-2">
+                  <span className="text-[10px] tracking-widest2 uppercase text-gold-soft mb-1 block">
+                    {cat.tag}
                   </span>
-                  <h3 className="font-display text-2xl sm:text-3xl text-paper mb-1.5">{cat.label}</h3>
-                  <p className="text-paper/80 text-xs sm:text-sm mb-4 font-light leading-relaxed">{cat.description}</p>
-                  <span className="inline-flex items-center gap-2 text-xs tracking-widest2 uppercase text-paper font-medium group-hover:text-gold-light transition-colors">
-                    Explore Sarees
-                    <ArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1.5" />
+                  <h3 className="font-display text-3xl text-paper mb-2 group-hover:text-gold-soft transition-colors duration-300">
+                    {cat.label}
+                  </h3>
+                  <p className="text-paper/70 text-sm mb-4 leading-relaxed">
+                    {cat.description}
+                  </p>
+                  <span className="inline-flex items-center gap-2 text-xs tracking-widest2 uppercase text-gold-light font-medium group-hover:gap-3 transition-all duration-300">
+                    Explore Collection
+                    <ArrowRight size={14} />
                   </span>
                 </div>
               </Link>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
-      {/* ─── Editorial Craft Storytelling Section ─── */}
-      <section className="bg-ink text-paper py-24 md:py-32 relative overflow-hidden my-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 relative z-10">
-          <div className="grid md:grid-cols-12 gap-12 items-center">
-            {/* Story Image Grid */}
-            <motion.div
-              className="md:col-span-6 grid grid-cols-2 gap-4 relative"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <div className="aspect-[3/4] overflow-hidden rounded-sm border border-paper/15 shadow-luxury">
-                <img
-                  src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=800&auto=format&fit=crop"
-                  alt="Zari Detail"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                />
-              </div>
-              <div className="aspect-[3/4] overflow-hidden rounded-sm border border-paper/15 shadow-luxury mt-8">
-                <img
-                  src="https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=800&auto=format&fit=crop"
-                  alt="Handloom Weave"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                />
-              </div>
-            </motion.div>
+      {/* ─── Promotional Offer Banner Slideshow (Admin-Controlled) ─── */}
+      <PromotionBannerSlideshow banners={promoBanners} />
 
-            {/* Story Text Content */}
-            <motion.div
-              className="md:col-span-6 space-y-6"
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: '-60px' }}
-              variants={staggerContainer(0.12)}
-            >
-              <motion.p variants={fadeUpLuxury} className="text-xs uppercase tracking-widest2 text-gold-light font-medium">
-                The Heritage Atelier
-              </motion.p>
-              <motion.h2 variants={fadeUpLuxury} className="font-display text-3xl sm:text-5xl leading-tight text-paper">
-                240 Hours of Pure Zari &amp; Silk Artistry
-              </motion.h2>
-              <motion.p variants={fadeUpLuxury} className="text-paper/70 text-sm sm:text-base leading-relaxed font-light">
-                Every Elaanji saree is born on traditional handlooms in Kanchipuram and Varanasi. Master weavers spend over three weeks intertwining pure mulberry silk with real gold-tested zari, preserving temple motif heirlooms for generations.
-              </motion.p>
-              <motion.div variants={fadeUpLuxury} className="pt-4 flex items-center gap-8 text-xs tracking-widest2 uppercase text-paper/80">
-                <div>
-                  <span className="block font-display text-3xl text-gold-light mb-1">100%</span>
-                  <span>Pure Mulberry Silk</span>
-                </div>
-                <div className="h-10 w-px bg-paper/20" />
-                <div>
-                  <span className="block font-display text-3xl text-gold-light mb-1">240+</span>
-                  <span>Hours Per Saree</span>
+      {/* ─── Heritage Craftsmanship Interactive Showcase ─── */}
+      <section className="bg-ink-gradient text-paper section-pad relative overflow-hidden">
+        {/* Ambient glow */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full bg-gold/10 blur-[160px] pointer-events-none" />
+
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 relative">
+          <SectionHeader
+            eyebrow="Legacy of Craftsmanship"
+            title="The Art of the Saree"
+            dark
+          />
+
+          {/* Interactive Chapter Nav Tabs */}
+          <div className="flex justify-start sm:justify-center gap-2 sm:gap-3 mb-8 sm:mb-12 overflow-x-auto pb-1 px-1 sm:px-0 no-scrollbar">
+            {HERITAGE_STEPS.map((step, idx) => {
+              const Icon = step.icon
+              const isActive = activeTab === idx
+              return (
+                <button
+                  key={step.id}
+                  onClick={() => setActiveTab(idx)}
+                  className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3.5 text-[10px] sm:text-xs tracking-wider sm:tracking-widest2 uppercase transition-all duration-300 cursor-pointer border shrink-0 whitespace-nowrap ${
+                    isActive
+                      ? 'bg-gold-gradient text-ink-deep border-transparent shadow-gold-glow font-semibold'
+                      : 'border-paper/15 text-paper/60 hover:text-paper hover:border-gold/40'
+                  }`}
+                >
+                  <Icon size={13} className={isActive ? '' : 'text-gold-soft'} />
+                  <span>{step.number} / {step.tagline}</span>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Tab Content Display */}
+          <div className="max-w-3xl mx-auto min-h-[200px] sm:min-h-[220px] flex items-center justify-center text-center">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.3, ease: luxuryEase }}
+                className="space-y-4 sm:space-y-5 px-3 sm:px-4"
+              >
+                <span className="font-display text-5xl sm:text-7xl md:text-8xl text-gold-gradient leading-none block">
+                  {HERITAGE_STEPS[activeTab].number}
+                </span>
+                <h3 className="font-display text-xl sm:text-3xl md:text-4xl text-paper">
+                  {HERITAGE_STEPS[activeTab].title}
+                </h3>
+                <p className="text-paper/70 text-sm sm:text-base md:text-lg max-w-xl mx-auto leading-relaxed">
+                  {HERITAGE_STEPS[activeTab].desc}
+                </p>
+                <div className="pt-3 sm:pt-5">
+                  <Link to="/shop" className="btn-primary">
+                    Explore The Collection
+                    <ArrowRight size={15} strokeWidth={1.5} />
+                  </Link>
                 </div>
               </motion.div>
-            </motion.div>
+            </AnimatePresence>
           </div>
-        </div>
-
-        {/* Ambient Overlay Background Watermark */}
-        <div className="absolute right-[-5%] top-1/2 -translate-y-1/2 font-display text-[220px] text-paper/[0.03] select-none pointer-events-none leading-none">
-          एलांजी
         </div>
       </section>
 
+      {/* ─── Seasonal / Sale Offer Banner Slideshow (Admin-Controlled) ─── */}
+      <PromotionBannerSlideshow banners={saleBanners} />
+
       {/* ─── New Arrivals ─── */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 pb-24 md:pb-32">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4 border-b border-stone/15 pb-6">
+      <section className="section-container section-pad">
+        <div className="flex items-end justify-between mb-12">
           <div>
-            <p className="label-eyebrow text-oxblood mb-2">Just Unveiled</p>
-            <h2 className="font-display text-3xl sm:text-4xl text-ink">New Arrivals</h2>
+            <p className="label-eyebrow mb-3 flex items-center gap-3">
+              <span className="w-8 h-px bg-gold/60" />
+              Fresh From Looms
+            </p>
+            <h2 className="font-display text-4xl sm:text-5xl text-ink">
+              New Arrivals
+            </h2>
           </div>
           <Link
             to="/shop?filter=new-arrivals"
-            className="inline-flex items-center gap-2 text-xs tracking-widest2 uppercase text-ink hover:text-oxblood font-medium transition-colors group"
+            className="hidden sm:inline-flex items-center gap-2 text-xs tracking-widest2 uppercase text-gold hover:text-oxblood transition-colors group"
           >
-            View Full Catalogue
-            <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+            View All Arrivals
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
         {isLoading && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-8">
             {Array.from({ length: 4 }).map((_, i) => (
               <SkeletonCard key={i} />
             ))}
           </div>
         )}
 
-        {!isLoading && data?.items?.length === 0 && (
-          <div className="text-center py-16 bg-beige/30 border border-stone/15">
-            <p className="text-stone text-sm font-body">New arrivals will appear here as soon as they're added.</p>
+        {isError && (
+          <div className="text-center py-12">
+            <p className="font-display text-xl mb-2">Unable to load new arrivals</p>
+            <p className="text-stone text-sm">Please check your connection and try refreshing.</p>
           </div>
         )}
 
-        {!isLoading && data?.items?.length > 0 && (
+        {!isLoading && !isError && data?.items?.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-stone text-sm">New arrivals will appear here as soon as they're added.</p>
+          </div>
+        )}
+
+        {!isLoading && !isError && data?.items?.length > 0 && (
           <motion.div
             className="grid grid-cols-2 md:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-10"
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: '-60px' }}
-            variants={staggerContainer(0.08)}
+            viewport={{ once: true, margin: '-40px' }}
+            variants={staggerGridContainer}
           >
             {data.items.map((product, i) => (
-              <motion.div key={product.id} variants={fadeUpLuxury} custom={i}>
-                <ProductCard product={product} />
+              <motion.div key={product.id} variants={staggerGridItem}>
+                <ProductCard product={product} priority={i < 4} />
               </motion.div>
             ))}
           </motion.div>
         )}
+
+        <div className="sm:hidden text-center mt-10">
+          <Link to="/shop?filter=new-arrivals" className="btn-secondary text-xs">
+            View All Arrivals
+            <ArrowRight size={14} />
+          </Link>
+        </div>
       </section>
     </div>
   )
 }
-

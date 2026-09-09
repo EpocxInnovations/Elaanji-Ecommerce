@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -8,19 +8,22 @@ from app.middleware.auth import require_admin
 from app.models.order import OrderStatus
 from app.models.user import User
 from app.schemas.admin_order import AdminOrderSummaryOut, AdminOrderDetailOut, AdminOrderStatusUpdateRequest
+from app.schemas.common import PaginatedResponse
 from app.services import admin_order_service
 
 router = APIRouter(prefix="/api/admin/orders", tags=["admin-orders"])
 
 
-@router.get("", response_model=list[AdminOrderSummaryOut])
+@router.get("", response_model=PaginatedResponse[AdminOrderSummaryOut])
 def list_orders(
     db: Session = Depends(get_db),
     current_admin: User = Depends(require_admin),
     status: OrderStatus | None = None,
     search: str | None = None,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
 ):
-    return admin_order_service.list_orders_admin(db, status, search)
+    return admin_order_service.list_orders_admin(db, status, search, page, page_size)
 
 
 @router.get("/{order_id}", response_model=AdminOrderDetailOut)

@@ -37,8 +37,8 @@ export function OrderDetailPage() {
   if (!order) {
     return (
       <div className="mx-auto max-w-md px-4 sm:px-6 py-24 text-center">
-        <h1 className="font-display text-3xl mb-3">Order Not Found</h1>
-        <p className="text-stone text-sm mb-6">This order may not exist or you may not have access to it.</p>
+        <h1 className="font-display text-4xl mb-3">Order Not Found</h1>
+        <p className="text-stone text-sm mb-8">This order may not exist or you may not have access to it.</p>
         <Link to="/orders" className="btn-primary">View My Orders</Link>
       </div>
     )
@@ -64,12 +64,12 @@ export function OrderDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 sm:px-6 py-10 md:py-12">
+    <div className="mx-auto max-w-4xl px-4 sm:px-6 py-10 md:py-14">
       {/* Success Banner */}
       {location.state?.justPlaced && (
-        <div className="flex items-center gap-3 bg-beige/60 px-4 py-3 mb-6">
-          <span className="w-5 h-5 bg-ink text-paper flex items-center justify-center shrink-0">
-            <Check size={12} strokeWidth={2.5} />
+        <div className="flex items-center gap-3 bg-gold/10 border border-gold/20 px-4 py-3 mb-6">
+          <span className="w-6 h-6 bg-gold-gradient text-ink-deep flex items-center justify-center shrink-0 font-bold">
+            <Check size={13} strokeWidth={3} />
           </span>
           <p className="text-sm">
             Thank you! Your order <span className="font-medium">{order.order_number}</span> has been placed.
@@ -90,20 +90,20 @@ export function OrderDetailPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8">
         <div>
-          <p className="label-eyebrow mb-1">Order</p>
-          <h1 className="font-display text-2xl">{order.order_number}</h1>
+          <p className="label-eyebrow mb-2">Order</p>
+          <h1 className="font-display text-3xl">{order.order_number}</h1>
           <p className="text-xs text-stone mt-1">
             Placed on {new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto">
           {CANCELLABLE.includes(order.status) && (
-            <button onClick={handleCancel} disabled={cancelOrder.isPending} className="btn-secondary text-xs !px-4 !py-2">
+            <button onClick={handleCancel} disabled={cancelOrder.isPending} className="btn-secondary text-xs !px-4 sm:!px-5 !py-2.5 flex-1 sm:flex-initial">
               {cancelOrder.isPending ? 'Cancelling…' : 'Cancel Order'}
             </button>
           )}
           {RETURNABLE.includes(order.status) && (
-            <button onClick={() => setShowReturnForm(true)} className="btn-secondary text-xs !px-4 !py-2">
+            <button onClick={() => setShowReturnForm(true)} className="btn-secondary text-xs !px-4 sm:!px-5 !py-2.5 flex-1 sm:flex-initial">
               Request Return
             </button>
           )}
@@ -114,8 +114,8 @@ export function OrderDetailPage() {
 
       {/* Return Form */}
       {showReturnForm && (
-        <form onSubmit={handleReturn} className="border border-stone/15 p-4 mb-8 space-y-3">
-          <label className="block text-xs tracking-widest2 uppercase text-stone">Reason for return</label>
+        <form onSubmit={handleReturn} className="border border-gold/20 p-5 mb-8 space-y-3 bg-paper/60 backdrop-blur-xl">
+          <label className="label-eyebrow">Reason for return</label>
           <textarea
             required
             minLength={3}
@@ -137,17 +137,17 @@ export function OrderDetailPage() {
         <div className="md:col-span-2 space-y-8">
           {/* Tracking */}
           <div>
-            <h2 className="text-xs tracking-widest2 uppercase mb-5">Tracking</h2>
+            <h2 className="label-eyebrow mb-5">Tracking</h2>
             <OrderStatusTimeline status={order.status} statusHistory={order.status_history} />
           </div>
 
           {/* Items */}
           <div>
-            <h2 className="text-xs tracking-widest2 uppercase mb-5">Items</h2>
+            <h2 className="label-eyebrow mb-5">Items</h2>
             <div className="space-y-3">
               {order.items.map((item) => (
                 <div key={item.id} className="flex gap-4 border-b border-stone/10 pb-4 last:border-0">
-                  <div className="w-14 h-[72px] bg-beige shrink-0 overflow-hidden">
+                  <div className="w-14 h-[72px] bg-beige shrink-0 overflow-hidden shadow-card">
                     {item.product_image_url && (
                       <img src={item.product_image_url} alt={item.product_name} className="w-full h-full object-cover" />
                     )}
@@ -158,7 +158,7 @@ export function OrderDetailPage() {
                       {item.color}{item.size ? ` · Blouse: ${item.size}` : ''} · Qty {item.quantity}
                     </p>
                   </div>
-                  <p className="text-sm font-medium shrink-0">{formatINR(item.line_total)}</p>
+                  <p className="text-sm font-semibold shrink-0">{formatINR(item.line_total)}</p>
                 </div>
               ))}
             </div>
@@ -166,7 +166,7 @@ export function OrderDetailPage() {
 
           {/* Shipping Address */}
           <div>
-            <h2 className="text-xs tracking-widest2 uppercase mb-3">Shipping Address</h2>
+            <h2 className="label-eyebrow mb-3">Shipping Address</h2>
             <div className="text-sm">
               <p className="font-medium">{order.shipping_name}</p>
               <p className="text-stone mt-0.5">{order.shipping_phone}</p>
@@ -179,19 +179,19 @@ export function OrderDetailPage() {
         </div>
 
         {/* Payment Summary */}
-        <div className="border border-stone/15 p-5 sm:p-6 h-fit">
-          <h2 className="text-xs tracking-widest2 uppercase mb-5">Payment Summary</h2>
-          <div className="space-y-2.5 text-sm">
-            <div className="flex justify-between"><span className="text-stone">Subtotal</span><span>{formatINR(order.subtotal)}</span></div>
+        <div className="border border-gold/20 p-6 sm:p-7 h-fit bg-paper/60 backdrop-blur-xl shadow-card">
+          <h2 className="text-xs tracking-widest2 uppercase text-ink font-medium mb-6">Payment Summary</h2>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between"><span className="text-stone">Subtotal</span><span className="font-medium">{formatINR(order.subtotal)}</span></div>
             {order.coupon_discount_amount > 0 && (
-              <div className="flex justify-between"><span className="text-stone">Coupon ({order.coupon_code})</span><span>-{formatINR(order.coupon_discount_amount)}</span></div>
+              <div className="flex justify-between"><span className="text-stone">Coupon ({order.coupon_code})</span><span className="text-emerald-700 font-medium">-{formatINR(order.coupon_discount_amount)}</span></div>
             )}
-            <div className="flex justify-between"><span className="text-stone">Shipping</span><span>{order.shipping_fee === 0 ? 'Free' : formatINR(order.shipping_fee)}</span></div>
-            <div className="flex justify-between"><span className="text-stone">Tax</span><span>{formatINR(order.tax_amount)}</span></div>
+            <div className="flex justify-between"><span className="text-stone">Shipping</span><span className="font-medium">{order.shipping_fee === 0 ? 'Free' : formatINR(order.shipping_fee)}</span></div>
+            <div className="flex justify-between"><span className="text-stone">Tax</span><span className="font-medium">{formatINR(order.tax_amount)}</span></div>
           </div>
-          <div className="border-t border-stone/15 pt-4 mt-4 flex justify-between font-medium">
-            <span>Total</span>
-            <span>{formatINR(order.total_amount)}</span>
+          <div className="border-t border-gold/15 pt-5 mt-5 flex justify-between items-baseline">
+            <span className="text-sm font-medium">Total</span>
+            <span className="text-2xl font-semibold tracking-tight">{formatINR(order.total_amount)}</span>
           </div>
           {order.payment && (
             <p className="text-xs text-stone mt-3 uppercase tracking-wide">
@@ -201,7 +201,7 @@ export function OrderDetailPage() {
         </div>
       </div>
 
-      <Link to="/orders" className="inline-flex items-center gap-1.5 text-sm text-stone hover:text-ink transition-colors mt-10">
+      <Link to="/orders" className="inline-flex items-center gap-1.5 text-sm text-stone hover:text-gold transition-colors mt-10">
         <ArrowLeft size={14} strokeWidth={1.5} />
         Back to Orders
       </Link>

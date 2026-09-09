@@ -2,10 +2,11 @@
 Admin catalog mutations. Every function here takes the acting admin and
 writes an activity log entry — nothing mutates the catalog silently.
 """
+import math
 import uuid
 
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session, selectinload
 
 from app.models.product import Product, ProductVariant, ProductImage, Category, ProductStatus
@@ -29,18 +30,24 @@ def get_product_admin(db: Session, product_id: uuid.UUID) -> Product:
     return _load_product(db, product_id)
 
 
-def list_products_admin(db: Session, search: str | None, status_filter: ProductStatus | None, category_id: uuid.UUID | None):
+def list_products_admin(db: Session, search: str | None, status_filter: ProductStatus | None, category_id: uuid.UUID | None, page: int = 1, page_size: int = 20):
     query = select(Product).options(
         selectinload(Product.variants), selectinload(Product.images), selectinload(Product.category), selectinload(Product.brand)
     )
+    count_query = select(func.count()).select_from(Product)
     if search:
         query = query.where(Product.name.ilike(f"%{search}%"))
+        count_query = count_query.where(Product.name.ilike(f"%{search}%"))
     if status_filter:
         query = query.where(Product.status == status_filter)
+        count_query = count_query.where(Product.status == status_filter)
     if category_id:
         query = query.where(Product.category_id == category_id)
-    query = query.order_by(Product.created_at.desc())
-    return db.execute(query).scalars().unique().all()
+        count_query = count_query.where(Product.category_id == category_id)
+    total = db.execute(count_query).scalar_one()
+    query = query.order_by(Product.created_at.desc()).offset((page - 1) * page_size).limit(page_size)
+    items = db.execute(query).scalars().unique().all()
+    return {"items": items, "total": total, "page": page, "page_size": page_size, "total_pages": math.ceil(total / page_size) if page_size else 0}
 
 
 def create_product(db: Session, admin: User, payload) -> Product:
@@ -51,25 +58,13 @@ def create_product(db: Session, admin: User, payload) -> Product:
     if existing_sku:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A product with this SKU already exists")
 
-    data = payload.model_dump(exclude={"variants", "images"})
+    data = payload.model_dump(exclude={"variants"})
     product = Product(**data)
     db.add(product)
     db.flush()
 
     for v in payload.variants:
         _upsert_variant(db, product.id, v)
-
-    for idx, img in enumerate(getattr(payload, "images", [])):
-        if img.image_url.strip():
-            db.add(
-                ProductImage(
-                    product_id=product.id,
-                    image_url=img.image_url.strip(),
-                    is_hover_image=img.is_hover_image,
-                    display_order=idx,
-                    color=img.color,
-                )
-            )
 
     log_action(db, admin, "created product", "product", str(product.id), product.name)
     db.commit()

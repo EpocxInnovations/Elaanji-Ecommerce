@@ -3,10 +3,11 @@ The only place in the codebase that writes to ProductVariant.stock_quantity
 directly. Every change goes through here so it's always paired with an
 InventoryTransaction row — there is no other legitimate way to move stock.
 """
+import math
 import uuid
 
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session, selectinload
 
 from app.models.inventory import InventoryTransaction, InventoryTransactionType
@@ -15,31 +16,35 @@ from app.models.user import User
 from app.services.activity_log_service import log_action
 
 
-def list_inventory(db: Session, low_stock_only: bool = False):
+def list_inventory(db: Session, low_stock_only: bool = False, page: int = 1, page_size: int = 20):
     query = select(ProductVariant).options(selectinload(ProductVariant.product))
-    rows = db.execute(query).scalars().all()
+    count_query = select(func.count()).select_from(ProductVariant)
 
-    result = []
-    for v in rows:
-        is_low = v.available_quantity <= v.low_stock_threshold
-        if low_stock_only and not is_low:
-            continue
-        result.append(
-            {
-                "variant_id": v.id,
-                "product_id": v.product_id,
-                "product_name": v.product.name,
-                "sku": v.sku,
-                "color": v.color,
-                "blouse_size": v.blouse_size,
-                "stock_quantity": v.stock_quantity,
-                "reserved_quantity": v.reserved_quantity,
-                "available_quantity": v.available_quantity,
-                "low_stock_threshold": v.low_stock_threshold,
-                "is_low_stock": is_low,
-            }
-        )
-    return result
+    if low_stock_only:
+        low_stock_filter = (ProductVariant.stock_quantity - ProductVariant.reserved_quantity) <= ProductVariant.low_stock_threshold
+        query = query.where(low_stock_filter)
+        count_query = count_query.where(low_stock_filter)
+
+    total = db.execute(count_query).scalar_one()
+    rows = db.execute(query.order_by(ProductVariant.created_at.desc()).offset((page - 1) * page_size).limit(page_size)).scalars().all()
+
+    items = [
+        {
+            "variant_id": v.id,
+            "product_id": v.product_id,
+            "product_name": v.product.name,
+            "sku": v.sku,
+            "color": v.color,
+            "blouse_size": v.blouse_size,
+            "stock_quantity": v.stock_quantity,
+            "reserved_quantity": v.reserved_quantity,
+            "available_quantity": v.available_quantity,
+            "low_stock_threshold": v.low_stock_threshold,
+            "is_low_stock": v.available_quantity <= v.low_stock_threshold,
+        }
+        for v in rows
+    ]
+    return {"items": items, "total": total, "page": page, "page_size": page_size, "total_pages": math.ceil(total / page_size) if page_size else 0}
 
 
 def adjust_stock(db: Session, admin: User, variant_id: uuid.UUID, change_quantity: int, note: str | None) -> ProductVariant:

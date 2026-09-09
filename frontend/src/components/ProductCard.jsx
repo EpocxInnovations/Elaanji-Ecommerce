@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom'
+import { Heart, Eye } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { Heart } from 'lucide-react'
 import { formatINR, SAREE_TYPE_LABELS } from '../utils/format'
 import { useWishlist } from '../hooks/useWishlist'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
-import { SPRING_LUXURY, EASE_EXPO_OUT } from '../utils/motion'
+import { bounceSpring, luxuryEase } from '../utils/motion'
 
-export function ProductCard({ product }) {
+export function ProductCard({ product, priority = false }) {
   const { isAuthenticated } = useAuth()
   const { isWishlisted, addItem, removeItem, findItemId } = useWishlist()
   const { showToast } = useToast()
@@ -31,98 +31,100 @@ export function ProductCard({ product }) {
     : null
 
   return (
-    <Link to={`/products/${product.slug}`} className="group block relative">
-      <motion.div
-        className="relative aspect-[3/4] bg-beige overflow-hidden mb-3.5"
-        whileHover="hover"
-        initial="rest"
-      >
-        {/* Primary Image with Silk Zoom & Shared Element layoutId */}
+    <Link to={`/products/${product.slug}`} className="group block transform-gpu">
+      <div className="relative aspect-[3/4] bg-beige overflow-hidden mb-4 shadow-card group-hover:shadow-luxury transition-shadow duration-500">
         {product.primary_image_url && (
           <motion.img
             layoutId={`product-image-${product.id}`}
             src={product.primary_image_url}
             alt={product.name}
-            variants={{
-              rest: { scale: 1 },
-              hover: { scale: 1.06, transition: { duration: 0.8, ease: EASE_EXPO_OUT } },
-            }}
-            className="w-full h-full object-cover"
-            loading="lazy"
+            className="w-full h-full object-cover transition-opacity duration-500 ease-out group-hover:opacity-0"
+            whileHover={{ scale: 1.06 }}
+            transition={{ duration: 0.6, ease: luxuryEase }}
+            loading={priority ? 'eager' : 'lazy'}
+            fetchpriority={priority ? 'high' : 'auto'}
+            referrerPolicy="no-referrer"
           />
         )}
-
-        {/* Hover Secondary Image (Unfolding Curtain Clip-Path Wipe) */}
         {product.hover_image_url && (
           <motion.img
             src={product.hover_image_url}
             alt=""
-            variants={{
-              rest: { opacity: 0, scale: 1.04 },
-              hover: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: EASE_EXPO_OUT } },
-            }}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100"
+            whileHover={{ scale: 1.06 }}
+            transition={{ duration: 0.6, ease: luxuryEase }}
             loading="lazy"
+            referrerPolicy="no-referrer"
           />
         )}
 
+        {/* Gold hairline frame */}
+        <div className="absolute inset-0 border border-gold/0 group-hover:border-gold/25 transition-colors duration-500 pointer-events-none" />
+
         {/* Badges */}
-        <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5 pointer-events-none">
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
           {!product.available && (
-            <span className="bg-ink/90 text-paper text-[9px] px-2 py-1 tracking-widest2 uppercase backdrop-blur-sm font-medium">
+            <span className="bg-ink/90 text-paper text-[10px] px-2.5 py-1 tracking-widest2 uppercase backdrop-blur-sm">
               Sold Out
             </span>
           )}
           {hasDiscount && product.available && (
-            <span className="bg-oxblood text-paper text-[9px] px-2 py-1 tracking-widest2 uppercase font-medium shadow-sm">
+            <span className="bg-oxblood-gradient text-paper text-[10px] px-2.5 py-1 tracking-widest2 uppercase shadow-md">
               {discountPercent}% Off
             </span>
           )}
         </div>
 
-        {/* Wishlist Button with Spring Physics */}
+        {/* Wishlist */}
         <motion.button
+          whileHover={{ scale: 1.15 }}
+          whileTap={{ scale: 0.85 }}
           onClick={handleWishlistToggle}
           aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          transition={SPRING_LUXURY}
-          className="absolute top-3 right-3 z-10 bg-paper/90 backdrop-blur-md p-2.5
-                     shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300
-                     hover:bg-paper cursor-pointer"
+          className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 glass-light p-1.5 sm:p-2 z-10
+                     opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300
+                     hover:shadow-gold-glow cursor-pointer"
         >
-          <Heart
-            size={14}
-            strokeWidth={1.5}
-            className={wishlisted ? 'fill-oxblood text-oxblood' : 'text-ink'}
-          />
+          <motion.div
+            animate={{ scale: wishlisted ? [1, 1.35, 1] : 1 }}
+            transition={bounceSpring}
+          >
+            <Heart
+              size={15}
+              strokeWidth={1.5}
+              className={wishlisted ? 'fill-oxblood text-oxblood' : 'text-ink'}
+            />
+          </motion.div>
         </motion.button>
 
-        {/* Quick View Bar */}
-        <div className="absolute inset-x-0 bottom-0 z-10 bg-ink/90 text-paper text-[10px] uppercase tracking-widest2 py-2.5 text-center backdrop-blur-md transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out font-medium">
-          Explore Drape Details →
+        {/* Quick view hint */}
+        <div className="absolute bottom-0 left-0 right-0 z-10 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+          <div className="flex items-center justify-center gap-2 bg-ink/90 backdrop-blur-sm text-paper text-[10px] tracking-widest2 uppercase py-2.5">
+            <Eye size={13} strokeWidth={1.5} className="text-gold-soft" />
+            View Product
+          </div>
         </div>
 
-        {/* Subtle Bottom Vignette Gradient */}
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-ink/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-      </motion.div>
+        {/* Subtle bottom gradient for depth */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-ink/[0.05] to-transparent pointer-events-none" />
+      </div>
 
-      {/* Info Section */}
-      <div className="space-y-1 transition-transform duration-300 ease-out group-hover:-translate-y-0.5">
+      {/* Info */}
+      <div className="space-y-1.5 px-0.5">
         {product.saree_type && (
-          <p className="text-[10px] text-stone uppercase tracking-widest2 leading-none font-medium">
+          <p className="text-[10px] text-gold uppercase tracking-widest2 leading-none font-medium">
             {SAREE_TYPE_LABELS[product.saree_type] || product.saree_type}
           </p>
         )}
-        <h3 className="text-sm font-body text-ink leading-snug line-clamp-2 group-hover:text-oxblood transition-colors duration-300">
+        <h3 className="font-display text-base text-ink leading-snug line-clamp-2 group-hover:text-oxblood transition-colors duration-200">
           {product.name}
         </h3>
         <div className="flex items-baseline gap-2 pt-0.5">
-          <span className="text-sm font-medium tracking-tight text-ink">
+          <span className="text-sm font-semibold tracking-tight">
             {formatINR(hasDiscount ? product.discount_price : product.price)}
           </span>
           {hasDiscount && (
-            <span className="text-xs text-stone line-through font-normal">
+            <span className="text-xs text-stone line-through">
               {formatINR(product.price)}
             </span>
           )}

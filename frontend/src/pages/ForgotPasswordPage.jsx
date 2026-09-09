@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, CheckCircle2, Eye, EyeOff, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Eye, EyeOff, Feather } from 'lucide-react'
 import { authApi } from '../api/auth'
 import { useToast } from '../context/ToastContext'
 
@@ -219,26 +219,40 @@ export function ForgotPasswordPage() {
   return (
     <div className="min-h-[calc(100vh-200px)] flex">
       {/* Editorial Side Panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-beige items-center justify-center p-12">
-        <div className="text-center max-w-sm">
+      <div className="hidden lg:flex lg:w-[45%] bg-ink-gradient text-paper items-center justify-center p-12 relative overflow-hidden">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full bg-gold/10 blur-[140px] pointer-events-none" />
+        <div className="absolute inset-y-0 left-10 w-px bg-gradient-to-b from-transparent via-gold/30 to-transparent" />
+        <div className="absolute inset-y-0 right-10 w-px bg-gradient-to-b from-transparent via-gold/30 to-transparent" />
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none select-none opacity-[0.04] text-paper">
+          <p className="font-display text-[200px] leading-none">ए</p>
+        </div>
+        <div className="text-center max-w-md relative">
           <div className="mb-8">
-            <div className="w-px h-16 bg-stone/30 mx-auto mb-6" />
-            <h2 className="font-display text-4xl leading-tight mb-3">Account Security</h2>
-            <p className="text-stone text-sm leading-relaxed">
+            <div className="flex items-center justify-center gap-4 mb-8">
+              <span className="w-12 h-px bg-gradient-to-r from-transparent to-gold/60" />
+              <Feather size={16} className="text-gold-soft" />
+              <span className="w-12 h-px bg-gradient-to-l from-transparent to-gold/60" />
+            </div>
+            <h2 className="font-display text-5xl leading-tight mb-4 text-paper">Account Security</h2>
+            <p className="text-paper/60 text-[15px] leading-relaxed">
               Resetting your password is fast and secure. We verify your identity using a 6-digit code delivered directly to your registered email.
             </p>
-            <div className="w-px h-16 bg-stone/30 mx-auto mt-6" />
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <span className="w-12 h-px bg-gradient-to-r from-transparent to-gold/60" />
+              <span className="text-gold-soft">✦</span>
+              <span className="w-12 h-px bg-gradient-to-l from-transparent to-gold/60" />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main Form Panel */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-16">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-16 bg-paper-gradient">
         <div className="w-full max-w-sm">
           {/* STEP 1: Enter Email */}
           {step === 'email' && (
             <div>
-              <h1 className="font-display text-3xl mb-2">Forgot Password?</h1>
+              <h1 className="font-display text-4xl mb-2">Forgot Password?</h1>
               <p className="text-stone text-sm mb-8">
                 Enter your registered email address and we'll send you a 6-digit verification code.
               </p>
@@ -281,7 +295,7 @@ export function ForgotPasswordPage() {
           {/* STEP 2: Enter OTP */}
           {step === 'otp' && (
             <div>
-              <h1 className="font-display text-3xl mb-2">Enter 6-Digit Code</h1>
+              <h1 className="font-display text-4xl mb-2">Enter 6-Digit Code</h1>
               <p className="text-stone text-sm mb-2">
                 We've sent a 6-digit verification code to:
               </p>
@@ -289,10 +303,10 @@ export function ForgotPasswordPage() {
 
               <form onSubmit={handleVerifyOtp} className="space-y-6">
                 <div>
-                  <label className="block text-xs tracking-widest2 uppercase text-stone mb-3">
+                  <label className="block text-xs tracking-wider sm:tracking-widest2 uppercase text-stone mb-3">
                     Verification Code
                   </label>
-                  <div className="flex gap-2 justify-between" onPaste={handleOtpPaste}>
+                  <div className="flex gap-1.5 sm:gap-2 justify-between w-full" onPaste={handleOtpPaste}>
                     {otpDigits.map((digit, index) => (
                       <input
                         key={index}
@@ -305,8 +319,8 @@ export function ForgotPasswordPage() {
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
                         aria-label={`Digit ${index + 1} of verification code`}
-                        className="w-11 h-13 text-center font-mono text-xl font-medium border border-stone/30 bg-transparent
-                                   focus:border-ink focus:outline-none transition-colors"
+                        className="w-9 h-12 sm:w-12 sm:h-14 text-center font-display text-xl sm:text-2xl font-medium border border-stone/30 bg-transparent
+                                   focus:border-gold focus:ring-2 focus:ring-gold/15 focus:outline-none transition-colors"
                       />
                     ))}
                   </div>
@@ -358,7 +372,7 @@ export function ForgotPasswordPage() {
           {/* STEP 3: Enter New Password */}
           {step === 'password' && (
             <div>
-              <h1 className="font-display text-3xl mb-2">Set New Password</h1>
+              <h1 className="font-display text-4xl mb-2">Set New Password</h1>
               <p className="text-stone text-sm mb-8">
                 Please create a strong new password for your account.
               </p>
@@ -447,10 +461,10 @@ export function ForgotPasswordPage() {
           {/* STEP 4: Success State */}
           {step === 'success' && (
             <div className="text-center py-4">
-              <div className="w-16 h-16 mx-auto mb-6 bg-emerald-50 text-emerald-600 flex items-center justify-center rounded-full border border-emerald-200">
+              <div className="w-20 h-20 mx-auto mb-6 bg-emerald-50 text-emerald-600 flex items-center justify-center rounded-full border border-emerald-200">
                 <CheckCircle2 size={32} strokeWidth={1.5} />
               </div>
-              <h1 className="font-display text-3xl mb-3">Password Reset Successfully</h1>
+              <h1 className="font-display text-4xl mb-3">Password Reset Successfully</h1>
               <p className="text-stone text-sm leading-relaxed mb-8">
                 Your password has been updated. You can now sign in with your new password.
               </p>

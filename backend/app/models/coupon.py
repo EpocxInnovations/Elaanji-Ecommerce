@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import String, Numeric, Integer, Boolean, Enum, DateTime, ForeignKey
+from sqlalchemy import String, Numeric, Integer, Boolean, Enum, DateTime, ForeignKey, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -34,6 +34,10 @@ class Coupon(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     usages: Mapped[list["CouponUsage"]] = relationship(back_populates="coupon", cascade="all, delete-orphan")
 
+    __table_args__ = (
+        Index("ix_coupons_active_dates", "is_active", "start_date", "expiry_date"),
+    )
+
 
 class CouponUsage(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "coupon_usage"
@@ -43,3 +47,7 @@ class CouponUsage(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     order_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("orders.id"))
 
     coupon: Mapped["Coupon"] = relationship(back_populates="usages")
+
+    __table_args__ = (
+        Index("ix_coupon_usage_coupon_user", "coupon_id", "user_id"),
+    )

@@ -1,3 +1,4 @@
+import math
 import uuid
 
 from fastapi import HTTPException, status
@@ -21,12 +22,15 @@ def _recompute_product_rating(db: Session, product_id: uuid.UUID):
     product.average_rating = round(sum(approved) / len(approved), 2) if approved else 0
 
 
-def list_reviews(db: Session, status_filter: ReviewStatus | None):
+def list_reviews(db: Session, status_filter: ReviewStatus | None, page: int = 1, page_size: int = 20):
     query = select(Review).options(selectinload(Review.product), selectinload(Review.user))
+    count_query = select(func.count()).select_from(Review)
     if status_filter:
         query = query.where(Review.status == status_filter)
-    reviews = db.execute(query.order_by(Review.created_at.desc())).scalars().all()
-    return [
+        count_query = count_query.where(Review.status == status_filter)
+    total = db.execute(count_query).scalar_one()
+    reviews = db.execute(query.order_by(Review.created_at.desc()).offset((page - 1) * page_size).limit(page_size)).scalars().all()
+    items = [
         {
             "id": r.id,
             "product_id": r.product_id,
@@ -42,6 +46,7 @@ def list_reviews(db: Session, status_filter: ReviewStatus | None):
         }
         for r in reviews
     ]
+    return {"items": items, "total": total, "page": page, "page_size": page_size, "total_pages": math.ceil(total / page_size) if page_size else 0}
 
 
 def set_review_status(db: Session, admin: User, review_id: uuid.UUID, new_status: ReviewStatus):

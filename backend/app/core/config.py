@@ -47,6 +47,10 @@ class Settings(BaseSettings):
     default_shipping_fee: float = 79
 
     environment: str = "development"
+    api_v1_prefix: str = "/api/v1"
+    log_level: str = "INFO"
+    project_name: str = "Elaanji E-Commerce API"
+    app_version: str = "1.0.0"
 
 
 def get_settings() -> Settings:

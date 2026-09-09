@@ -14,6 +14,8 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
+      staleTime: 60 * 1000,
+      refetchOnMount: true,
     },
   },
 })
@@ -22,7 +24,7 @@ const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 function Root() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <ToastProvider>

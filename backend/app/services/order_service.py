@@ -27,9 +27,12 @@ CANCELLABLE_STATUSES = {OrderStatus.pending, OrderStatus.confirmed, OrderStatus.
 RETURNABLE_STATUSES = {OrderStatus.delivered}
 
 
-def _generate_order_number() -> str:
-    suffix = "".join(random.choices(string.digits, k=6))
-    return f"ELJ{suffix}"
+def _generate_order_number(db: Session) -> str:
+    while True:
+        suffix = "".join(random.choices(string.digits, k=6))
+        order_number = f"ELJ{suffix}"
+        if not db.execute(select(Order.id).where(Order.order_number == order_number)).first():
+            return order_number
 
 
 def write_status_history(db: Session, order: Order, status_value: OrderStatus, note: str | None = None):
@@ -47,14 +50,20 @@ def create_order(db: Session, user: User, address_id: uuid.UUID, delivery_method
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Your cart is empty")
 
     # Re-validate stock and re-price every line from the database right now —
-    # never trust anything the client sent about price or availability.
+    # Acquire row-level locks on product variants to prevent race-condition overselling.
     subtotal = 0.0
     tax_amount = 0.0
     line_plans = []
     for item in active_items:
-        variant = db.get(ProductVariant, item.variant_id)
+        variant = db.execute(
+            select(ProductVariant)
+            .options(selectinload(ProductVariant.product).selectinload(Product.images))
+            .where(ProductVariant.id == item.variant_id)
+            .with_for_update()
+        ).scalar_one_or_none()
+
         if variant is None or not variant.is_active:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"An item in your cart is no longer available")
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="An item in your cart is no longer available")
         if item.quantity > variant.available_quantity:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -91,7 +100,7 @@ def create_order(db: Session, user: User, address_id: uuid.UUID, delivery_method
     total_amount = round(discounted_subtotal + shipping_fee + tax_amount, 2)
 
     order = Order(
-        order_number=_generate_order_number(),
+        order_number=_generate_order_number(db),
         user_id=user.id,
         shipping_name=address.full_name,
         shipping_phone=address.phone,

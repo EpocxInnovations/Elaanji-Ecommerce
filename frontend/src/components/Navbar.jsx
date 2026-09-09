@@ -1,27 +1,25 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
-import { Search, Heart, User, ShoppingBag, Menu, X, ChevronRight } from 'lucide-react'
+import { Search, Heart, User, ShoppingBag, Menu, X, ArrowRight, ShieldCheck } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../hooks/useCart'
-
-import { menuCurtainVariants } from '../utils/motion'
+import { luxuryEase, luxurySpring } from '../utils/motion'
 
 const navLinks = [
-  { label: 'Kanjivaram', to: '/shop?saree_type=kanjivaram', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=800&auto=format&fit=crop' },
-  { label: 'Banarasi', to: '/shop?saree_type=banarasi', image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=800&auto=format&fit=crop' },
-  { label: 'Designer', to: '/shop?saree_type=designer', image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?q=80&w=800&auto=format&fit=crop' },
-  { label: 'New Arrivals', to: '/shop?filter=new-arrivals', image: 'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?q=80&w=800&auto=format&fit=crop' },
-  { label: 'Sale', to: '/shop?filter=sale', image: 'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?q=80&w=800&auto=format&fit=crop' },
+  { label: 'Kanjivaram', to: '/shop?saree_type=kanjivaram', desc: 'Temple-woven heritage silk' },
+  { label: 'Banarasi', to: '/shop?saree_type=banarasi', desc: 'Mughal-inspired brocades' },
+  { label: 'Designer', to: '/shop?saree_type=designer', desc: 'Contemporary handloom weaves' },
+  { label: 'New Arrivals', to: '/shop?filter=new-arrivals', desc: 'Fresh from the master looms' },
+  { label: 'Sale', to: '/shop?filter=sale', desc: 'Curated promotional offers' },
 ]
 
 export function Navbar() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isAdmin } = useAuth()
   const { cart } = useCart()
   const navigate = useNavigate()
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [hoveredLinkImage, setHoveredLinkImage] = useState(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [scrolled, setScrolled] = useState(false)
@@ -68,8 +66,10 @@ export function Navbar() {
   return (
     <>
       <header
-        className={`sticky top-0 z-40 bg-paper/95 backdrop-blur-sm transition-shadow duration-300 ${
-          scrolled ? 'shadow-card' : ''
+        className={`sticky top-0 z-40 transition-all duration-500 ${
+          scrolled
+            ? 'bg-paper/85 backdrop-blur-xl shadow-card py-0.5'
+            : 'bg-paper'
         }`}
       >
         <div className="border-b border-stone/10">
@@ -84,8 +84,11 @@ export function Navbar() {
             </button>
 
             {/* Logo */}
-            <Link to="/" className="font-display text-2xl tracking-wide">
-              ELAANJI
+            <Link to="/" className="group flex items-center gap-2">
+              <span className="font-display text-xl sm:text-2xl tracking-[0.14em] sm:tracking-[0.18em]">
+                ELAANJI
+              </span>
+              <span className="hidden sm:block w-5 h-px bg-gold/50 transition-all duration-300 group-hover:w-8" />
             </Link>
 
             {/* Desktop Nav */}
@@ -95,94 +98,124 @@ export function Navbar() {
                   key={link.label}
                   to={link.to}
                   className={({ isActive }) =>
-                    `text-[13px] tracking-wide uppercase transition-colors duration-300 relative py-1 group ${
-                      isActive ? 'text-oxblood font-medium' : 'text-ink/75 hover:text-ink'
+                    `text-[13px] tracking-wide uppercase transition-colors duration-200 relative py-1 group ${
+                      isActive
+                        ? 'text-oxblood font-medium'
+                        : 'text-ink/75 hover:text-ink'
                     }`
                   }
                 >
-                  {({ isActive }) => (
-                    <>
-                      {link.label}
-                      {/* Underline center-out hover expand */}
-                      <span className={`absolute bottom-0 left-0 right-0 h-px bg-oxblood transform origin-center transition-transform duration-300 ${
-                        isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
-                      }`} />
-                    </>
-                  )}
+                  {link.label}
+                  <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-gold transition-all duration-300 group-hover:w-full" />
                 </NavLink>
               ))}
             </nav>
 
             {/* Icon Actions */}
             <div className="flex items-center gap-1">
-              <button
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full bg-ink text-paper hover:bg-oxblood hover:text-paper transition-all text-[11px] sm:text-xs font-semibold tracking-wider uppercase border border-gold/40 shadow-sm mr-1 shrink-0"
+                  title="Return to Admin Panel"
+                >
+                  <ShieldCheck size={13} className="text-gold" />
+                  <span>Admin</span>
+                </Link>
+              )}
+              <motion.button
+                whileTap={{ scale: 0.92 }}
                 onClick={() => setSearchOpen(!searchOpen)}
                 aria-label="Search"
-                className="p-2.5 text-ink/80 hover:text-oxblood transition-colors cursor-pointer"
+                className="p-2.5 hover:text-oxblood transition-colors"
               >
                 <Search size={20} strokeWidth={1.5} />
-              </button>
-              <Link to="/wishlist" aria-label="Wishlist" className="p-2.5 text-ink/80 hover:text-oxblood transition-colors hidden sm:flex">
-                <Heart size={20} strokeWidth={1.5} />
+              </motion.button>
+              <Link to="/wishlist" aria-label="Wishlist" className="p-2.5 hover:text-oxblood transition-colors hidden sm:flex">
+                <motion.div whileTap={{ scale: 0.88 }}>
+                  <Heart size={20} strokeWidth={1.5} />
+                </motion.div>
               </Link>
               <Link
                 to={isAuthenticated ? '/account' : '/login'}
                 aria-label="Account"
-                className="p-2.5 text-ink/80 hover:text-oxblood transition-colors hidden sm:flex"
+                className="p-2.5 hover:text-oxblood transition-colors hidden sm:flex"
               >
-                <User size={20} strokeWidth={1.5} />
+                <motion.div whileTap={{ scale: 0.88 }}>
+                  <User size={20} strokeWidth={1.5} />
+                </motion.div>
               </Link>
-              <Link to="/cart" aria-label="Cart" className="p-2.5 text-ink/80 hover:text-oxblood transition-colors relative">
-                <ShoppingBag size={20} strokeWidth={1.5} />
-                <AnimatePresence>
-                  {cartCount > 0 && (
-                    <motion.span
-                      key={cartCount}
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                      transition={{ type: 'spring', damping: 15, stiffness: 350 }}
-                      className="absolute top-1 right-0.5 bg-oxblood text-paper text-[10px] font-medium leading-none min-w-[16px] h-4 flex items-center justify-center px-1 rounded-full shadow-sm"
-                    >
-                      {cartCount > 9 ? '9+' : cartCount}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
+              <Link to="/cart" aria-label="Cart" className="p-2.5 hover:text-oxblood transition-colors relative">
+                <motion.div
+                  key={cartCount}
+                  initial={{ scale: 1 }}
+                  animate={{ scale: cartCount > 0 ? [1, 1.25, 1] : 1 }}
+                  transition={luxurySpring}
+                >
+                  <ShoppingBag size={20} strokeWidth={1.5} />
+                </motion.div>
+                {cartCount > 0 && (
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={luxurySpring}
+                    className="absolute top-1 right-0.5 bg-gold-gradient text-ink-deep text-[10px] font-bold leading-none min-w-[16px] h-4 flex items-center justify-center px-1 rounded-full"
+                  >
+                    {cartCount > 9 ? '9+' : cartCount}
+                  </motion.span>
+                )}
               </Link>
             </div>
           </div>
         </div>
 
-        {/* Search Overlay */}
+        {/* Search Overlay — Luxury Full Width Dropdown */}
         <AnimatePresence>
           {searchOpen && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="border-b border-stone/15 bg-paper/98 overflow-hidden shadow-inner"
+              transition={{ duration: 0.3, ease: luxuryEase }}
+              className="border-b border-stone/10 bg-beige/30 overflow-hidden"
             >
-              <form onSubmit={handleSearch} className="mx-auto max-w-7xl px-4 sm:px-6 py-4">
+              <form onSubmit={handleSearch} className="mx-auto max-w-4xl px-4 sm:px-6 py-6">
                 <div className="relative">
-                  <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone/60" strokeWidth={1.5} />
+                  <Search size={22} className="absolute left-0 top-1/2 -translate-y-1/2 text-stone" strokeWidth={1.5} />
                   <input
                     ref={searchInputRef}
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search for sarees, fabrics, occasions…"
-                    className="w-full pl-10 pr-10 py-3 bg-transparent border-b border-stone/30 text-sm
-                               focus:border-ink focus:outline-none transition-colors placeholder:text-stone/50"
+                    placeholder="Search Kanjivaram, Banarasi, Organza, Silk…"
+                    className="w-full pl-9 pr-12 py-3 bg-transparent border-b-2 border-gold/30 font-display text-lg sm:text-xl text-ink
+                               focus:border-gold focus:outline-none transition-colors placeholder:text-stone/50"
                   />
                   <button
                     type="button"
                     onClick={() => { setSearchOpen(false); setSearchQuery('') }}
                     aria-label="Close search"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone hover:text-ink transition-colors"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-stone hover:text-ink transition-colors"
                   >
-                    <X size={16} strokeWidth={1.5} />
+                    <X size={20} strokeWidth={1.5} />
                   </button>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-4 text-xs text-stone">
+                  <span className="uppercase tracking-widest2 text-[10px] self-center mr-2 text-stone/70">Popular:</span>
+                  {['Kanjivaram Silk', 'Bridal Red', 'Banarasi Brocade', 'Organza Designer'].map((term) => (
+                    <button
+                      key={term}
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery(term)
+                        navigate(`/shop?search=${encodeURIComponent(term)}`)
+                        setSearchOpen(false)
+                      }}
+                      className="px-3 py-1 bg-paper border border-stone/20 hover:border-gold hover:text-gold transition-colors rounded-full"
+                    >
+                      {term}
+                    </button>
+                  ))}
                 </div>
               </form>
             </motion.div>
@@ -190,94 +223,95 @@ export function Navbar() {
         </AnimatePresence>
       </header>
 
-      {/* Full-Screen Luxury Magazine Menu Overlay */}
+      {/* Mobile Editorial Full-Screen Menu Takeover */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            variants={menuCurtainVariants}
-            initial="closed"
-            animate="open"
-            exit="closed"
-            className="fixed inset-0 bg-ink text-paper z-50 flex flex-col justify-between p-6 sm:p-12 overflow-y-auto"
+            initial={{ opacity: 0, clipPath: 'circle(0% at top left)' }}
+            animate={{ opacity: 1, clipPath: 'circle(150% at top left)' }}
+            exit={{ opacity: 0, clipPath: 'circle(0% at top left)' }}
+            transition={{ duration: 0.5, ease: luxuryEase }}
+            className="fixed inset-0 bg-ink-gradient text-paper z-50 flex flex-col justify-between p-6 sm:p-10 md:hidden overflow-y-auto"
           >
-            {/* Header in Overlay */}
+            {/* Header */}
             <div className="flex items-center justify-between border-b border-paper/15 pb-6">
-              <Link to="/" onClick={() => setMobileMenuOpen(false)} className="font-display text-2xl tracking-widest uppercase">
-                ELAANJI
-              </Link>
-              <div className="flex items-center gap-6">
-                <span className="text-[10px] uppercase tracking-widest2 text-gold-light hidden sm:inline-block">
-                  Pure Silk &amp; Heritage Couture
-                </span>
-                <button
-                  onClick={() => setMobileMenuOpen(false)}
-                  aria-label="Close menu"
-                  className="p-2 -mr-2 text-paper hover:text-gold-light transition-colors cursor-pointer"
+              <span className="font-display text-2xl tracking-[0.18em] text-paper">ELAANJI</span>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Close menu"
+                className="p-2 -mr-2 text-paper hover:text-gold-soft transition-colors"
+              >
+                <X size={26} strokeWidth={1.5} />
+              </button>
+            </div>
+
+            {/* Background Watermark */}
+            <div className="absolute right-4 bottom-1/4 pointer-events-none select-none opacity-[0.05] text-paper">
+              <p className="font-display text-[160px] leading-none">ए</p>
+            </div>
+
+            {/* Navigation Links Stagger */}
+            <nav className="my-auto py-8 space-y-6" aria-label="Mobile menu links">
+              {navLinks.map((link, idx) => (
+                <motion.div
+                  key={link.label}
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 + idx * 0.06, duration: 0.45, ease: luxuryEase }}
                 >
-                  <X size={26} strokeWidth={1.5} />
-                </button>
-              </div>
-            </div>
-
-            {/* Menu Content Grid */}
-            <div className="grid md:grid-cols-12 gap-8 my-auto py-10 items-center">
-              {/* Navigation Links Column */}
-              <div className="md:col-span-7 space-y-4">
-                <p className="text-[10px] text-paper/40 uppercase tracking-widest2 mb-4 font-medium">
-                  Curated Catalogues
-                </p>
-                {navLinks.map((link, idx) => (
-                  <motion.div
-                    key={link.label}
-                    initial={{ opacity: 0, x: -24 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.15 + idx * 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  <Link
+                    to={link.to}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="group flex flex-col border-b border-paper/10 pb-4"
                   >
-                    <Link
-                      to={link.to}
-                      onMouseEnter={() => setHoveredLinkImage(link.image)}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="group flex items-center gap-4 text-3xl sm:text-5xl font-display text-paper/80 hover:text-paper hover:italic transition-all duration-300"
-                    >
-                      <span className="text-xs font-body text-gold-light opacity-0 group-hover:opacity-100 transition-opacity">0{idx + 1}</span>
-                      <span className="group-hover:translate-x-2 transition-transform duration-300">{link.label}</span>
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-display text-2xl sm:text-3xl text-paper group-hover:text-gold-soft transition-colors">
+                        {link.label}
+                      </span>
+                      <ArrowRight size={18} className="text-paper/40 group-hover:text-gold-soft group-hover:translate-x-1 transition-all" />
+                    </div>
+                    <span className="text-xs text-paper/60 mt-1 tracking-wide">{link.desc}</span>
+                  </Link>
+                </motion.div>
+              ))}
+            </nav>
 
-              {/* Dynamic Editorial Visual Column */}
-              <div className="hidden md:block md:col-span-5 relative aspect-[3/4] overflow-hidden rounded-sm border border-paper/15 shadow-luxury">
-                <AnimatePresence mode="wait">
-                  <motion.img
-                    key={hoveredLinkImage || navLinks[0].image}
-                    src={hoveredLinkImage || navLinks[0].image}
-                    alt="Category Preview"
-                    initial={{ opacity: 0, scale: 1.06 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.96 }}
-                    transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
-                    className="w-full h-full object-cover"
-                  />
-                </AnimatePresence>
-                <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent pointer-events-none" />
-                <div className="absolute bottom-4 left-4 text-paper text-xs tracking-widest2 uppercase">
-                  Handcrafted Heritage
-                </div>
-              </div>
-            </div>
-
-            {/* Footer in Overlay */}
-            <div className="border-t border-paper/15 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-paper/50 gap-4">
-              <div className="flex gap-6">
-                <Link to="/wishlist" onClick={() => setMobileMenuOpen(false)} className="hover:text-paper transition-colors">Wishlist</Link>
-                <Link to={isAuthenticated ? '/account' : '/login'} onClick={() => setMobileMenuOpen(false)} className="hover:text-paper transition-colors">
-                  {isAuthenticated ? 'My Account' : 'Sign In'}
+            {/* Footer Actions */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45, duration: 0.4 }}
+              className="border-t border-paper/15 pt-6 space-y-3"
+            >
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full btn-primary !py-2.5 text-xs text-center flex items-center justify-center gap-2 shadow-gold-glow font-semibold tracking-wider uppercase"
+                >
+                  <ShieldCheck size={16} />
+                  Admin Dashboard
                 </Link>
-                <Link to="/orders" onClick={() => setMobileMenuOpen(false)} className="hover:text-paper transition-colors">Track Order</Link>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                <Link
+                  to="/wishlist"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="btn-secondary-dark !py-2.5 text-xs text-center flex items-center justify-center gap-2"
+                >
+                  <Heart size={16} strokeWidth={1.5} />
+                  Wishlist
+                </Link>
+                <Link
+                  to={isAuthenticated ? '/account' : '/login'}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="btn-primary !py-2.5 text-xs text-center flex items-center justify-center gap-2"
+                >
+                  <User size={16} strokeWidth={1.5} />
+                  {isAuthenticated ? 'Account' : 'Sign In'}
+                </Link>
               </div>
-              <p className="tracking-widest uppercase text-[10px]">© 2026 ELAANJI — All Rights Reserved</p>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

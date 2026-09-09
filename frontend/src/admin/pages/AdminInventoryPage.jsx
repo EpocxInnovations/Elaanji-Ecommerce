@@ -3,7 +3,8 @@ import { useAdminInventory, useAdminInventoryActions } from '../../hooks/admin/u
 
 export function AdminInventoryPage() {
   const [lowStockOnly, setLowStockOnly] = useState(false)
-  const { data: rows, isLoading } = useAdminInventory(lowStockOnly)
+  const { data, isLoading } = useAdminInventory(lowStockOnly)
+  const rows = data?.items
   const { adjustStock } = useAdminInventoryActions()
   const [adjustments, setAdjustments] = useState({})
   const [error, setError] = useState('')
@@ -23,22 +24,22 @@ export function AdminInventoryPage() {
   }
 
   return (
-    <div>
+    <div className="max-w-6xl pb-10">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-display text-3xl">Inventory</h1>
+          <h1 className="font-display text-2xl sm:text-3xl text-ink">Inventory</h1>
         </div>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex items-center gap-2 text-xs sm:text-sm cursor-pointer">
           <input type="checkbox" checked={lowStockOnly} onChange={(e) => setLowStockOnly(e.target.checked)} className="accent-oxblood" />
           Low stock only
         </label>
       </div>
 
-      {error && <p className="text-sm text-oxblood mb-4">{error}</p>}
-      {isLoading && <p className="text-stone text-sm">Loading…</p>}
+      {error && <p className="text-sm text-oxblood mb-4 bg-oxblood/10 p-3 rounded">{error}</p>}
+      {isLoading && <p className="text-stone text-xs sm:text-sm">Loading…</p>}
 
       {!isLoading && (
-        <div className="border border-stone/20 overflow-x-auto">
+        <div className="border border-stone/20 overflow-x-auto rounded-lg bg-paper shadow-sm no-scrollbar">
           <table className="w-full text-sm">
             <thead className="bg-beige text-xs tracking-widest2 uppercase text-stone">
               <tr>

@@ -8,39 +8,40 @@ const STATUSES = ['pending', 'confirmed', 'processing', 'packed', 'shipped', 'ou
 export function AdminOrdersPage() {
   const [status, setStatus] = useState('')
   const [search, setSearch] = useState('')
-  const { data: orders, isLoading } = useAdminOrders({ status: status || undefined, search: search || undefined })
+  const { data, isLoading } = useAdminOrders({ status: status || undefined, search: search || undefined })
+  const orders = data?.items
 
   return (
-    <div>
-      <h1 className="font-display text-3xl mb-6">Orders</h1>
+    <div className="max-w-5xl pb-10">
+      <h1 className="font-display text-2xl sm:text-3xl mb-4 sm:mb-6 text-ink">Orders</h1>
 
-      <div className="flex gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 mb-6">
         <input
           placeholder="Search by order #, name, email, phone…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="input flex-1 max-w-sm"
+          className="input flex-1 max-w-sm text-xs sm:text-sm"
         />
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="input max-w-xs">
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className="input max-w-xs text-xs sm:text-sm capitalize">
           <option value="">All Statuses</option>
           {STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
         </select>
       </div>
 
-      {isLoading && <p className="text-stone text-sm">Loading…</p>}
+      {isLoading && <p className="text-stone text-xs sm:text-sm">Loading…</p>}
 
       {!isLoading && (
-        <div className="border border-stone/20 divide-y divide-stone/10">
-          {orders?.length === 0 && <p className="p-6 text-stone text-sm">No orders found.</p>}
+        <div className="border border-stone/20 divide-y divide-stone/10 rounded-lg overflow-hidden bg-paper shadow-sm">
+          {orders?.length === 0 && <p className="p-6 text-stone text-xs sm:text-sm text-center">No orders found.</p>}
           {orders?.map((o) => (
-            <Link key={o.id} to={`/admin/orders/${o.id}`} className="flex items-center justify-between p-4 hover:bg-beige/40">
-              <div>
-                <p className="text-sm font-medium">{o.order_number}</p>
-                <p className="text-xs text-stone mt-1">{o.customer_name} · {o.customer_email}</p>
+            <Link key={o.id} to={`/admin/orders/${o.id}`} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 hover:bg-beige/40 gap-2 transition-colors">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-ink">{o.order_number}</p>
+                <p className="text-xs text-stone mt-0.5 truncate">{o.customer_name} · {o.customer_email}</p>
               </div>
-              <div className="text-right">
-                <p className="text-sm">{formatINR(o.total_amount)}</p>
-                <p className="text-xs text-stone mt-1">{o.status.replace(/_/g, ' ')} · {o.payment_method.toUpperCase()}</p>
+              <div className="flex items-center justify-between sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-stone/10">
+                <p className="text-sm font-semibold text-ink">{formatINR(o.total_amount)}</p>
+                <p className="text-xs text-stone sm:mt-0.5 capitalize">{o.status.replace(/_/g, ' ')} · {o.payment_method?.toUpperCase()}</p>
               </div>
             </Link>
           ))}

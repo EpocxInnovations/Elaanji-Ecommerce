@@ -1,14 +1,33 @@
 import warnings
 warnings.filterwarnings("ignore", message=".*pkg_resources is deprecated.*")
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
+from sqlalchemy import text
 
 from app.core.config import settings
+from app.core.database import engine, get_db
+from app.core.exceptions import register_exception_handlers
+from app.core.logging import setup_logging, logger
 from app.core.rate_limit import limiter
-from app.api import auth, products, categories, cart, wishlist, addresses, coupons, orders, payments, banners, seo
+from app.middleware.security_headers import SecurityHeadersMiddleware
+
+from app.api import (
+    auth,
+    products,
+    categories,
+    cart,
+    wishlist,
+    addresses,
+    coupons,
+    orders,
+    payments,
+    banners,
+    seo,
+)
 from app.api.admin import (
     dashboard as admin_dashboard,
     products as admin_products,
@@ -26,24 +45,49 @@ from app.api.admin import (
     settings as admin_settings,
 )
 
+# Initialize application logger
+setup_logging(settings.log_level)
+
+openapi_tags = [
+    {"name": "health", "description": "Liveness and database readiness health probes"},
+    {"name": "auth", "description": "User registration, authentication, OAuth, and token rotation"},
+    {"name": "products", "description": "High-performance catalog search, filtering, and product details"},
+    {"name": "categories", "description": "Category navigation and hierarchy"},
+    {"name": "cart", "description": "Server-side price and stock verified shopping cart"},
+    {"name": "orders", "description": "Transactional order checkout, order state machine, and customer order history"},
+    {"name": "payments", "description": "Razorpay payment processing and idempotent verification"},
+    {"name": "coupons", "description": "Coupon validation and discount rules"},
+    {"name": "wishlist", "description": "Customer wishlist operations"},
+    {"name": "addresses", "description": "Customer saved address book"},
+    {"name": "admin-dashboard", "description": "Administrative KPI aggregations"},
+    {"name": "admin-products", "description": "Administrative catalog management"},
+    {"name": "admin-orders", "description": "Administrative order operations"},
+    {"name": "admin-inventory", "description": "Administrative stock management"},
+]
+
 app = FastAPI(
-    title="Elaanji API",
-    description="Backend for the Elaanji saree storefront + admin panel.",
-    version="0.1.0",
+    title="Elaanji Production E-Commerce API",
+    description="Enterprise-grade REST API for Elaanji luxury saree storefront and administration panel.",
+    version="1.0.0",
+    openapi_tags=openapi_tags,
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+register_exception_handlers(app)
 
 
 @app.on_event("startup")
 def on_startup():
+    logger.info("Starting Elaanji API in %s mode...", settings.environment)
     try:
         from scripts.run_migrations import sync_schema_columns, auto_seed_catalog_if_empty
         sync_schema_columns()
         auto_seed_catalog_if_empty()
     except Exception as exc:
-        print(f"Startup migration sync warning: {exc}")
+        logger.warning("Startup migration sync notice: %s", exc)
 
 
 cors_origins = [origin.strip() for origin in settings.frontend_origin.split(",") if origin.strip()]
@@ -52,32 +96,35 @@ if "https://elaanji-website.vercel.app" not in cors_origins:
 if "http://localhost:5173" not in cors_origins:
     cors_origins.append("http://localhost:5173")
 
+# Middleware stack
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Request-ID"],
 )
-
-
-from fastapi.staticfiles import StaticFiles
-import os
-
-UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+app.add_middleware(SecurityHeadersMiddleware)
 
 
 @app.middleware("http")
 async def api_path_rewrite_middleware(request: Request, call_next):
+    """
+    Ensures seamless routing:
+    - Rewrites non-prefixed paths to /api
+    - Maps /api/v1 requests seamlessly
+    """
     path = request.scope.get("path", "")
-    if not path.startswith("/api") and not path.startswith("/uploads") and not path.startswith("/docs") and not path.startswith("/openapi.json") and path != "/":
+    if path.startswith("/api/v1/"):
+        # Normalize /api/v1/... to /api/... internally for registered routers
+        request.scope["path"] = path.replace("/api/v1", "/api", 1)
+    elif not path.startswith("/api") and not path.startswith("/docs") and not path.startswith("/openapi.json") and not path.startswith("/redoc") and path != "/":
         request.scope["path"] = f"/api{path}"
     return await call_next(request)
 
 
-
+# Include Customer Routers
 app.include_router(auth.router)
 app.include_router(products.router)
 app.include_router(categories.router)
@@ -89,6 +136,8 @@ app.include_router(orders.router)
 app.include_router(payments.router)
 app.include_router(banners.router)
 app.include_router(seo.router)
+
+# Include Admin Routers
 app.include_router(admin_dashboard.router)
 app.include_router(admin_products.router)
 app.include_router(admin_categories.router)
@@ -106,5 +155,37 @@ app.include_router(admin_settings.router)
 
 
 @app.get("/api/health", tags=["health"])
-def health_check():
-    return {"status": "ok", "environment": settings.environment}
+@app.get("/api/v1/health", tags=["health"])
+def liveness_check():
+    """Liveness probe to confirm API server process is alive."""
+    return {
+        "status": "healthy",
+        "service": "elaanji-backend",
+        "version": settings.app_version,
+        "environment": settings.environment,
+    }
+
+
+@app.get("/api/health/ready", tags=["health"])
+@app.get("/api/v1/health/ready", tags=["health"])
+def readiness_check():
+    """Readiness probe that pings the database connection."""
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+        return {
+            "status": "ready",
+            "database": "connected",
+            "environment": settings.environment,
+            "version": settings.app_version,
+        }
+    except Exception as exc:
+        logger.error("Readiness check database failure: %s", exc)
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={
+                "status": "unhealthy",
+                "database": "disconnected",
+                "detail": str(exc),
+            },
+        )

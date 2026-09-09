@@ -12,6 +12,7 @@ from app.models.mixins import UUIDPrimaryKeyMixin, TimestampMixin
 
 class UserRole(str, enum.Enum):
     customer = "customer"
+    staff = "staff"
     admin = "admin"
 
 

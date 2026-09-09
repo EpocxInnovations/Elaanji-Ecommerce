@@ -2,7 +2,7 @@ import enum
 import uuid
 from typing import Optional
 
-from sqlalchemy import String, Numeric, Integer, Enum, ForeignKey, Text
+from sqlalchemy import String, Numeric, Integer, Enum, ForeignKey, Text, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -70,6 +70,11 @@ class Order(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     )
     payment: Mapped[Optional["Payment"]] = relationship(back_populates="order", uselist=False)  # noqa: F821
 
+    __table_args__ = (
+        Index("ix_orders_user_created_at", "user_id", "created_at"),
+        Index("ix_orders_status_created_at", "status", "created_at"),
+    )
+
 
 class OrderItem(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "order_items"
@@ -89,6 +94,11 @@ class OrderItem(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     order: Mapped["Order"] = relationship(back_populates="items")
 
+    __table_args__ = (
+        Index("ix_order_items_order_id", "order_id"),
+        Index("ix_order_items_variant_id", "variant_id"),
+    )
+
 
 class OrderStatusHistory(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "order_status_history"
@@ -101,3 +111,7 @@ class OrderStatusHistory(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     )
 
     order: Mapped["Order"] = relationship(back_populates="status_history")
+
+    __table_args__ = (
+        Index("ix_order_status_history_order_created", "order_id", "created_at"),
+    )

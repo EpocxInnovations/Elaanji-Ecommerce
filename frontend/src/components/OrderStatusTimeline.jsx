@@ -21,7 +21,7 @@ export function OrderStatusTimeline({ status, statusHistory = [] }) {
 
   if (isTerminalException) {
     return (
-      <div className="border border-oxblood/20 bg-oxblood/5 p-4">
+      <div className="border border-oxblood/20 bg-oxblood/5 p-5">
         <p className="text-sm font-medium text-oxblood">{LABELS[status]}</p>
         {statusHistory.length > 0 && (
           <p className="text-xs text-stone mt-1">
@@ -44,16 +44,16 @@ export function OrderStatusTimeline({ status, statusHistory = [] }) {
           <div key={step} className="flex gap-3">
             <div className="flex flex-col items-center">
               <div
-                className={`w-6 h-6 flex items-center justify-center shrink-0 transition-colors ${
+                className={`w-7 h-7 flex items-center justify-center shrink-0 transition-all ${
                   isDone
-                    ? 'bg-ink'
+                    ? 'bg-gold-gradient text-ink-deep shadow-gold-glow'
                     : 'border border-stone/30'
-                }`}
+                } ${isCurrent ? 'ring-2 ring-gold/30 ring-offset-2' : ''}`}
               >
-                {isDone && <Check size={12} className="text-paper" strokeWidth={2.5} />}
+                {isDone && <Check size={13} className="text-ink-deep" strokeWidth={2.5} />}
               </div>
               {idx < HAPPY_PATH.length - 1 && (
-                <div className={`w-px flex-1 min-h-[20px] transition-colors ${isDone ? 'bg-ink' : 'bg-stone/20'}`} />
+                <div className={`w-px flex-1 min-h-[20px] transition-colors ${isDone ? 'bg-gold/50' : 'bg-stone/20'}`} />
               )}
             </div>
             <div className="pb-5">

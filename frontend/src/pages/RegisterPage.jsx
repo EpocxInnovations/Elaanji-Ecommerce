@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Feather } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { GoogleAuthButton } from '../components/GoogleAuthButton'
 
@@ -14,6 +14,53 @@ function getPasswordStrength(password) {
   const labels = ['', 'Weak', 'Fair', 'Good', 'Strong']
   const colors = ['', 'bg-oxblood', 'bg-gold', 'bg-gold-light', 'bg-emerald-600']
   return { score, label: labels[score], color: colors[score] }
+}
+
+function BrandPanel({ title, subtitle }) {
+  return (
+    <div className="hidden lg:flex lg:w-[45%] bg-ink-gradient text-paper items-center justify-center p-12 relative overflow-hidden">
+      {/* Ambient glow */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full bg-gold/10 blur-[140px] pointer-events-none" />
+      <div className="absolute inset-y-0 left-10 w-px bg-gradient-to-b from-transparent via-gold/30 to-transparent" />
+      <div className="absolute inset-y-0 right-10 w-px bg-gradient-to-b from-transparent via-gold/30 to-transparent" />
+
+      {/* Watermark */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none select-none opacity-[0.04] text-paper">
+        <p className="font-display text-[200px] leading-none">ए</p>
+      </div>
+
+      <div className="text-center max-w-md relative">
+        <div className="mb-8">
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <span className="w-12 h-px bg-gradient-to-r from-transparent to-gold/60" />
+            <Feather size={16} className="text-gold-soft" />
+            <span className="w-12 h-px bg-gradient-to-l from-transparent to-gold/60" />
+          </div>
+          <h2 className="font-display text-5xl leading-tight mb-4 text-paper">{title}</h2>
+          <p className="text-paper/60 text-[15px] leading-relaxed">
+            {subtitle}
+          </p>
+          <div className="flex items-center justify-center gap-4 mt-8">
+            <span className="w-12 h-px bg-gradient-to-r from-transparent to-gold/60" />
+            <span className="text-gold-soft">✦</span>
+            <span className="w-12 h-px bg-gradient-to-l from-transparent to-gold/60" />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Divider() {
+  return (
+    <div className="flex items-center gap-2.5 sm:gap-4 my-6 w-full">
+      <div className="flex-1 h-px bg-stone/15 min-w-[8px]" />
+      <span className="text-[10px] sm:text-xs text-stone tracking-wider sm:tracking-widest2 uppercase text-center shrink-0">
+        or continue with email
+      </span>
+      <div className="flex-1 h-px bg-stone/15 min-w-[8px]" />
+    </div>
+  )
 }
 
 export function RegisterPage() {
@@ -45,37 +92,24 @@ export function RegisterPage() {
 
   return (
     <div className="min-h-[calc(100vh-200px)] flex">
-      {/* Brand Panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-beige items-center justify-center p-12">
-        <div className="text-center max-w-sm">
-          <div className="mb-8">
-            <div className="w-px h-16 bg-stone/30 mx-auto mb-6" />
-            <h2 className="font-display text-4xl leading-tight mb-3">Join Elaanji</h2>
-            <p className="text-stone text-sm leading-relaxed">
-              Create your account for a personalised shopping experience: track orders, save favourites, and enjoy exclusive offers.
-            </p>
-            <div className="w-px h-16 bg-stone/30 mx-auto mt-6" />
-          </div>
-        </div>
-      </div>
+      <BrandPanel
+        title="Join Elaanji"
+        subtitle="Create your account for a personalised shopping experience: track orders, save favourites, and enjoy exclusive offers."
+      />
 
       {/* Form Panel */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-16">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-12 sm:py-16 bg-paper-gradient w-full overflow-hidden">
         <div className="w-full max-w-sm">
-          <h1 className="font-display text-3xl mb-2">Create Account</h1>
-          <p className="text-stone text-sm mb-8">Join ELAANJI for a personalized shopping experience.</p>
+          <h1 className="font-display text-3xl sm:text-4xl mb-2">Create Account</h1>
+          <p className="text-stone text-sm mb-7 sm:mb-8">Join ELAANJI for a personalized shopping experience.</p>
 
           <GoogleAuthButton onSuccess={() => navigate('/account', { replace: true })} />
 
-          <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 h-px bg-stone/15" />
-            <span className="text-xs text-stone tracking-widest2 uppercase">or</span>
-            <div className="flex-1 h-px bg-stone/15" />
-          </div>
+          <Divider />
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="name" className="block text-xs tracking-widest2 uppercase text-stone mb-2">
+              <label htmlFor="name" className="block text-xs tracking-wider sm:tracking-widest2 uppercase text-stone mb-2">
                 Full Name
               </label>
               <input
@@ -137,7 +171,7 @@ export function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone hover:text-ink transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone hover:text-gold transition-colors cursor-pointer"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff size={16} strokeWidth={1.5} /> : <Eye size={16} strokeWidth={1.5} />}
@@ -163,7 +197,7 @@ export function RegisterPage() {
             </div>
 
             {error && (
-              <p className="text-sm text-oxblood bg-oxblood/5 px-3 py-2">{error}</p>
+              <p className="text-sm text-oxblood bg-oxblood/5 px-3 py-2 border border-oxblood/20">{error}</p>
             )}
 
             <button type="submit" disabled={isSubmitting} className="btn-primary w-full">

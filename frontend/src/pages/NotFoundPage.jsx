@@ -3,10 +3,10 @@ import { ArrowLeft } from 'lucide-react'
 
 export function NotFoundPage() {
   return (
-    <div className="mx-auto max-w-md px-4 sm:px-6 py-32 text-center">
-      <p className="font-display text-8xl text-stone/20 leading-none mb-4">404</p>
-      <h1 className="font-display text-2xl mb-3">Page Not Found</h1>
-      <p className="text-stone text-sm mb-8 max-w-xs mx-auto">
+    <div className="mx-auto max-w-md px-4 sm:px-6 py-32 text-center relative">
+      <p className="font-display text-9xl text-gold-gradient leading-none mb-6">404</p>
+      <h1 className="font-display text-3xl mb-3">Page Not Found</h1>
+      <p className="text-stone text-sm mb-10 max-w-xs mx-auto">
         The page you're looking for doesn't exist or has been moved.
       </p>
       <Link to="/" className="btn-primary">

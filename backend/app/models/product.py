@@ -2,7 +2,7 @@ import enum
 import uuid
 from typing import Optional
 
-from sqlalchemy import String, Text, Numeric, Boolean, Integer, ForeignKey, Enum
+from sqlalchemy import String, Text, Numeric, Boolean, Integer, ForeignKey, Enum, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -140,6 +140,14 @@ class Product(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     images: Mapped[list["ProductImage"]] = relationship(back_populates="product", cascade="all, delete-orphan")
     reviews: Mapped[list["Review"]] = relationship(back_populates="product")  # noqa: F821
 
+    __table_args__ = (
+        Index("ix_products_status_created_at", "status", "created_at"),
+        Index("ix_products_category_status", "category_id", "status"),
+        Index("ix_products_saree_type_status", "saree_type", "status"),
+        Index("ix_products_price", "price"),
+        Index("ix_products_flags", "status", "is_featured", "is_new_arrival", "is_best_seller"),
+    )
+
 
 class ProductVariant(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     """One SKU per color (and, when the blouse is pre-stitched, blouse size).
@@ -170,6 +178,11 @@ class ProductVariant(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     def available_quantity(self) -> int:
         return max(self.stock_quantity - self.reserved_quantity, 0)
 
+    __table_args__ = (
+        Index("ix_product_variants_product_active", "product_id", "is_active"),
+        Index("ix_product_variants_color", "color"),
+    )
+
 
 class ProductImage(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "product_images"
@@ -181,3 +194,7 @@ class ProductImage(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     color: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)  # image tied to a color variant
 
     product: Mapped["Product"] = relationship(back_populates="images")
+
+    __table_args__ = (
+        Index("ix_product_images_product_order", "product_id", "display_order"),
+    )

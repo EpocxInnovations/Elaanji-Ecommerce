@@ -16,7 +16,7 @@ function FilterSection({ title, defaultOpen = true, children }) {
         className="flex items-center justify-between w-full text-left group"
         aria-expanded={open}
       >
-        <h3 className="text-xs tracking-widest2 uppercase text-stone group-hover:text-ink transition-colors">
+        <h3 className="text-xs tracking-widest2 uppercase text-stone group-hover:text-gold transition-colors">
           {title}
         </h3>
         <ChevronDown
@@ -45,13 +45,13 @@ function FilterRadio({ name, value, checked, onChange, label }) {
   return (
     <label className="flex items-center gap-2.5 py-1 cursor-pointer group">
       <span
-        className={`w-4 h-4 border flex items-center justify-center shrink-0 transition-colors duration-150 ${
-          checked ? 'border-ink bg-ink' : 'border-stone/40 group-hover:border-stone'
+        className={`w-4 h-4 border flex items-center justify-center shrink-0 transition-all duration-150 ${
+          checked ? 'border-gold bg-gold-gradient shadow-gold-glow' : 'border-stone/40 group-hover:border-gold'
         }`}
       >
         {checked && (
           <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-            <path d="M1 4L3.5 6.5L9 1" stroke="#FAF9F6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M1 4L3.5 6.5L9 1" stroke="#14120F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         )}
       </span>
@@ -62,7 +62,7 @@ function FilterRadio({ name, value, checked, onChange, label }) {
         onChange={onChange}
         className="sr-only"
       />
-      <span className={`text-sm transition-colors ${checked ? 'text-ink' : 'text-ink/70 group-hover:text-ink'}`}>
+      <span className={`text-sm transition-colors ${checked ? 'text-ink font-medium' : 'text-ink/70 group-hover:text-ink'}`}>
         {label}
       </span>
     </label>
@@ -82,7 +82,7 @@ export function ShopFilters({ filters, onChange }) {
         <h2 className="text-xs tracking-widest2 uppercase text-ink">
           Filters
           {activeCount > 0 && (
-            <span className="ml-2 inline-flex items-center justify-center bg-ink text-paper text-[10px] w-4 h-4 leading-none">
+            <span className="ml-2 inline-flex items-center justify-center bg-gold-gradient text-ink-deep text-[10px] w-4 h-4 leading-none font-bold">
               {activeCount}
             </span>
           )}
@@ -90,7 +90,7 @@ export function ShopFilters({ filters, onChange }) {
         {activeCount > 0 && (
           <button
             onClick={() => onChange({})}
-            className="text-[11px] tracking-widest2 uppercase text-oxblood hover:text-ink transition-colors"
+            className="text-[11px] tracking-widest2 uppercase text-oxblood hover:text-gold transition-colors cursor-pointer"
           >
             Clear
           </button>
@@ -149,13 +149,13 @@ export function ShopFilters({ filters, onChange }) {
 
       <label className="flex items-center gap-2.5 cursor-pointer group mt-1">
         <span
-          className={`w-4 h-4 border flex items-center justify-center shrink-0 transition-colors duration-150 ${
-            filters.in_stock_only ? 'border-ink bg-ink' : 'border-stone/40 group-hover:border-stone'
+          className={`w-4 h-4 border flex items-center justify-center shrink-0 transition-all duration-150 ${
+            filters.in_stock_only ? 'border-gold bg-gold-gradient shadow-gold-glow' : 'border-stone/40 group-hover:border-gold'
           }`}
         >
           {filters.in_stock_only && (
             <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-              <path d="M1 4L3.5 6.5L9 1" stroke="#FAF9F6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M1 4L3.5 6.5L9 1" stroke="#14120F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           )}
         </span>

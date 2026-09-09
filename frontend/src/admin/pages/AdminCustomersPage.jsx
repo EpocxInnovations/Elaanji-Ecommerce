@@ -4,24 +4,25 @@ import { formatINR } from '../../utils/format'
 
 export function AdminCustomersPage() {
   const [search, setSearch] = useState('')
-  const { data: customers, isLoading } = useAdminCustomers(search || undefined)
+  const { data, isLoading } = useAdminCustomers(search || undefined)
+  const customers = data?.items
   const { setStatus } = useAdminCustomerActions()
 
   return (
-    <div>
-      <h1 className="font-display text-3xl mb-6">Customers</h1>
+    <div className="max-w-6xl pb-10">
+      <h1 className="font-display text-2xl sm:text-3xl mb-4 sm:mb-6 text-ink">Customers</h1>
 
       <input
         placeholder="Search by name, email, phone…"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="input max-w-sm mb-6"
+        className="input max-w-sm mb-6 text-xs sm:text-sm"
       />
 
-      {isLoading && <p className="text-stone text-sm">Loading…</p>}
+      {isLoading && <p className="text-stone text-xs sm:text-sm">Loading…</p>}
 
       {!isLoading && (
-        <div className="border border-stone/20 overflow-x-auto">
+        <div className="border border-stone/20 overflow-x-auto rounded-lg bg-paper shadow-sm no-scrollbar">
           <table className="w-full text-sm">
             <thead className="bg-beige text-xs tracking-widest2 uppercase text-stone">
               <tr>
