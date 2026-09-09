@@ -30,14 +30,25 @@ function SkeletonCard() {
 }
 
 export function ShopPage() {
-  const [searchParams] = useSearchParams()
-  const [filters, setFilters] = useState({
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [filters, setFilters] = useState(() => ({
+    search: searchParams.get('search') || undefined,
     saree_type: searchParams.get('saree_type') || undefined,
     filter: searchParams.get('filter') || undefined,
-  })
+  }))
   const [sort, setSort] = useState('featured')
   const [page, setPage] = useState(1)
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+
+  // Sync state when URL search parameters change (e.g. searching from header)
+  useEffect(() => {
+    setFilters({
+      search: searchParams.get('search') || undefined,
+      saree_type: searchParams.get('saree_type') || undefined,
+      filter: searchParams.get('filter') || undefined,
+    })
+    setPage(1)
+  }, [searchParams])
 
   const queryParams = useMemo(
     () => ({ ...filters, sort, page, page_size: 12 }),
@@ -53,7 +64,9 @@ export function ShopPage() {
   }, [isError, error])
 
   useDocumentMeta({
-    title: 'Shop All Sarees | Elaanji',
+    title: filters.search
+      ? `Search Results for "${filters.search}" | Elaanji`
+      : 'Shop All Sarees | Elaanji',
     description: 'Browse handpicked Kanjivaram, Banarasi, and designer sarees curated for every occasion.',
   })
 
@@ -62,8 +75,16 @@ export function ShopPage() {
     setPage(1)
   }
 
-  const activeFilterLabel = filters.saree_type
-    ? 'Sarees'
+  const clearSearch = () => {
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.delete('search')
+    setSearchParams(nextParams)
+  }
+
+  const activeFilterLabel = filters.search
+    ? `Search Results: "${filters.search}"`
+    : filters.saree_type
+    ? `${filters.saree_type.charAt(0).toUpperCase() + filters.saree_type.slice(1)} Sarees`
     : 'All Sarees'
 
   return (
@@ -71,22 +92,31 @@ export function ShopPage() {
       {/* Breadcrumb */}
       <Breadcrumbs items={[{ label: 'Shop' }]} className="mb-8" />
 
-
       {/* Header */}
-      <div className="mb-10 flex items-end justify-between">
+      <div className="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <p className="label-eyebrow mb-3 flex items-center gap-3">
             <span className="w-8 h-px bg-gold/60" />
-            The Collection
+            {filters.search ? 'Search Atelier' : 'The Collection'}
           </p>
-          <h1 className="font-display text-4xl md:text-5xl text-ink">
-            {activeFilterLabel}
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl text-ink flex items-center gap-3 flex-wrap">
+            <span>{activeFilterLabel}</span>
+            {filters.search && (
+              <button
+                onClick={clearSearch}
+                className="inline-flex items-center gap-1.5 px-3 py-1 bg-paper border border-oxblood/30 text-oxblood hover:bg-oxblood hover:text-paper transition-all rounded-full text-xs font-sans font-medium"
+              >
+                <span>Clear Search</span>
+                <X size={14} />
+              </button>
+            )}
           </h1>
         </div>
-        <p className="hidden sm:block text-sm text-stone pb-2">
-          {isLoading ? 'Loading…' : `${data?.total ?? 0} sarees`}
+        <p className="text-sm text-stone pb-1">
+          {isLoading ? 'Loading…' : `${data?.total ?? 0} sarees found`}
         </p>
       </div>
+
 
       <div className="flex flex-col md:flex-row gap-8 md:gap-12">
         {/* Mobile Filter Toggle */}

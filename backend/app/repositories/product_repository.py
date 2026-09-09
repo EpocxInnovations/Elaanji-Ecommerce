@@ -85,7 +85,20 @@ class ProductRepository:
 
         if search:
             like = f"%{search}%"
-            base_query = base_query.where(or_(Product.name.ilike(like), Product.tags.ilike(like)))
+            search_conditions = [
+                Product.name.ilike(like),
+                Product.description.ilike(like),
+                Product.tags.ilike(like),
+                Product.border_type.ilike(like),
+                Product.work_type.ilike(like),
+            ]
+            saree_type_matches = [
+                st for st in SareeType if search.lower() in st.value.lower() or st.value.lower() in search.lower()
+            ]
+            if saree_type_matches:
+                search_conditions.append(Product.saree_type.in_(saree_type_matches))
+            base_query = base_query.where(or_(*search_conditions))
+
 
         if category_slug:
             base_query = base_query.join(Product.category).where(Product.category.has(slug=category_slug))

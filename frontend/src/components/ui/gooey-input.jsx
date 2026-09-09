@@ -117,6 +117,19 @@ export function GooeyInput({
     if (!disabled) setExpanded(true);
   }, [disabled, setExpanded]);
 
+  const handleBubbleClick = useCallback((e) => {
+    e.stopPropagation();
+    if (!disabled) {
+      if (!isExpanded) {
+        setExpanded(true);
+      } else if (searchText && searchText.trim() && onSubmit) {
+        onSubmit(searchText);
+      } else {
+        inputRef.current?.focus();
+      }
+    }
+  }, [disabled, isExpanded, searchText, onSubmit, setExpanded, inputRef]);
+
   const handleChange = useCallback((e) => {
     setSearchText(e.target.value);
     onChange?.(e);
@@ -183,9 +196,12 @@ export function GooeyInput({
           </button>
         </motion.div>
 
-        <motion.div
+        <motion.button
+          type="button"
+          onClick={handleBubbleClick}
+          aria-label="Submit search"
           className={cn(
-            "absolute inset-y-0 left-0 my-auto flex w-10 h-10 items-center justify-center transform-gpu",
+            "absolute inset-y-0 left-0 my-auto flex w-10 h-10 items-center justify-center transform-gpu cursor-pointer outline-none",
             classNames?.bubble
           )}
           variants={iconBubbleVariants}
@@ -194,16 +210,17 @@ export function GooeyInput({
           transition={transition}>
           <div
             className={cn(
-              "flex w-10 h-10 items-center justify-center rounded-full",
+              "flex w-10 h-10 items-center justify-center rounded-full hover:scale-105 transition-transform",
               surfaceClass,
               classNames?.bubbleSurface
             )}>
             <SearchIcon layoutId={iconLayoutId} />
           </div>
-        </motion.div>
+        </motion.button>
       </div>
     </div>
   );
+
 }
 
 
