@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAdminProduct, useAdminProductActions } from '../../hooks/admin/useAdminProducts'
 import { useAdminCategories } from '../../hooks/admin/useAdminCategories'
