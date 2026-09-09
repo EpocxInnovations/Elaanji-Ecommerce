@@ -1,11 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { SlidersHorizontal, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useProducts } from '../hooks/useProducts'
 import { ProductCard } from '../components/ProductCard'
 import { ShopFilters } from '../components/ShopFilters'
-import { fadeUpLuxury, staggerContainer } from '../utils/motion'
+import { Breadcrumbs } from '../components/Breadcrumbs'
+import { useDocumentMeta } from '../hooks/useDocumentMeta'
+
 
 const SORT_OPTIONS = [
   { value: 'featured', label: 'Featured' },
@@ -42,68 +44,61 @@ export function ShopPage() {
     [filters, sort, page]
   )
 
-  const { data, isLoading, isError } = useProducts(queryParams)
+  const { data, isLoading, isError, error } = useProducts(queryParams)
+
+  useEffect(() => {
+    if (isError && error) {
+      console.error('Failed to load shop products:', error)
+    }
+  }, [isError, error])
+
+  useDocumentMeta({
+    title: 'Shop All Sarees | Elaanji',
+    description: 'Browse handpicked Kanjivaram, Banarasi, and designer sarees curated for every occasion.',
+  })
 
   const handleFilterChange = (next) => {
     setFilters(next)
     setPage(1)
   }
 
+  const activeFilterLabel = filters.saree_type
+    ? 'Sarees'
+    : 'All Sarees'
+
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 md:py-12">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 md:py-14">
       {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="mb-6">
-        <ol className="flex items-center gap-1.5 text-xs text-stone">
-          <li><Link to="/" className="hover:text-ink transition-colors">Home</Link></li>
-          <li className="text-stone/40">/</li>
-          <li className="text-ink">Shop</li>
-        </ol>
-      </nav>
+      <Breadcrumbs items={[{ label: 'Shop' }]} className="mb-8" />
 
-      {/* Editorial Header */}
-      <div className="mb-10 border-b border-stone/15 pb-8">
-        <p className="label-eyebrow text-oxblood mb-2 font-medium">Full Catalogue</p>
-        <h1 className="font-display text-4xl sm:text-5xl text-ink">The Saree Catalogue</h1>
-        <p className="text-stone text-sm max-w-lg mt-3 font-light leading-relaxed">
-          Handloom Kanjivaram silk, Banarasi brocades, and modern designer creations. Crafted by master artisans across India.
-        </p>
 
-        {/* Weave Quick Filter Pills */}
-        <div className="flex flex-wrap items-center gap-2 mt-6">
-          {[
-            { label: 'All Weaves', value: undefined },
-            { label: 'Kanjivaram', value: 'kanjivaram' },
-            { label: 'Banarasi', value: 'banarasi' },
-            { label: 'Designer', value: 'designer' },
-            { label: 'Silk', value: 'silk' },
-            { label: 'Cotton', value: 'cotton' },
-          ].map((type) => (
-            <button
-              key={type.label}
-              onClick={() => handleFilterChange({ ...filters, saree_type: type.value })}
-              className={`px-4 py-1.5 text-xs tracking-widest2 uppercase transition-all duration-300 ${
-                filters.saree_type === type.value || (!filters.saree_type && type.value === undefined)
-                  ? 'bg-oxblood text-paper font-medium shadow-sm'
-                  : 'bg-beige/60 text-stone hover:bg-beige hover:text-ink'
-              }`}
-            >
-              {type.label}
-            </button>
-          ))}
+      {/* Header */}
+      <div className="mb-10 flex items-end justify-between">
+        <div>
+          <p className="label-eyebrow mb-3 flex items-center gap-3">
+            <span className="w-8 h-px bg-gold/60" />
+            The Collection
+          </p>
+          <h1 className="font-display text-4xl md:text-5xl text-ink">
+            {activeFilterLabel}
+          </h1>
         </div>
+        <p className="hidden sm:block text-sm text-stone pb-2">
+          {isLoading ? 'Loading…' : `${data?.total ?? 0} sarees`}
+        </p>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8 md:gap-10">
+      <div className="flex flex-col md:flex-row gap-8 md:gap-12">
         {/* Mobile Filter Toggle */}
         <div className="md:hidden flex items-center justify-between gap-3">
           <button
             onClick={() => setMobileFiltersOpen(true)}
-            className="flex items-center gap-2 border border-stone/30 px-4 py-2.5 text-sm hover:border-ink transition-colors"
+            className="flex items-center gap-2 border border-stone/30 px-4 py-2.5 text-sm hover:border-gold transition-colors cursor-pointer"
           >
             <SlidersHorizontal size={16} strokeWidth={1.5} />
             Filters
             {Object.values(filters).filter(Boolean).length > 0 && (
-              <span className="bg-ink text-paper text-[10px] w-4 h-4 flex items-center justify-center">
+              <span className="bg-gold-gradient text-ink-deep text-[10px] w-4 h-4 flex items-center justify-center font-bold">
                 {Object.values(filters).filter(Boolean).length}
               </span>
             )}
@@ -111,7 +106,7 @@ export function ShopPage() {
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value)}
-            className="border border-stone/30 px-3 py-2.5 text-sm bg-transparent cursor-pointer"
+            className="border border-stone/30 px-3 py-2.5 text-sm bg-transparent cursor-pointer focus:border-gold focus:outline-none"
           >
             {SORT_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -136,15 +131,15 @@ export function ShopPage() {
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ type: 'tween', duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
-                className="fixed inset-y-0 left-0 w-[280px] bg-paper z-50 flex flex-col shadow-overlay md:hidden"
+                className="fixed inset-y-0 left-0 w-[85vw] max-w-[320px] bg-paper z-50 flex flex-col shadow-overlay md:hidden"
               >
-                <div className="flex items-center justify-between px-5 py-4 border-b border-stone/10">
-                  <span className="text-xs tracking-widest2 uppercase">Filters</span>
-                  <button onClick={() => setMobileFiltersOpen(false)} className="p-2 -mr-2 hover:text-oxblood transition-colors">
+                <div className="flex items-center justify-between px-5 py-5 border-b border-stone/10">
+                  <span className="text-xs tracking-widest2 uppercase text-ink font-medium">Filters</span>
+                  <button onClick={() => setMobileFiltersOpen(false)} className="p-2 -mr-2 hover:text-gold transition-colors cursor-pointer">
                     <X size={18} strokeWidth={1.5} />
                   </button>
                 </div>
-                <div className="flex-1 overflow-y-auto px-5 py-5">
+                <div className="flex-1 overflow-y-auto px-5 py-6">
                   <ShopFilters filters={filters} onChange={handleFilterChange} />
                 </div>
                 <div className="border-t border-stone/10 px-5 py-4">
@@ -165,20 +160,21 @@ export function ShopPage() {
         {/* Product Grid */}
         <div className="flex-1 min-w-0">
           {/* Toolbar */}
-          <div className="hidden md:flex items-center justify-between mb-6">
-            <p className="text-sm text-stone">
-              {isLoading ? 'Loading…' : `${data?.total ?? 0} sarees`}
-            </p>
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-              className="border border-stone/30 px-3 py-2 text-sm bg-transparent cursor-pointer
-                         hover:border-ink transition-colors"
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+          <div className="hidden md:flex items-center justify-between mb-8">
+            <p className="text-sm text-stone">{data?.total ?? 0} sarees</p>
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] tracking-widest2 uppercase text-stone">Sort by</span>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                className="border border-stone/30 px-3 py-2 text-sm bg-transparent cursor-pointer
+                           hover:border-gold focus:border-gold focus:outline-none transition-colors"
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Loading */}
@@ -201,8 +197,8 @@ export function ShopPage() {
           {/* Empty */}
           {!isLoading && !isError && data?.items?.length === 0 && (
             <div className="text-center py-16">
-              <p className="font-display text-xl mb-2">No sarees found</p>
-              <p className="text-stone text-sm mb-4">Try adjusting your filters or browse our full collection.</p>
+              <p className="font-display text-2xl mb-3">No sarees found</p>
+              <p className="text-stone text-sm mb-6">Try adjusting your filters or browse our full collection.</p>
               <button onClick={() => handleFilterChange({})} className="btn-secondary text-xs">
                 Clear All Filters
               </button>
@@ -213,28 +209,39 @@ export function ShopPage() {
           {!isLoading && data?.items?.length > 0 && (
             <>
               <motion.div
-                key={`${sort}-${page}-${JSON.stringify(filters)}`}
                 className="grid grid-cols-2 md:grid-cols-3 gap-x-4 sm:gap-x-6 gap-y-10"
                 initial="hidden"
                 animate="visible"
-                variants={staggerContainer(0.05)}
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: { staggerChildren: 0.06 },
+                  },
+                }}
               >
                 {data.items.map((product, i) => (
-                  <motion.div key={product.id} variants={fadeUpLuxury} custom={i}>
-                    <ProductCard product={product} />
+                  <motion.div
+                    key={product.id}
+                    variants={{
+                      hidden: { opacity: 0, y: 16 },
+                      visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+                    }}
+                  >
+                    <ProductCard product={product} priority={i < 6} />
                   </motion.div>
                 ))}
               </motion.div>
 
               {/* Pagination */}
               {data.total_pages > 1 && (
-                <div className="flex items-center justify-center gap-1 mt-12">
+                <div className="flex items-center justify-center gap-2 mt-14">
                   <button
                     onClick={() => setPage(Math.max(1, page - 1))}
                     disabled={page === 1}
                     aria-label="Previous page"
-                    className="w-9 h-9 flex items-center justify-center border border-stone/30
-                               hover:border-ink transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                    className="w-10 h-10 flex items-center justify-center border border-stone/30
+                               hover:border-gold hover:text-gold transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
                   >
                     <ChevronLeft size={16} strokeWidth={1.5} />
                   </button>
@@ -244,10 +251,10 @@ export function ShopPage() {
                       onClick={() => setPage(i + 1)}
                       aria-label={`Page ${i + 1}`}
                       aria-current={page === i + 1 ? 'page' : undefined}
-                      className={`w-9 h-9 text-sm transition-colors ${
+                      className={`w-10 h-10 text-sm transition-all cursor-pointer ${
                         page === i + 1
-                          ? 'bg-ink text-paper'
-                          : 'border border-stone/30 hover:border-ink text-ink/70 hover:text-ink'
+                          ? 'bg-gold-gradient text-ink-deep font-bold shadow-gold-glow'
+                          : 'border border-stone/30 hover:border-gold text-ink/70 hover:text-ink'
                       }`}
                     >
                       {i + 1}
@@ -257,8 +264,8 @@ export function ShopPage() {
                     onClick={() => setPage(Math.min(data.total_pages, page + 1))}
                     disabled={page === data.total_pages}
                     aria-label="Next page"
-                    className="w-9 h-9 flex items-center justify-center border border-stone/30
-                               hover:border-ink transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                    className="w-10 h-10 flex items-center justify-center border border-stone/30
+                               hover:border-gold hover:text-gold transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
                   >
                     <ChevronRight size={16} strokeWidth={1.5} />
                   </button>

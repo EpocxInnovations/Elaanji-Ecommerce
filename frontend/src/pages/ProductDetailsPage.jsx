@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { Heart, ShieldCheck, Truck, RotateCcw, ChevronDown, Minus, Plus } from 'lucide-react'
+import { Heart, ShieldCheck, Truck, RotateCcw, ChevronDown, Minus, Plus, Check } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useProduct, useRelatedProducts } from '../hooks/useProducts'
 import { useCart } from '../hooks/useCart'
@@ -9,7 +9,9 @@ import { useAuth } from '../context/AuthContext'
 import { useDocumentMeta, useProductStructuredData } from '../hooks/useDocumentMeta'
 import { useToast } from '../context/ToastContext'
 import { ProductCard } from '../components/ProductCard'
+import { Breadcrumbs } from '../components/Breadcrumbs'
 import { formatINR, SAREE_TYPE_LABELS, OCCASION_LABELS } from '../utils/format'
+
 
 function AccordionSection({ title, defaultOpen = false, children }) {
   const [open, setOpen] = useState(defaultOpen)
@@ -17,11 +19,11 @@ function AccordionSection({ title, defaultOpen = false, children }) {
     <div className="border-b border-stone/15">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-between w-full py-4 text-left group"
+        className="flex items-center justify-between w-full py-4 text-left group cursor-pointer"
         aria-expanded={open}
       >
-        <span className="text-sm font-medium group-hover:text-oxblood transition-colors">{title}</span>
-        <ChevronDown size={16} className={`text-stone transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        <span className="text-xs tracking-widest2 uppercase text-ink font-medium group-hover:text-gold transition-colors">{title}</span>
+        <ChevronDown size={16} className={`text-stone transition-transform duration-200 ${open ? 'rotate-180 text-gold' : ''}`} />
       </button>
       <AnimatePresence initial={false}>
         {open && (
@@ -45,7 +47,7 @@ function DetailRow({ label, value }) {
   return (
     <div className="flex justify-between py-1.5 text-sm">
       <span className="text-stone">{label}</span>
-      <span className="text-ink text-right">{value}</span>
+      <span className="text-ink text-right font-medium">{value}</span>
     </div>
   )
 }
@@ -130,8 +132,8 @@ export function ProductDetailsPage() {
   if (!product) {
     return (
       <div className="mx-auto max-w-2xl px-4 sm:px-6 py-24 text-center">
-        <h1 className="font-display text-3xl mb-3">Saree Not Found</h1>
-        <p className="text-stone text-sm mb-6">This product may no longer be available.</p>
+        <h1 className="font-display text-4xl mb-3">Saree Not Found</h1>
+        <p className="text-stone text-sm mb-8">This product may no longer be available.</p>
         <Link to="/shop" className="btn-primary">Browse Collection</Link>
       </div>
     )
@@ -177,52 +179,46 @@ export function ProductDetailsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 md:py-10">
-      {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="mb-6">
-        <ol className="flex items-center gap-1.5 text-xs text-stone">
-          <li><Link to="/" className="hover:text-ink transition-colors">Home</Link></li>
-          <li className="text-stone/40">/</li>
-          <li><Link to="/shop" className="hover:text-ink transition-colors">Shop</Link></li>
-          <li className="text-stone/40">/</li>
-          <li className="text-ink line-clamp-1">{product.name}</li>
-        </ol>
-      </nav>
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 md:py-12">
+      {/* Breadcrumbs */}
+      <Breadcrumbs items={[{ label: 'Shop', href: '/shop' }, { label: product.name }]} className="mb-8" />
 
-      <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+
+      <div className="grid md:grid-cols-2 gap-10 md:gap-14">
         {/* ─── Gallery ─── */}
         <div>
-          <div className="aspect-[3/4] bg-beige mb-3 overflow-hidden group cursor-crosshair relative">
-            <AnimatePresence mode="wait">
-              {displayImage && (
-                <motion.img
-                  layoutId={`product-image-${product.id}`}
-                  key={displayImage}
-                  src={displayImage}
-                  alt={product.name}
-                  initial={{ opacity: 0, scale: 1.03 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
-                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                />
-              )}
-            </AnimatePresence>
+          <div className="aspect-[3/4] bg-beige mb-4 overflow-hidden group cursor-crosshair relative shadow-card">
+            {displayImage && (
+              <motion.img
+                key={displayImage}
+                layoutId={displayImage === colorImages[0]?.image_url ? `product-image-${product.id}` : undefined}
+                src={displayImage}
+                alt={product.name}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.35, ease: 'easeOut' }}
+                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                referrerPolicy="no-referrer"
+              />
+            )}
+            {/* Gold hairline */}
+            <div className="absolute inset-0 border border-gold/15 pointer-events-none" />
           </div>
           {colorImages.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="flex gap-2.5 overflow-x-auto pb-1">
               {colorImages.map((img) => (
-                <button
+                <motion.button
+                  whileTap={{ scale: 0.94 }}
                   key={img.id}
                   onClick={() => setActiveImage(img.image_url)}
-                  className={`w-16 h-20 shrink-0 overflow-hidden transition-all duration-300 ${
+                  className={`w-16 h-20 shrink-0 overflow-hidden transition-all duration-200 cursor-pointer ${
                     displayImage === img.image_url
-                      ? 'ring-2 ring-oxblood ring-offset-2 opacity-100 scale-105'
+                      ? 'ring-2 ring-gold ring-offset-2 opacity-100'
                       : 'opacity-60 hover:opacity-100'
                   }`}
                 >
-                  <img src={img.image_url} alt="" className="w-full h-full object-cover" />
-                </button>
+                  <img src={img.image_url} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                </motion.button>
               ))}
             </div>
           )}
@@ -231,19 +227,19 @@ export function ProductDetailsPage() {
         {/* ─── Product Info ─── */}
         <div className="md:py-2">
           {product.saree_type && (
-            <p className="label-eyebrow text-oxblood mb-2 font-medium">
+            <p className="label-eyebrow-gold mb-3">
               {SAREE_TYPE_LABELS[product.saree_type] || product.saree_type}
             </p>
           )}
-          <h1 className="font-display text-2xl sm:text-4xl mb-4 leading-snug text-ink">{product.name}</h1>
+          <h1 className="font-display text-3xl sm:text-4xl mb-5 leading-snug">{product.name}</h1>
 
           {/* Price */}
-          <div className="flex items-baseline gap-3 mb-6">
-            <span className="text-2xl sm:text-3xl font-medium tracking-tight text-ink">{formatINR(price)}</span>
+          <div className="flex items-baseline gap-3 mb-7">
+            <span className="text-3xl font-semibold tracking-tight">{formatINR(price)}</span>
             {hasDiscount && (
               <>
-                <span className="text-sm text-stone line-through font-normal">{formatINR(product.price)}</span>
-                <span className="text-xs bg-oxblood/10 text-oxblood px-2 py-0.5 tracking-wide uppercase font-medium">
+                <span className="text-sm text-stone line-through">{formatINR(product.price)}</span>
+                <span className="text-xs bg-oxblood/10 text-oxblood px-2.5 py-0.5 tracking-wide uppercase font-semibold">
                   {Math.round(((product.price - product.discount_price) / product.price) * 100)}% off
                 </span>
               </>
@@ -252,29 +248,35 @@ export function ProductDetailsPage() {
 
           {/* Color Selector */}
           {colors.length > 0 && (
-            <div className="mb-6">
-              <p className="text-xs tracking-widest2 uppercase text-stone mb-2.5 font-medium">
-                Color: <span className="text-ink normal-case tracking-normal font-semibold">{activeColor}</span>
+            <div className="mb-7">
+              <p className="text-xs tracking-widest2 uppercase text-stone mb-3">
+                Color: <span className="text-ink normal-case tracking-normal font-medium">{activeColor}</span>
               </p>
               <div className="flex gap-3">
                 {colors.map(([color, hex]) => (
                   <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                     key={color}
                     onClick={() => {
                       setSelectedColor(color)
                       setSelectedBlouseSize(null)
                       setActiveImage(null)
                     }}
-                    whileHover={{ scale: 1.12 }}
-                    whileTap={{ scale: 0.9 }}
                     aria-label={color}
-                    className={`w-9 h-9 rounded-full border-2 transition-all duration-200 shadow-sm ${
+                    className={`relative w-10 h-10 rounded-full border-2 transition-all duration-200 cursor-pointer ${
                       activeColor === color
-                        ? 'border-oxblood ring-2 ring-oxblood/30 ring-offset-2 scale-110'
-                        : 'border-paper hover:border-stone/40'
+                        ? 'border-gold scale-110 shadow-gold-glow'
+                        : 'border-transparent hover:border-stone/40'
                     }`}
                     style={{ backgroundColor: hex || '#ccc' }}
-                  />
+                  >
+                    {activeColor === color && (
+                      <span className="absolute inset-0 flex items-center justify-center">
+                        <Check size={14} className="text-paper drop-shadow" strokeWidth={2.5} />
+                      </span>
+                    )}
+                  </motion.button>
                 ))}
               </div>
             </div>
@@ -282,21 +284,22 @@ export function ProductDetailsPage() {
 
           {/* Blouse Size */}
           {blouseSizes.length > 0 && (
-            <div className="mb-6">
-              <p className="text-xs tracking-widest2 uppercase text-stone mb-2.5">Blouse Size</p>
-              <div className="flex flex-wrap gap-2">
+            <div className="mb-7">
+              <p className="text-xs tracking-widest2 uppercase text-stone mb-3">Blouse Size</p>
+              <div className="flex flex-wrap gap-2.5">
                 {blouseSizes.map((size) => (
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
                     key={size}
                     onClick={() => setSelectedBlouseSize(size)}
-                    className={`px-4 py-2 text-sm border transition-all duration-150 ${
+                    className={`px-5 py-2.5 text-sm border transition-all duration-150 cursor-pointer ${
                       selectedBlouseSize === size
-                        ? 'bg-ink text-paper border-ink'
-                        : 'border-stone/30 hover:border-ink'
+                        ? 'bg-gold-gradient text-ink-deep border-transparent font-semibold shadow-gold-glow'
+                        : 'border-stone/30 hover:border-gold'
                     }`}
                   >
                     {size}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
@@ -304,7 +307,7 @@ export function ProductDetailsPage() {
 
           {/* Stock */}
           {matchingVariant && (
-            <p className={`text-xs mb-4 ${inStock ? 'text-stone' : 'text-oxblood'}`}>
+            <p className={`text-xs mb-5 ${inStock ? 'text-stone' : 'text-oxblood'}`}>
               {inStock
                 ? matchingVariant.available_quantity <= 5
                   ? `Only ${matchingVariant.available_quantity} left`
@@ -314,37 +317,39 @@ export function ProductDetailsPage() {
           )}
 
           {/* Quantity + Add to Cart */}
-          <div className="flex gap-3 mb-4">
-            <div className="flex items-center border border-stone/30">
-              <button
+          <div className="flex gap-2 sm:gap-3 mb-5">
+            <div className="flex items-center border border-stone/30 shrink-0">
+              <motion.button
+                whileTap={{ scale: 0.88 }}
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="px-3 py-3 hover:bg-beige/50 transition-colors"
+                className="px-2.5 py-2.5 sm:px-3.5 sm:py-3.5 hover:bg-beige/50 transition-colors cursor-pointer"
                 aria-label="Decrease quantity"
               >
-                <Minus size={14} strokeWidth={1.5} />
-              </button>
-              <span className="px-3 text-sm min-w-[32px] text-center">{quantity}</span>
-              <button
+                <Minus size={13} strokeWidth={1.5} />
+              </motion.button>
+              <span className="px-2.5 sm:px-4 text-xs sm:text-sm min-w-[24px] sm:min-w-[32px] text-center font-medium">{quantity}</span>
+              <motion.button
+                whileTap={{ scale: 0.88 }}
                 onClick={() => setQuantity(quantity + 1)}
-                className="px-3 py-3 hover:bg-beige/50 transition-colors"
+                className="px-2.5 py-2.5 sm:px-3.5 sm:py-3.5 hover:bg-beige/50 transition-colors cursor-pointer"
                 aria-label="Increase quantity"
               >
-                <Plus size={14} strokeWidth={1.5} />
-              </button>
+                <Plus size={13} strokeWidth={1.5} />
+              </motion.button>
             </div>
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={handleAddToCart}
               disabled={addItem.isPending || (matchingVariant && !inStock)}
-              className="btn-primary flex-1"
+              className="btn-primary flex-1 !px-4 sm:!px-8 cursor-pointer text-center"
             >
-              {addItem.isPending ? 'Adding to Bag…' : 'Add to Shopping Bag'}
+              {addItem.isPending ? 'Adding…' : 'Add to Cart'}
             </motion.button>
             <motion.button
-              whileTap={{ scale: 0.92 }}
+              whileTap={{ scale: 0.9 }}
               onClick={handleWishlistToggle}
               aria-label="Toggle wishlist"
-              className="btn-secondary !px-4"
+              className="btn-secondary !px-3 sm:!px-4 cursor-pointer shrink-0"
             >
               <Heart size={18} strokeWidth={1.5} className={wishlisted ? 'fill-oxblood text-oxblood' : ''} />
             </motion.button>
@@ -353,17 +358,17 @@ export function ProductDetailsPage() {
           {feedback && <p className="text-sm text-oxblood mb-4">{feedback}</p>}
 
           {/* Trust Signals */}
-          <div className="flex flex-wrap gap-x-6 gap-y-2 py-4 border-t border-stone/10 mb-2">
-            <div className="flex items-center gap-1.5 text-xs text-stone">
-              <ShieldCheck size={14} strokeWidth={1.5} />
+          <div className="flex flex-wrap gap-x-8 gap-y-2 py-5 border-t border-stone/10 mb-2">
+            <div className="flex items-center gap-2 text-xs text-stone">
+              <ShieldCheck size={15} strokeWidth={1.5} className="text-gold" />
               <span>Secure Payment</span>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-stone">
-              <Truck size={14} strokeWidth={1.5} />
+            <div className="flex items-center gap-2 text-xs text-stone">
+              <Truck size={15} strokeWidth={1.5} className="text-gold" />
               <span>Free Shipping ₹999+</span>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-stone">
-              <RotateCcw size={14} strokeWidth={1.5} />
+            <div className="flex items-center gap-2 text-xs text-stone">
+              <RotateCcw size={15} strokeWidth={1.5} className="text-gold" />
               <span>Easy Returns</span>
             </div>
           </div>
@@ -406,16 +411,16 @@ export function ProductDetailsPage() {
       </div>
 
       {/* ─── Mobile Sticky CTA ─── */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-paper border-t border-stone/10 px-4 py-3 z-30 shadow-luxury">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-paper/95 backdrop-blur-xl border-t border-stone/15 px-4 py-3 z-30 shadow-luxury">
         <div className="flex items-center gap-3">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{product.name}</p>
-            <p className="text-sm tracking-tight">{formatINR(price)}</p>
+            <p className="text-sm tracking-tight font-semibold">{formatINR(price)}</p>
           </div>
           <button
             onClick={handleAddToCart}
             disabled={addItem.isPending || (matchingVariant && !inStock)}
-            className="btn-primary text-xs !py-2.5 whitespace-nowrap"
+            className="btn-primary text-xs !py-2.5 !px-5 whitespace-nowrap shrink-0"
           >
             {addItem.isPending ? 'Adding…' : 'Add to Cart'}
           </button>
@@ -424,8 +429,16 @@ export function ProductDetailsPage() {
 
       {/* ─── Related Products ─── */}
       {related?.length > 0 && (
-        <section className="mt-16 md:mt-24 pb-20 md:pb-0">
-          <h2 className="font-display text-2xl mb-8">You May Also Like</h2>
+        <section className="mt-16 md:mt-28 pb-28 md:pb-0">
+          <div className="flex items-center justify-between mb-10">
+            <div>
+              <p className="label-eyebrow mb-3 flex items-center gap-3">
+                <span className="w-8 h-px bg-gold/60" />
+                Complete The Look
+              </p>
+              <h2 className="font-display text-3xl sm:text-4xl text-ink">You May Also Like</h2>
+            </div>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-8">
             {related.map((p) => (
               <ProductCard key={p.id} product={p} />

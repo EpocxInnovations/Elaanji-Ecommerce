@@ -1,10 +1,15 @@
 import { Link } from 'react-router-dom'
-import { Minus, Plus, X, ShoppingBag, ArrowRight } from 'lucide-react'
+import { Minus, Plus, X, ShoppingBag, ArrowRight, Truck } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useCart } from '../hooks/useCart'
 import { formatINR } from '../utils/format'
+import { luxuryEase } from '../utils/motion'
+import { Breadcrumbs } from '../components/Breadcrumbs'
 
 export function CartPage() {
   const { cart, isLoading, updateItem, removeItem } = useCart()
+
+
 
   if (isLoading) {
     return (
@@ -35,10 +40,10 @@ export function CartPage() {
   if (activeItems.length === 0 && savedItems.length === 0) {
     return (
       <div className="mx-auto max-w-md px-4 sm:px-6 py-24 text-center">
-        <div className="w-16 h-16 mx-auto mb-5 border border-stone/20 flex items-center justify-center">
-          <ShoppingBag size={24} className="text-stone" strokeWidth={1} />
+        <div className="w-20 h-20 mx-auto mb-6 frame-gold flex items-center justify-center">
+          <ShoppingBag size={28} className="text-gold" strokeWidth={1} />
         </div>
-        <h1 className="font-display text-3xl mb-3">Your Cart is Empty</h1>
+        <h1 className="font-display text-4xl mb-3">Your Cart is Empty</h1>
         <p className="text-stone text-sm mb-8 max-w-xs mx-auto">
           Browse our collection to find your perfect saree.
         </p>
@@ -56,69 +61,85 @@ export function CartPage() {
   const progressPercent = remaining > 0 ? Math.min(((threshold - remaining) / threshold) * 100, 100) : 100
 
   return (
-    <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10 md:py-12">
-      <h1 className="font-display text-3xl mb-8">Shopping Cart</h1>
+    <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10 md:py-14">
+      <Breadcrumbs items={[{ label: 'Cart' }]} className="mb-6" />
+
+      <div className="mb-10">
+
+        <p className="label-eyebrow mb-3 flex items-center gap-3">
+          <span className="w-8 h-px bg-gold/60" />
+          Your Selection
+        </p>
+        <h1 className="font-display text-4xl md:text-5xl">Shopping Cart</h1>
+      </div>
 
       {/* Free Shipping Banner */}
-      <div className="bg-beige/60 px-4 py-3 mb-8">
+      <div className="glass-light px-5 py-4 mb-10">
         {remaining > 0 ? (
           <>
-            <p className="text-sm mb-2">
-              Add {formatINR(remaining)} more for{' '}
-              <span className="font-medium">FREE SHIPPING</span>
+            <p className="text-sm mb-3 flex items-center gap-2">
+              <Truck size={16} strokeWidth={1.5} className="text-gold" />
+              Add <span className="font-semibold text-oxblood">{formatINR(remaining)}</span> more for{' '}
+              <span className="font-semibold uppercase tracking-wide">Free Shipping</span>
             </p>
-            <div className="h-1 bg-stone/15 overflow-hidden">
-              <div
-                className="h-full bg-ink transition-all duration-500 ease-out"
-                style={{ width: `${progressPercent}%` }}
+            <div className="h-1.5 bg-stone/15 overflow-hidden rounded-full">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${progressPercent}%` }}
+                transition={{ duration: 0.6, ease: luxuryEase }}
+                className="h-full bg-gold-gradient rounded-full"
               />
             </div>
           </>
         ) : (
           <p className="text-sm font-medium flex items-center gap-2">
-            <span className="inline-flex items-center justify-center w-5 h-5 bg-ink text-paper text-xs">✓</span>
-            You've unlocked FREE SHIPPING
+            <span className="inline-flex items-center justify-center w-6 h-6 bg-gold-gradient text-ink-deep text-xs font-bold">✓</span>
+            You've unlocked <span className="uppercase tracking-wide font-semibold">Free Shipping</span>
           </p>
         )}
       </div>
 
       <div className="grid md:grid-cols-3 gap-8 md:gap-10">
         <div className="md:col-span-2 space-y-0">
-          {activeItems.map((item) => (
-            <CartRow key={item.id} item={item} updateItem={updateItem} removeItem={removeItem} />
-          ))}
+          <AnimatePresence initial={false}>
+            {activeItems.map((item) => (
+              <CartRow key={item.id} item={item} updateItem={updateItem} removeItem={removeItem} />
+            ))}
+          </AnimatePresence>
 
           {savedItems.length > 0 && (
             <div className="pt-8 mt-2">
-              <h3 className="text-xs tracking-widest2 uppercase text-stone mb-4">Saved for Later</h3>
-              {savedItems.map((item) => (
-                <CartRow key={item.id} item={item} updateItem={updateItem} removeItem={removeItem} saved />
-              ))}
+              <h3 className="label-eyebrow mb-4">Saved for Later</h3>
+              <AnimatePresence initial={false}>
+                {savedItems.map((item) => (
+                  <CartRow key={item.id} item={item} updateItem={updateItem} removeItem={removeItem} saved />
+                ))}
+              </AnimatePresence>
             </div>
           )}
         </div>
 
         {/* Order Summary */}
-        <div className="border border-stone/15 p-5 sm:p-6 h-fit sticky top-24">
-          <h2 className="text-xs tracking-widest2 uppercase mb-5">Order Summary</h2>
-          <div className="space-y-2.5 text-sm">
+        <div className="border border-gold/20 p-6 sm:p-7 h-fit sticky top-24 bg-paper/60 backdrop-blur-xl shadow-card">
+          <h2 className="text-xs tracking-widest2 uppercase text-ink font-medium mb-6">Order Summary</h2>
+          <div className="space-y-3 text-sm">
             <div className="flex justify-between">
               <span className="text-stone">Subtotal</span>
-              <span>{formatINR(cart.subtotal)}</span>
+              <span className="font-medium">{formatINR(cart.subtotal)}</span>
             </div>
             <div className="text-stone text-xs">
               Shipping &amp; tax calculated at checkout
             </div>
           </div>
-          <div className="border-t border-stone/15 pt-4 mt-4 flex justify-between font-medium">
-            <span>Total</span>
-            <span>{formatINR(cart.subtotal)}</span>
+          <div className="border-t border-gold/15 pt-5 mt-5 flex justify-between items-baseline">
+            <span className="text-sm font-medium">Total</span>
+            <span className="text-2xl font-semibold tracking-tight">{formatINR(cart.subtotal)}</span>
           </div>
-          <Link to="/checkout" className="btn-primary w-full mt-5 text-center">
+          <Link to="/checkout" className="btn-primary w-full mt-6 text-center">
             Checkout
             <ArrowRight size={16} strokeWidth={1.5} />
           </Link>
-          <Link to="/shop" className="block text-center text-xs text-stone mt-3 hover:text-ink transition-colors">
+          <Link to="/shop" className="block text-center text-xs text-stone mt-4 hover:text-gold transition-colors">
             Continue Shopping
           </Link>
         </div>
@@ -129,36 +150,46 @@ export function CartPage() {
 
 function CartRow({ item, updateItem, removeItem, saved }) {
   return (
-    <div className="flex gap-4 border-b border-stone/10 py-5 first:pt-0">
-      <Link to={`/products/${item.product_slug}`} className="w-20 sm:w-24 h-28 sm:h-32 bg-beige shrink-0 overflow-hidden">
+    <motion.div
+      initial={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0, overflow: 'hidden', paddingBottom: 0, paddingTop: 0 }}
+      transition={{ duration: 0.3, ease: luxuryEase }}
+      className="flex gap-3 sm:gap-5 border-b border-stone/10 py-5 sm:py-6 first:pt-0"
+    >
+      <Link to={`/products/${item.product_slug}`} className="w-16 sm:w-24 h-24 sm:h-32 bg-beige shrink-0 overflow-hidden shadow-card">
         {item.product_image_url && (
-          <img src={item.product_image_url} alt={item.product_name} className="w-full h-full object-cover" />
+          <img
+            src={item.product_image_url}
+            alt={item.product_name}
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
         )}
       </Link>
       <div className="flex-1 min-w-0">
-        <Link to={`/products/${item.product_slug}`} className="text-sm font-medium hover:text-oxblood transition-colors line-clamp-1">
+        <Link to={`/products/${item.product_slug}`} className="font-display text-sm sm:text-base hover:text-oxblood transition-colors line-clamp-1">
           {item.product_name}
         </Link>
-        <p className="text-xs text-stone mt-1">
+        <p className="text-xs text-stone mt-0.5 sm:mt-1">
           {item.variant.color}
           {item.variant.blouse_size ? ` · Blouse: ${item.variant.blouse_size}` : ''}
         </p>
-        <p className="text-sm font-medium mt-2">{formatINR(item.unit_price)}</p>
+        <p className="text-sm font-semibold mt-1.5 sm:mt-2">{formatINR(item.unit_price)}</p>
 
         {!saved && (
-          <div className="flex items-center gap-4 mt-3">
+          <div className="flex items-center flex-wrap gap-2.5 sm:gap-4 mt-2.5 sm:mt-3">
             <div className="flex items-center border border-stone/30">
               <button
                 onClick={() => updateItem.mutate({ itemId: item.id, payload: { quantity: Math.max(1, item.quantity - 1) } })}
-                className="px-2 py-1.5 hover:bg-beige/50 transition-colors"
+                className="px-2 py-1.5 sm:px-2.5 sm:py-2 hover:bg-beige/50 transition-colors cursor-pointer"
                 aria-label="Decrease quantity"
               >
                 <Minus size={12} strokeWidth={1.5} />
               </button>
-              <span className="px-3 text-sm min-w-[28px] text-center">{item.quantity}</span>
+              <span className="px-2.5 sm:px-3 text-xs sm:text-sm min-w-[24px] sm:min-w-[28px] text-center font-medium">{item.quantity}</span>
               <button
                 onClick={() => updateItem.mutate({ itemId: item.id, payload: { quantity: item.quantity + 1 } })}
-                className="px-2 py-1.5 hover:bg-beige/50 transition-colors"
+                className="px-2 py-1.5 sm:px-2.5 sm:py-2 hover:bg-beige/50 transition-colors cursor-pointer"
                 aria-label="Increase quantity"
               >
                 <Plus size={12} strokeWidth={1.5} />
@@ -166,7 +197,7 @@ function CartRow({ item, updateItem, removeItem, saved }) {
             </div>
             <button
               onClick={() => updateItem.mutate({ itemId: item.id, payload: { saved_for_later: true } })}
-              className="text-xs text-stone underline underline-offset-4 hover:text-ink transition-colors"
+              className="text-xs text-stone underline underline-offset-4 hover:text-gold transition-colors cursor-pointer"
             >
               Save for later
             </button>
@@ -176,7 +207,7 @@ function CartRow({ item, updateItem, removeItem, saved }) {
         {saved && (
           <button
             onClick={() => updateItem.mutate({ itemId: item.id, payload: { saved_for_later: false } })}
-            className="text-xs text-oxblood underline underline-offset-4 mt-3 hover:text-ink transition-colors"
+            className="text-xs text-oxblood underline underline-offset-4 mt-3 hover:text-gold transition-colors cursor-pointer"
           >
             Move to cart
           </button>
@@ -185,10 +216,10 @@ function CartRow({ item, updateItem, removeItem, saved }) {
       <button
         onClick={() => removeItem.mutate(item.id)}
         aria-label="Remove item"
-        className="text-stone hover:text-oxblood h-fit p-1 transition-colors"
+        className="text-stone hover:text-oxblood h-fit p-1 transition-colors cursor-pointer"
       >
         <X size={16} strokeWidth={1.5} />
       </button>
-    </div>
+    </motion.div>
   )
 }
