@@ -1,167 +1,215 @@
-import React, { useState, useRef, useId } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Search, X, Sparkles } from 'lucide-react'
+"use client";
+import { useState, useRef, useEffect, useId, useMemo, useCallback } from "react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+
+function GooeyFilter({
+  filterId,
+  blur
+}) {
+  return (
+    <svg className="absolute hidden h-0 w-0" aria-hidden>
+      <defs>
+        <filter id={filterId} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation={blur} result="blur" />
+          <feColorMatrix
+            in="blur"
+            type="matrix"
+            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10"
+            result="goo" />
+          <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+        </filter>
+      </defs>
+    </svg>
+  );
+}
+
+function SearchIcon({
+  layoutId
+}) {
+  return (
+    <motion.svg
+      layoutId={layoutId}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      className="w-4 h-4 shrink-0">
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </motion.svg>
+  );
+}
+
+const transition = {
+  duration: 0.4,
+  type: "spring",
+  bounce: 0.25,
+};
+
+const iconBubbleVariants = {
+  collapsed: { scale: 0, opacity: 0 },
+  expanded: { scale: 1, opacity: 1 },
+};
 
 export function GooeyInput({
-  placeholder = 'Search Kanjivaram, Banarasi, Silk...',
-  value: externalValue,
-  onChange: externalOnChange,
+  placeholder = "Type to search...",
+  className,
+  classNames,
+  collapsedWidth = 115,
+  expandedWidth = 240,
+  expandedOffset = 50,
+  gooeyBlur = 5,
+  value: valueProp,
+  defaultValue = "",
+  onChange,
+  onValueChange,
+  onOpenChange,
+  disabled = false,
   onSubmit,
-  className = '',
-  inputRef,
-  ...props
+  inputRef: externalInputRef
 }) {
-  const [internalValue, setInternalValue] = useState('')
-  const [isFocused, setIsFocused] = useState(false)
-  const filterId = useId().replace(/:/g, '')
+  const reactId = useId();
+  const safeId = reactId.replace(/:/g, "");
+  const filterId = `gooey-filter-${safeId}`;
+  const iconLayoutId = `gooey-input-icon-${safeId}`;
+  const inputLayoutId = `gooey-input-field-${safeId}`;
 
-  const isControlled = externalValue !== undefined
-  const value = isControlled ? externalValue : internalValue
+  const internalInputRef = useRef(null);
+  const inputRef = externalInputRef || internalInputRef;
+  const prevExpandedRef = useRef(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
 
-  const handleChange = (e) => {
+  const isControlled = valueProp !== undefined;
+  const searchText = isControlled ? valueProp : uncontrolledValue;
+
+  const setSearchText = useCallback((next) => {
     if (!isControlled) {
-      setInternalValue(e.target.value)
+      setUncontrolledValue(next);
     }
-    if (externalOnChange) {
-      externalOnChange(e)
-    }
-  }
+    onValueChange?.(next);
+  }, [isControlled, onValueChange]);
 
-  const handleClear = () => {
-    if (isControlled && externalOnChange) {
-      const syntheticEvent = { target: { value: '' } }
-      externalOnChange(syntheticEvent)
-    } else {
-      setInternalValue('')
-    }
-  }
+  const setExpanded = useCallback((next) => {
+    setIsExpanded(next);
+    onOpenChange?.(next);
+  }, [onOpenChange]);
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault()
-    if (onSubmit) {
-      onSubmit(value)
+  useEffect(() => {
+    if (isExpanded) {
+      inputRef.current?.focus();
+    } else if (prevExpandedRef.current) {
+      setSearchText("");
     }
-  }
+    prevExpandedRef.current = isExpanded;
+  }, [isExpanded, setSearchText, inputRef]);
+
+  const buttonVariants = useMemo(() => ({
+    collapsed: { width: collapsedWidth, marginLeft: 0 },
+    expanded: { width: expandedWidth, marginLeft: expandedOffset },
+  }), [collapsedWidth, expandedWidth, expandedOffset]);
+
+  const handleExpand = useCallback(() => {
+    if (!disabled) setExpanded(true);
+  }, [disabled, setExpanded]);
+
+  const handleChange = useCallback((e) => {
+    setSearchText(e.target.value);
+    onChange?.(e);
+  }, [setSearchText, onChange]);
+
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Enter' && onSubmit) {
+      e.preventDefault();
+      onSubmit(searchText);
+    }
+  }, [onSubmit, searchText]);
+
+  const handleBlur = useCallback(() => {
+    if (!searchText) setExpanded(false);
+  }, [searchText, setExpanded]);
+
+  const surfaceClass =
+    "bg-ink text-paper border border-gold/40 shadow-luxury";
 
   return (
-    <div className={`relative w-full max-w-xl mx-auto ${className}`}>
-      {/* SVG Gooey Filter Definition */}
-      <svg className="hidden">
-        <defs>
-          <filter id={`gooey-${filterId}`}>
-            <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
-            <feColorMatrix
-              in="blur"
-              mode="matrix"
-              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
-              result="goo"
-            />
-            <feComposite in="SourceGraphic" in2="goo" operator="atop" />
-          </filter>
-        </defs>
-      </svg>
+    <div
+      className={cn("relative flex items-center justify-center", className, classNames?.root)}>
+      <GooeyFilter filterId={filterId} blur={gooeyBlur} />
+      <div
+        className={cn("relative flex h-10 items-center justify-center", classNames?.filterWrap)}
+        style={{ filter: `url(#${filterId})` }}>
+        <motion.div
+          className={cn("flex h-10 items-center justify-center", classNames?.buttonRow)}
+          variants={buttonVariants}
+          initial="collapsed"
+          animate={isExpanded ? "expanded" : "collapsed"}
+          transition={transition}>
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={handleExpand}
+            className={cn(
+              "flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-full px-4 text-sm font-medium outline-none transition-[color,box-shadow] focus-visible:ring-2 focus-visible:ring-gold disabled:pointer-events-none disabled:opacity-50",
+              surfaceClass,
+              classNames?.trigger
+            )}>
+            {!isExpanded ? (
+              <SearchIcon layoutId={iconLayoutId} />
+            ) : null}
+            <motion.input
+              layoutId={inputLayoutId}
+              ref={inputRef}
+              type="search"
+              enterKeyHint="search"
+              autoComplete="off"
+              value={searchText}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              onBlur={handleBlur}
+              disabled={disabled || !isExpanded}
+              placeholder={placeholder}
+              className={cn(
+                "h-full min-w-0 flex-1 bg-transparent text-sm text-paper outline-none font-display",
+                isExpanded
+                  ? "placeholder:text-paper/60"
+                  : "pointer-events-none placeholder:text-paper/80",
+                classNames?.input
+              )} />
+          </button>
+        </motion.div>
 
-      <form onSubmit={handleFormSubmit} className="relative flex items-center w-full">
-        {/* Gooey Liquid Background Blobs */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ filter: `url(#gooey-${filterId})` }}
-        >
-          <motion.div
-            animate={{
-              scale: isFocused ? [1, 1.04, 1] : 1,
-              borderRadius: isFocused ? '24px' : '16px',
-            }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full h-full bg-gradient-to-r from-gold/20 via-oxblood/15 to-gold/20 border border-gold/40 shadow-card"
-          />
-
-          {/* Morphing Gooey Orbs */}
-          <motion.div
-            animate={
-              isFocused
-                ? {
-                    x: [0, 40, -30, 0],
-                    y: [0, -8, 6, 0],
-                    scale: [1, 1.3, 0.9, 1],
-                  }
-                : { x: 0, y: 0, scale: 1 }
-            }
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute -top-1 -left-2 w-8 h-8 rounded-full bg-gold/50 blur-xs"
-          />
-          <motion.div
-            animate={
-              isFocused
-                ? {
-                    x: [0, -50, 35, 0],
-                    y: [0, 10, -8, 0],
-                    scale: [1, 1.2, 0.85, 1],
-                  }
-                : { x: 0, y: 0, scale: 1 }
-            }
-            transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute -bottom-1 -right-2 w-10 h-10 rounded-full bg-oxblood/40 blur-xs"
-          />
-        </div>
-
-        {/* Input Container */}
-        <div className="relative z-10 flex items-center w-full px-4 py-2.5 bg-paper/90 backdrop-blur-md rounded-2xl border border-gold/30 shadow-luxury transition-all duration-300 focus-within:border-gold focus-within:ring-2 focus-within:ring-gold/30">
-          <motion.div
-            animate={{ rotate: isFocused ? 90 : 0, scale: isFocused ? 1.15 : 1 }}
-            transition={{ duration: 0.3 }}
-            className="text-oxblood mr-3 shrink-0"
-          >
-            <Search size={20} strokeWidth={1.8} />
-          </motion.div>
-
-          <input
-            ref={inputRef}
-            type="text"
-            value={value}
-            onChange={handleChange}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            placeholder={placeholder}
-            className="w-full bg-transparent text-ink font-display text-base sm:text-lg placeholder:text-stone/50 outline-none border-none py-1"
-            {...props}
-          />
-
-          <AnimatePresence>
-            {value && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.7 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.7 }}
-                onClick={handleClear}
-                type="button"
-                className="p-1 text-stone hover:text-oxblood transition-colors rounded-full hover:bg-gold/10 ml-1 shrink-0"
-              >
-                <X size={18} strokeWidth={2} />
-              </motion.button>
-            )}
-          </AnimatePresence>
-
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            type="submit"
-            className="ml-2 px-4 py-1.5 bg-gold-gradient text-ink-deep text-xs font-bold uppercase tracking-widest2 rounded-xl shadow-gold-glow hover:shadow-luxury transition-all shrink-0 flex items-center gap-1.5"
-          >
-            <span>Search</span>
-            <Sparkles size={13} className="text-oxblood" />
-          </motion.button>
-        </div>
-      </form>
+        <motion.div
+          className={cn(
+            "absolute top-1/2 left-0 flex w-10 h-10 -translate-y-1/2 items-center justify-center",
+            classNames?.bubble
+          )}
+          variants={iconBubbleVariants}
+          initial="collapsed"
+          animate={isExpanded ? "expanded" : "collapsed"}
+          transition={transition}>
+          <div
+            className={cn(
+              "flex w-10 h-10 items-center justify-center rounded-full",
+              surfaceClass,
+              classNames?.bubbleSurface
+            )}>
+            <SearchIcon layoutId={iconLayoutId} />
+          </div>
+        </motion.div>
+      </div>
     </div>
-  )
+  );
 }
 
 export function GooeyInputDemo() {
   return (
-    <div className="flex flex-col items-center justify-center p-8 bg-paper-warm rounded-2xl border border-gold/20 shadow-card my-6">
-      <p className="label-eyebrow mb-4 text-center">Interactive Search Atelier</p>
+    <div className="flex h-40 w-full items-center justify-center">
       <GooeyInput placeholder="Search..." />
     </div>
-  )
+  );
 }
