@@ -51,9 +51,10 @@ export function ShopPage() {
   }, [searchParams])
 
   const queryParams = useMemo(
-    () => ({ ...filters, sort, page, page_size: 12 }),
+    () => ({ ...filters, sort, page, page_size: 9 }),
     [filters, sort, page]
   )
+
 
   const { data, isLoading, isError, error } = useProducts(queryParams)
 
@@ -210,11 +211,12 @@ export function ShopPage() {
           {/* Loading */}
           {isLoading && (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 sm:gap-x-6 gap-y-8">
-              {Array.from({ length: 6 }).map((_, i) => (
+              {Array.from({ length: 9 }).map((_, i) => (
                 <SkeletonCard key={i} />
               ))}
             </div>
           )}
+
 
           {/* Error */}
           {isError && (
