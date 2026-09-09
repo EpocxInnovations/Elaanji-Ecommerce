@@ -2,7 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { Search, Heart, User, ShoppingBag, Menu, X, ArrowRight, ShieldCheck } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { GooeyInput } from '@/components/ui/gooey-input'
 import { useAuth } from '../context/AuthContext'
+
 import { useCart } from '../hooks/useCart'
 import { luxuryEase, luxurySpring } from '../utils/motion'
 
@@ -171,37 +173,31 @@ export function Navbar() {
 
         {/* Search Overlay — Luxury Full Width Dropdown */}
         <AnimatePresence>
+
           {searchOpen && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: luxuryEase }}
-              className="border-b border-stone/10 bg-beige/30 overflow-hidden"
+              className="border-b border-stone/10 bg-beige/40 backdrop-blur-xl overflow-hidden py-6"
             >
-              <form onSubmit={handleSearch} className="mx-auto max-w-4xl px-4 sm:px-6 py-6">
-                <div className="relative">
-                  <Search size={22} className="absolute left-0 top-1/2 -translate-y-1/2 text-stone" strokeWidth={1.5} />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search Kanjivaram, Banarasi, Organza, Silk…"
-                    className="w-full pl-9 pr-12 py-3 bg-transparent border-b-2 border-gold/30 font-display text-lg sm:text-xl text-ink
-                               focus:border-gold focus:outline-none transition-colors placeholder:text-stone/50"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => { setSearchOpen(false); setSearchQuery('') }}
-                    aria-label="Close search"
-                    className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-stone hover:text-ink transition-colors"
-                  >
-                    <X size={20} strokeWidth={1.5} />
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-2 mt-4 text-xs text-stone">
-                  <span className="uppercase tracking-widest2 text-[10px] self-center mr-2 text-stone/70">Popular:</span>
+              <div className="mx-auto max-w-3xl px-4 sm:px-6">
+                <GooeyInput
+                  inputRef={searchInputRef}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onSubmit={(query) => {
+                    if (query.trim()) {
+                      navigate(`/shop?search=${encodeURIComponent(query.trim())}`)
+                      setSearchOpen(false)
+                      setSearchQuery('')
+                    }
+                  }}
+                  placeholder="Search Kanjivaram, Banarasi, Organza, Silk..."
+                />
+                <div className="flex flex-wrap items-center justify-center gap-2 mt-4 text-xs text-stone">
+                  <span className="uppercase tracking-widest2 text-[10px] self-center mr-1 text-stone/70">Popular:</span>
                   {['Kanjivaram Silk', 'Bridal Red', 'Banarasi Brocade', 'Organza Designer'].map((term) => (
                     <button
                       key={term}
@@ -211,17 +207,25 @@ export function Navbar() {
                         navigate(`/shop?search=${encodeURIComponent(term)}`)
                         setSearchOpen(false)
                       }}
-                      className="px-3 py-1 bg-paper border border-stone/20 hover:border-gold hover:text-gold transition-colors rounded-full"
+                      className="px-3 py-1 bg-paper border border-stone/20 hover:border-gold hover:text-gold transition-colors rounded-full text-[11px]"
                     >
                       {term}
                     </button>
                   ))}
+                  <button
+                    type="button"
+                    onClick={() => { setSearchOpen(false); setSearchQuery('') }}
+                    className="ml-auto text-xs text-oxblood hover:underline uppercase tracking-wider font-semibold flex items-center gap-1"
+                  >
+                    <X size={14} /> Close
+                  </button>
                 </div>
-              </form>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </header>
+
 
       {/* Mobile Editorial Full-Screen Menu Takeover */}
       <AnimatePresence>
