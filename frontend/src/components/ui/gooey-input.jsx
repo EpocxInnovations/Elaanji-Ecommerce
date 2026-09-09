@@ -59,9 +59,9 @@ export function GooeyInput({
   placeholder = "Type to search...",
   className,
   classNames,
-  collapsedWidth = 115,
-  expandedWidth = 240,
-  expandedOffset = 50,
+  collapsedWidth = 120,
+  expandedWidth = 320,
+  expandedOffset = 48,
   gooeyBlur = 5,
   value: valueProp,
   defaultValue = "",
@@ -138,7 +138,7 @@ export function GooeyInput({
 
   return (
     <div
-      className={cn("relative flex items-center justify-center", className, classNames?.root)}>
+      className={cn("relative flex items-center justify-center py-2", className, classNames?.root)}>
       <GooeyFilter filterId={filterId} blur={gooeyBlur} />
       <div
         className={cn("relative flex h-10 items-center justify-center", classNames?.filterWrap)}
@@ -185,7 +185,7 @@ export function GooeyInput({
 
         <motion.div
           className={cn(
-            "absolute top-1/2 left-0 flex w-10 h-10 -translate-y-1/2 items-center justify-center",
+            "absolute inset-y-0 left-0 my-auto flex w-10 h-10 items-center justify-center transform-gpu",
             classNames?.bubble
           )}
           variants={iconBubbleVariants}
@@ -205,6 +205,7 @@ export function GooeyInput({
     </div>
   );
 }
+
 
 export function GooeyInputDemo() {
   return (
