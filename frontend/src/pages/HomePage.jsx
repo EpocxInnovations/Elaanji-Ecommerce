@@ -8,7 +8,9 @@ import { ProductCard } from '../components/ProductCard'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 import { SplitText } from '../components/SplitText'
 import { TextRevealCard } from '../components/TextRevealCard'
+import { HeroReveal } from '../components/HeroReveal'
 import { HeroBannerSlideshow, PromotionBannerSlideshow } from '../components/BannerSlideshow'
+
 
 import { luxuryEase, staggerGridContainer, staggerGridItem } from '../utils/motion'
 
@@ -134,154 +136,17 @@ export function HomePage() {
           <div className="absolute -top-24 -right-24 w-[480px] h-[480px] rounded-full bg-gold/15 blur-[140px] pointer-events-none animate-glow-pulse" />
           <div className="absolute bottom-0 -left-24 w-[420px] h-[420px] rounded-full bg-oxblood/10 blur-[140px] pointer-events-none" />
 
-          {/* Full-Width Edge-to-Edge Banner Slideshow (Fade Out Effect, Zero Buffers) */}
+          {/* Full-Width Edge-to-Edge Banner Slideshow */}
           <div className="w-full">
             <HeroBannerSlideshow banners={heroBanners} />
           </div>
 
-          {/* Brand Statement with Interactive Text Reveal Transition */}
-          <div className="w-full mx-auto max-w-5xl px-4 sm:px-6 py-10 md:py-14 text-center">
-            <motion.p
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="label-eyebrow mb-4 flex items-center justify-center gap-3"
-            >
-              <span className="w-8 h-px bg-gold/60" />
-              <Feather size={14} className="text-oxblood" />
-              Handloom &amp; Designer Atelier
-              <span className="w-8 h-px bg-gold/60" />
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, ease: luxuryEase }}
-              className="my-4"
-            >
-              <TextRevealCard text="The House of Saree" revealText="ELAANJI" />
-            </motion.div>
-
-
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.2, ease: luxuryEase }}
-              className="mt-4 text-stone text-[15px] sm:text-base leading-relaxed max-w-xl mx-auto"
-            >
-              Handpicked Kanjivaram, Banarasi, and designer weaves curated for timeless elegance, woven with sacred heritage.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.35, ease: luxuryEase }}
-              className="mt-8 flex flex-wrap items-center justify-center gap-4"
-            >
-              <Link to="/shop" className="btn-primary">
-                Shop Now
-                <ArrowRight size={16} strokeWidth={1.5} />
-              </Link>
-              <Link to="/shop?filter=new-arrivals" className="btn-secondary">
-                Explore Collection
-              </Link>
-            </motion.div>
-          </div>
+          <HeroReveal />
         </section>
       ) : (
-        <section className="relative bg-paper-gradient overflow-hidden min-h-[500px] md:min-h-[600px] flex items-center">
-          {/* Ambient gold glow */}
-          <div className="absolute -top-24 -right-24 w-[480px] h-[480px] rounded-full bg-gold/15 blur-[140px] pointer-events-none animate-glow-pulse" />
-          <div className="absolute bottom-0 -left-24 w-[420px] h-[420px] rounded-full bg-oxblood/10 blur-[140px] pointer-events-none" />
-
-          {/* Vertical ornament lines */}
-          <div className="absolute inset-y-0 left-8 hidden lg:block w-px bg-gradient-to-b from-transparent via-gold/30 to-transparent" />
-          <div className="absolute inset-y-0 right-8 hidden lg:block w-px bg-gradient-to-b from-transparent via-gold/30 to-transparent" />
-
-          <div className="w-full mx-auto max-w-[1600px] px-6 sm:px-10 lg:px-12 xl:px-16 py-12 md:py-16 relative">
-            <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
-              {/* Text Column — Undisturbed, elegant width */}
-              <div className="lg:col-span-5 max-w-lg">
-                <motion.p
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="label-eyebrow mb-4 flex items-center gap-3"
-                >
-                  <span className="w-8 h-px bg-gold/60" />
-                  <Feather size={14} className="text-oxblood" />
-                  Handloom &amp; Designer Atelier
-                </motion.p>
-
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.6, ease: luxuryEase }}
-                  className="my-3"
-                >
-                  <TextRevealCard text="The House of Saree" revealText="ELAANJI" />
-                </motion.div>
-
-
-                <motion.p
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.2, ease: luxuryEase }}
-                  className="mt-6 text-stone text-[15px] sm:text-base leading-relaxed max-w-md"
-                >
-                  Handpicked Kanjivaram, Banarasi, and designer weaves curated for timeless elegance, woven with sacred heritage.
-                </motion.p>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.35, ease: luxuryEase }}
-                  className="mt-9 flex flex-wrap items-center gap-4"
-                >
-                  <Link to="/shop" className="btn-primary">
-                    Shop Now
-                    <ArrowRight size={16} strokeWidth={1.5} />
-                  </Link>
-                  <Link to="/shop?filter=new-arrivals" className="btn-secondary">
-                    Explore Collection
-                  </Link>
-                </motion.div>
-              </div>
-
-              {/* Hero Visual Column */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.15, ease: luxuryEase }}
-                className="hidden md:flex items-center justify-center lg:justify-end lg:col-span-7 w-full"
-              >
-                <div className="relative w-full max-w-[400px] aspect-[3/4] p-6">
-                  {/* Layered gold frames */}
-                  <div className="absolute inset-0 frame-gold" />
-                  <div className="absolute inset-4 bg-gradient-to-br from-oxblood/10 via-transparent to-gold/10 border border-gold/20" />
-                  <div className="absolute inset-8 border border-gold/15" />
-
-                  {/* Rotating ornament */}
-                  <div className="absolute inset-6 border border-dashed border-gold/20 rounded-full animate-spin-slow pointer-events-none" />
-
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="glass-light p-8 max-w-[260px] shadow-luxury">
-                      <span className="text-[10px] tracking-widest2 uppercase text-oxblood font-medium block mb-2">
-                        Heritage Atelier
-                      </span>
-                      <p className="font-display text-7xl text-gold-gradient leading-none my-3">ए</p>
-                      <div className="w-12 h-px bg-gold/50 mx-auto my-4" />
-                      <p className="text-[11px] tracking-widest2 uppercase text-stone">
-                        Est. 2024 · India
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </section>
+        <HeroReveal />
       )}
+
 
       {/* ─── Trust Strip ─── */}
       <section className="border-y border-stone/10 bg-ink-gradient text-paper">
