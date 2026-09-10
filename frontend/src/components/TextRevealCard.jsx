@@ -54,6 +54,7 @@ export function TextRevealCard({
   const [left, setLeft] = useState(0)
   const [localWidth, setLocalWidth] = useState(0)
   const [isMouseOver, setIsMouseOver] = useState(false)
+  const pauseTimerRef = useRef(null)
 
   const updateCardBounds = () => {
     if (cardRef.current) {
@@ -66,8 +67,18 @@ export function TextRevealCard({
   useEffect(() => {
     updateCardBounds()
     window.addEventListener('resize', updateCardBounds)
-    return () => window.removeEventListener('resize', updateCardBounds)
+    return () => {
+      window.removeEventListener('resize', updateCardBounds)
+      if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current)
+    }
   }, [])
+
+  function clearPauseTimer() {
+    if (pauseTimerRef.current) {
+      clearTimeout(pauseTimerRef.current)
+      pauseTimerRef.current = null
+    }
+  }
 
   function mouseMoveHandler(event) {
     const { clientX } = event
@@ -78,18 +89,34 @@ export function TextRevealCard({
       if (currentWidth > 0) {
         const relativeX = clientX - currentLeft
         const percentage = Math.max(0, Math.min(100, (relativeX / currentWidth) * 100))
+        
+        setIsMouseOver(true)
         setWidthPercentage(percentage)
+        clearPauseTimer()
+
+        // If cursor stops/pauses in the middle (< 80%), auto-glide back to starting stage (0%)
+        if (percentage < 80) {
+          pauseTimerRef.current = setTimeout(() => {
+            setWidthPercentage(0)
+          }, 600)
+        } else {
+          // Full reveal completion if moved to the end
+          setWidthPercentage(100)
+        }
       }
     }
   }
 
   function mouseLeaveHandler() {
     setIsMouseOver(false)
+    clearPauseTimer()
+    setWidthPercentage(0)
   }
 
   function mouseEnterHandler(event) {
     updateCardBounds()
     setIsMouseOver(true)
+    clearPauseTimer()
     if (event && cardRef.current) {
       const bounds = cardRef.current.getBoundingClientRect()
       const clientX = event.clientX || (event.touches && event.touches[0]?.clientX)
@@ -108,11 +135,20 @@ export function TextRevealCard({
       if (bounds.width > 0) {
         const relativeX = clientX - bounds.left
         const percentage = Math.max(0, Math.min(100, (relativeX / bounds.width) * 100))
+        setIsMouseOver(true)
         setWidthPercentage(percentage)
+        clearPauseTimer()
+
+        if (percentage < 80) {
+          pauseTimerRef.current = setTimeout(() => {
+            setWidthPercentage(0)
+          }, 600)
+        } else {
+          setWidthPercentage(100)
+        }
       }
     }
   }
-
 
   const rotateDeg = (widthPercentage - 50) * 0.08
 
@@ -132,25 +168,16 @@ export function TextRevealCard({
     >
       {children}
 
-
-
       <div className="h-28 sm:h-36 relative flex items-center justify-center overflow-hidden">
         {/* Revealed Text Layer ("ELAANJI") */}
         <motion.div
           style={{ width: '100%' }}
-          animate={
-            isMouseOver
-              ? {
-                opacity: widthPercentage > 0 ? 1 : 0,
-                clipPath: `inset(0 ${100 - widthPercentage}% 0 0)`,
-              }
-              : {
-                clipPath: `inset(0 ${100 - widthPercentage}% 0 0)`,
-              }
-          }
-          transition={isMouseOver ? { duration: 0 } : { duration: 0.4 }}
-          className={`absolute inset-0 z-20 flex items-center justify-center will-change-transform ${dark ? 'bg-ink' : 'bg-paper-warm'
-            }`}
+          animate={{
+            opacity: isMouseOver && widthPercentage > 0 ? 1 : 0,
+            clipPath: `inset(0 ${100 - widthPercentage}% 0 0)`,
+          }}
+          transition={isMouseOver && widthPercentage > 0 && widthPercentage < 100 ? { duration: 0.1 } : { duration: 0.5, ease: 'easeOut' }}
+          className={`absolute inset-0 z-20 flex items-center justify-center will-change-transform ${dark ? 'bg-ink' : 'bg-paper-warm'}`}
         >
           <p
             style={{ textShadow: '0 4px 20px rgba(161, 98, 7, 0.3)' }}
@@ -165,10 +192,10 @@ export function TextRevealCard({
           animate={{
             left: `${widthPercentage}%`,
             rotate: `${rotateDeg}deg`,
-            opacity: widthPercentage > 0 && widthPercentage < 100 ? 1 : 0,
+            opacity: isMouseOver && widthPercentage > 0 && widthPercentage < 100 ? 1 : 0,
           }}
-          transition={isMouseOver ? { duration: 0 } : { duration: 0.4 }}
-          className="h-full w-[4px] bg-gradient-to-b from-transparent via-gold-soft to-transparent absolute z-50 pointer-events-none shadow-gold-glow-lg will-change-transform"
+          transition={isMouseOver && widthPercentage > 0 && widthPercentage < 100 ? { duration: 0.1 } : { duration: 0.5, ease: 'easeOut' }}
+          className="h-full w-[3px] bg-gradient-to-b from-transparent via-gold-soft to-transparent absolute z-50 pointer-events-none shadow-gold-glow-lg will-change-transform"
         />
 
         {/* Base Layer ("The House of Saree") */}
