@@ -71,31 +71,48 @@ export function TextRevealCard({
 
   function mouseMoveHandler(event) {
     const { clientX } = event
-    if (cardRef.current && localWidth > 0) {
-      const relativeX = clientX - left
-      const percentage = Math.max(0, Math.min(100, (relativeX / localWidth) * 100))
-      setWidthPercentage(percentage)
+    if (cardRef.current) {
+      const bounds = cardRef.current.getBoundingClientRect()
+      const currentWidth = bounds.width || localWidth
+      const currentLeft = bounds.left || left
+      if (currentWidth > 0) {
+        const relativeX = clientX - currentLeft
+        const percentage = Math.max(0, Math.min(100, (relativeX / currentWidth) * 100))
+        setWidthPercentage(percentage)
+      }
     }
   }
 
   function mouseLeaveHandler() {
     setIsMouseOver(false)
-    setWidthPercentage(0)
   }
 
-  function mouseEnterHandler() {
+  function mouseEnterHandler(event) {
     updateCardBounds()
     setIsMouseOver(true)
+    if (event && cardRef.current) {
+      const bounds = cardRef.current.getBoundingClientRect()
+      const clientX = event.clientX || (event.touches && event.touches[0]?.clientX)
+      if (clientX && bounds.width > 0) {
+        const relativeX = clientX - bounds.left
+        const percentage = Math.max(0, Math.min(100, (relativeX / bounds.width) * 100))
+        setWidthPercentage(percentage)
+      }
+    }
   }
 
   function touchMoveHandler(event) {
-    if (event.touches && event.touches[0] && cardRef.current && localWidth > 0) {
+    if (event.touches && event.touches[0] && cardRef.current) {
+      const bounds = cardRef.current.getBoundingClientRect()
       const clientX = event.touches[0].clientX
-      const relativeX = clientX - left
-      const percentage = Math.max(0, Math.min(100, (relativeX / localWidth) * 100))
-      setWidthPercentage(percentage)
+      if (bounds.width > 0) {
+        const relativeX = clientX - bounds.left
+        const percentage = Math.max(0, Math.min(100, (relativeX / bounds.width) * 100))
+        setWidthPercentage(percentage)
+      }
     }
   }
+
 
   const rotateDeg = (widthPercentage - 50) * 0.08
 
