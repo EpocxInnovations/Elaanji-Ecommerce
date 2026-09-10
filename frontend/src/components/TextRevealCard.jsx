@@ -108,20 +108,14 @@ export function TextRevealCard({
       onTouchEnd={mouseLeaveHandler}
       onTouchMove={touchMoveHandler}
       ref={cardRef}
-      className={`relative w-full max-w-3xl mx-auto rounded-2xl p-6 sm:p-10 border overflow-hidden select-none cursor-ew-resize transition-all duration-300 ${
-        dark
+      className={`relative w-full max-w-3xl mx-auto rounded-2xl p-6 sm:p-10 border overflow-hidden select-none cursor-ew-resize transition-all duration-300 ${dark
           ? 'bg-ink/80 border-gold/25 shadow-luxury text-paper'
           : 'bg-paper-warm/80 backdrop-blur-xl border-gold/20 shadow-card-hover text-ink'
-      } ${className}`}
+        } ${className}`}
     >
       {children}
 
-      {/* Interactive Helper Hint */}
-      <div className="flex items-center justify-center gap-2 mb-2 text-[11px] font-medium tracking-widest2 uppercase text-gold-soft opacity-80">
-        <span className="w-6 h-px bg-gold/50" />
-        <span>Hover or Drag to Reveal</span>
-        <span className="w-6 h-px bg-gold/50" />
-      </div>
+
 
       <div className="h-28 sm:h-36 relative flex items-center justify-center overflow-hidden">
         {/* Revealed Text Layer ("ELAANJI") */}
@@ -130,17 +124,16 @@ export function TextRevealCard({
           animate={
             isMouseOver
               ? {
-                  opacity: widthPercentage > 0 ? 1 : 0,
-                  clipPath: `inset(0 ${100 - widthPercentage}% 0 0)`,
-                }
+                opacity: widthPercentage > 0 ? 1 : 0,
+                clipPath: `inset(0 ${100 - widthPercentage}% 0 0)`,
+              }
               : {
-                  clipPath: `inset(0 ${100 - widthPercentage}% 0 0)`,
-                }
+                clipPath: `inset(0 ${100 - widthPercentage}% 0 0)`,
+              }
           }
           transition={isMouseOver ? { duration: 0 } : { duration: 0.4 }}
-          className={`absolute inset-0 z-20 flex items-center justify-center will-change-transform ${
-            dark ? 'bg-ink' : 'bg-paper-warm'
-          }`}
+          className={`absolute inset-0 z-20 flex items-center justify-center will-change-transform ${dark ? 'bg-ink' : 'bg-paper-warm'
+            }`}
         >
           <p
             style={{ textShadow: '0 4px 20px rgba(161, 98, 7, 0.3)' }}
