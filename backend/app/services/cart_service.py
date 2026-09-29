@@ -121,7 +121,17 @@ def build_summary(cart: Cart, db: Session | None = None) -> dict:
         if not item.saved_for_later:
             subtotal += line_total
 
-        primary_image = next(iter(sorted(product.images, key=lambda x: x.display_order)), None) if product.images else None
+        variant_image = next(
+            (
+                img for img in sorted(product.images, key=lambda x: x.display_order)
+                if (img.variant_id == variant.id)
+                or (img.color and variant.color and img.color.strip().lower() == variant.color.strip().lower())
+            ),
+            None,
+        )
+        primary_image = variant_image or (
+            next(iter(sorted(product.images, key=lambda x: x.display_order)), None) if product.images else None
+        )
 
         item_dicts.append(
             {

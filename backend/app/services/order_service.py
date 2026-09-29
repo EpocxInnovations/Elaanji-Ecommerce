@@ -126,7 +126,15 @@ def create_order(db: Session, user: User, address_id: uuid.UUID, delivery_method
     for plan in line_plans:
         variant = plan["variant"]
         product = plan["product"]
-        primary_image = next((i for i in sorted(product.images, key=lambda x: x.display_order)), None)
+        variant_image = next(
+            (
+                img for img in sorted(product.images, key=lambda x: x.display_order)
+                if (img.variant_id == variant.id)
+                or (img.color and variant.color and img.color.strip().lower() == variant.color.strip().lower())
+            ),
+            None,
+        )
+        primary_image = variant_image or next((i for i in sorted(product.images, key=lambda x: x.display_order)), None)
 
         db.add(
             OrderItem(

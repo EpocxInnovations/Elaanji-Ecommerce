@@ -9,6 +9,7 @@ from app.models.content import HomepageSectionType
 
 class BannerCreateRequest(BaseModel):
     image_url: str
+    mobile_image_url: Optional[str] = None
     heading: Optional[str] = None
     description: Optional[str] = None
     cta_text: Optional[str] = None
@@ -27,6 +28,7 @@ class BannerUpdateRequest(BannerCreateRequest):
 class BannerOut(BaseModel):
     id: uuid.UUID
     image_url: str
+    mobile_image_url: Optional[str] = None
     heading: Optional[str] = None
     description: Optional[str] = None
     cta_text: Optional[str] = None

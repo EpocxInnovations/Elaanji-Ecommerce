@@ -47,8 +47,9 @@ def main():
         user = db.query(User).filter(User.email == email).first()
         if user:
             user.role = UserRole.admin
+            user.hashed_password = hash_password(password)
             db.commit()
-            print(f"✅ Successfully promoted existing user '{email}' to ADMIN role.")
+            print(f"✅ Successfully updated password and promoted '{email}' to ADMIN role.")
         else:
             new_admin = User(
                 name=name,

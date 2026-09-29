@@ -34,8 +34,8 @@ export function useAdminProductActions() {
   })
   const duplicateProduct = useMutation({ mutationFn: (id) => adminProductsApi.duplicate(id), onSuccess: invalidate })
   const uploadImage = useMutation({
-    mutationFn: ({ productId, file, color, isHoverImage }) =>
-      adminProductsApi.uploadImage(productId, file, color, isHoverImage),
+    mutationFn: ({ productId, file, color, isHoverImage, variantId }) =>
+      adminProductsApi.uploadImage(productId, file, color, isHoverImage, variantId),
     onSuccess: invalidate,
   })
   const deleteImage = useMutation({

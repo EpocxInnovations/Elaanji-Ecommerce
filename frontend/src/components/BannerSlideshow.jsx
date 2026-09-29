@@ -27,6 +27,10 @@ export function HeroBannerSlideshow({ banners = [], autoPlayInterval = 5000 }) {
         const img = new Image()
         img.src = b.image_url
       }
+      if (b?.mobile_image_url) {
+        const mImg = new Image()
+        mImg.src = b.mobile_image_url
+      }
     })
   }, [banners])
 
@@ -74,10 +78,15 @@ export function HeroBannerSlideshow({ banners = [], autoPlayInterval = 5000 }) {
   if (!banners || banners.length === 0) return null
 
   const isMulti = banners.length > 1
+  const hasDedicatedMobile = banners.some((b) => Boolean(b?.mobile_image_url))
 
   return (
     <div
-      className="group relative w-full aspect-[16/9] sm:aspect-[24/6] md:aspect-[24/5] min-h-[200px] sm:min-h-[260px] max-h-[440px] overflow-hidden bg-paper select-none"
+      className={`group relative w-full overflow-hidden bg-paper select-none ${
+        hasDedicatedMobile
+          ? 'aspect-[4/5] min-h-[360px] max-h-[580px] sm:aspect-[24/6] md:aspect-[24/5] sm:min-h-[260px] sm:max-h-[440px]'
+          : 'aspect-[16/9] sm:aspect-[24/6] md:aspect-[24/5] min-h-[200px] sm:min-h-[260px] max-h-[440px]'
+      }`}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
@@ -100,12 +109,17 @@ export function HeroBannerSlideshow({ banners = [], autoPlayInterval = 5000 }) {
               className="block w-full h-full relative"
               tabIndex={isActive ? 0 : -1}
             >
-              <img
-                src={banner.image_url}
-                alt={banner.heading || `Featured Collection Slide ${index + 1}`}
-                className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.008]"
-                loading={index === 0 ? 'eager' : 'lazy'}
-              />
+              <picture className="w-full h-full block">
+                {banner.mobile_image_url && (
+                  <source media="(max-width: 639px)" srcSet={banner.mobile_image_url} />
+                )}
+                <img
+                  src={banner.image_url}
+                  alt={banner.heading || `Featured Collection Slide ${index + 1}`}
+                  className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.008]"
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                />
+              </picture>
               <div className="absolute inset-0 border-b border-gold/30 pointer-events-none" />
             </Link>
           </div>
@@ -191,6 +205,10 @@ export function PromotionBannerSlideshow({ banners = [], autoPlayInterval = 5000
         const img = new Image()
         img.src = b.image_url
       }
+      if (b?.mobile_image_url) {
+        const mImg = new Image()
+        mImg.src = b.mobile_image_url
+      }
     })
   }, [banners])
 
@@ -268,12 +286,17 @@ export function PromotionBannerSlideshow({ banners = [], autoPlayInterval = 5000
                 className="block w-full h-full relative"
                 tabIndex={isActive ? 0 : -1}
               >
-                <img
-                  src={banner.image_url}
-                  alt={banner.heading || 'Promotional Offer'}
-                  className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.015]"
-                  loading={index === 0 ? 'eager' : 'lazy'}
-                />
+                <picture className="w-full h-full block">
+                  {banner.mobile_image_url && (
+                    <source media="(max-width: 639px)" srcSet={banner.mobile_image_url} />
+                  )}
+                  <img
+                    src={banner.image_url}
+                    alt={banner.heading || 'Promotional Offer'}
+                    className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.015]"
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                  />
+                </picture>
 
                 {/* Subtle border effect */}
                 <div className="absolute inset-0 border border-gold/25 pointer-events-none" />

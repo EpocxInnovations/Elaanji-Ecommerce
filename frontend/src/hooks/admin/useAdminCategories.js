@@ -21,6 +21,7 @@ export function useAdminCategories() {
   })
   const removeCategory = useMutation({ mutationFn: (id) => adminCategoriesApi.remove(id), onSuccess: invalidate })
   const reorderCategories = useMutation({ mutationFn: (categories) => adminCategoriesApi.reorder(categories), onSuccess: invalidate })
+  const uploadImage = useMutation({ mutationFn: (file) => adminCategoriesApi.uploadImage(file) })
 
   return {
     categories: categoriesQuery.data || [],
@@ -29,5 +30,6 @@ export function useAdminCategories() {
     updateCategory,
     removeCategory,
     reorderCategories,
+    uploadImage,
   }
 }

@@ -10,10 +10,11 @@ export const adminProductsApi = {
   deleteImage: (productId, imageId) => api.delete(`/admin/products/${productId}/images/${imageId}`),
   reorderImages: (productId, images) =>
     api.put(`/admin/products/${productId}/images/reorder`, { images }).then((res) => res.data),
-  uploadImage: (productId, file, color, isHoverImage) => {
+  uploadImage: (productId, file, color, isHoverImage, variantId) => {
     const formData = new FormData()
     formData.append('file', file)
     if (color) formData.append('color', color)
+    if (variantId) formData.append('variant_id', variantId)
     formData.append('is_hover_image', isHoverImage ? 'true' : 'false')
     return api
       .post(`/admin/uploads/products/${productId}/images`, formData, {

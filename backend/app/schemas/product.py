@@ -30,9 +30,11 @@ class BrandOut(BaseModel):
 
 class ProductImageOut(BaseModel):
     id: uuid.UUID
+    product_id: Optional[uuid.UUID] = None
+    variant_id: Optional[uuid.UUID] = None
     image_url: str
-    is_hover_image: bool
-    display_order: int
+    is_hover_image: bool = False
+    display_order: int = 0
     color: Optional[str] = None
 
     model_config = {"from_attributes": True}
@@ -40,17 +42,30 @@ class ProductImageOut(BaseModel):
 
 class ProductVariantOut(BaseModel):
     id: uuid.UUID
+    product_id: Optional[uuid.UUID] = None
     sku: str
     color: str
     color_hex: Optional[str] = None
+    color_code: Optional[str] = None
     blouse_size: Optional[str] = None
     price_override: Optional[float] = None
+    price: Optional[float] = None
     stock_quantity: int
     reserved_quantity: int
     available_quantity: int
     is_active: bool
+    images: list[ProductImageOut] = []
 
     model_config = {"from_attributes": True}
+
+
+class ColorVariantCardOut(BaseModel):
+    id: uuid.UUID
+    sku: str
+    color: str
+    color_hex: Optional[str] = None
+    available: bool = True
+    image_url: Optional[str] = None
 
 
 class ProductCardOut(BaseModel):
@@ -75,6 +90,7 @@ class ProductCardOut(BaseModel):
     hover_image_url: Optional[str] = None
     status: ProductStatus
     available: bool
+    color_variants: list[ColorVariantCardOut] = []
 
     model_config = {"from_attributes": True}
 

@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.models.product import Product, ProductVariant, ProductImage, Category, ProductStatus
 from app.models.inventory import InventoryTransaction, InventoryTransactionType
+from app.models.order import OrderItem
 from app.models.user import User
 from app.services.activity_log_service import log_action
 
@@ -50,6 +51,16 @@ def list_products_admin(db: Session, search: str | None, status_filter: ProductS
     return {"items": items, "total": total, "page": page, "page_size": page_size, "total_pages": math.ceil(total / page_size) if page_size else 0}
 
 
+def _validate_variants(variants, blouse_stitched: bool):
+    seen_keys = set()
+    for v in variants:
+        key = (v.color.strip().lower(), (v.blouse_size or "").strip().lower() if blouse_stitched else "")
+        if key in seen_keys:
+            desc = f"'{v.color}'" + (f" size '{v.blouse_size}'" if blouse_stitched and v.blouse_size else "")
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Duplicate color variant {desc} for this product")
+        seen_keys.add(key)
+
+
 def create_product(db: Session, admin: User, payload) -> Product:
     existing_slug = db.execute(select(Product).where(Product.slug == payload.slug)).scalar_one_or_none()
     if existing_slug:
@@ -57,6 +68,8 @@ def create_product(db: Session, admin: User, payload) -> Product:
     existing_sku = db.execute(select(Product).where(Product.sku == payload.sku)).scalar_one_or_none()
     if existing_sku:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A product with this SKU already exists")
+
+    _validate_variants(payload.variants, payload.blouse_stitched)
 
     data = payload.model_dump(exclude={"variants"})
     product = Product(**data)
@@ -79,6 +92,8 @@ def update_product(db: Session, admin: User, product_id: uuid.UUID, payload) -> 
         if clash:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A product with this slug already exists")
 
+    _validate_variants(payload.variants, payload.blouse_stitched)
+
     data = payload.model_dump(exclude={"variants"})
     for field, value in data.items():
         setattr(product, field, value)
@@ -86,7 +101,12 @@ def update_product(db: Session, admin: User, product_id: uuid.UUID, payload) -> 
     submitted_ids = {v.id for v in payload.variants if v.id}
     for existing in list(product.variants):
         if existing.id not in submitted_ids:
-            db.delete(existing)
+            # Check if variant has existing orders to preserve audit trail
+            has_orders = db.execute(select(OrderItem.id).where(OrderItem.variant_id == existing.id)).first() is not None
+            if has_orders:
+                existing.is_active = False
+            else:
+                db.delete(existing)
 
     for v in payload.variants:
         _upsert_variant(db, product.id, v)
@@ -108,8 +128,6 @@ def _upsert_variant(db: Session, product_id: uuid.UUID, v) -> ProductVariant:
         variant.price_override = v.price_override
         variant.low_stock_threshold = v.low_stock_threshold
         variant.is_active = v.is_active
-        # stock_quantity is intentionally NOT settable here — use the
-        # inventory adjust endpoint so every stock change is audited.
         return variant
 
     existing_sku = db.execute(select(ProductVariant).where(ProductVariant.sku == v.sku)).scalar_one_or_none()
@@ -232,11 +250,28 @@ def delete_product_image(db: Session, admin: User, product_id: uuid.UUID, image_
     db.commit()
 
 
-def add_product_image(db: Session, admin: User, product_id: uuid.UUID, image_url: str, color: str | None, is_hover_image: bool) -> ProductImage:
+def add_product_image(
+    db: Session,
+    admin: User,
+    product_id: uuid.UUID,
+    image_url: str,
+    color: str | None,
+    is_hover_image: bool,
+    variant_id: uuid.UUID | None = None,
+) -> ProductImage:
     product = _load_product(db, product_id)
+    if variant_id:
+        var = db.get(ProductVariant, variant_id)
+        if var and var.product_id == product_id and not color:
+            color = var.color
     max_order = max((i.display_order for i in product.images), default=-1)
     image = ProductImage(
-        product_id=product_id, image_url=image_url, color=color, is_hover_image=is_hover_image, display_order=max_order + 1
+        product_id=product_id,
+        variant_id=variant_id,
+        image_url=image_url,
+        color=color,
+        is_hover_image=is_hover_image,
+        display_order=max_order + 1,
     )
     db.add(image)
     log_action(db, admin, "added product image", "product", str(product_id))

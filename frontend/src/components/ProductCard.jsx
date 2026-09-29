@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Heart, Eye } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { formatINR, SAREE_TYPE_LABELS } from '../utils/format'
@@ -8,6 +8,7 @@ import { useToast } from '../context/ToastContext'
 import { bounceSpring, luxuryEase } from '../utils/motion'
 
 export function ProductCard({ product, priority = false }) {
+  const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
   const { isWishlisted, addItem, removeItem, findItemId } = useWishlist()
   const { showToast } = useToast()
@@ -29,6 +30,8 @@ export function ProductCard({ product, priority = false }) {
   const discountPercent = hasDiscount
     ? Math.round(((product.price - product.discount_price) / product.price) * 100)
     : null
+
+  const colorVariants = product.color_variants || []
 
   return (
     <Link to={`/products/${product.slug}`} className="group block transform-gpu">
@@ -119,6 +122,37 @@ export function ProductCard({ product, priority = false }) {
         <h3 className="font-display text-base text-ink leading-snug line-clamp-2 group-hover:text-oxblood transition-colors duration-200">
           {product.name}
         </h3>
+
+        {/* Color Swatches if product has multiple colors */}
+        {colorVariants.length > 1 && (
+          <div className="flex items-center gap-1.5 pt-0.5 pb-1">
+            <div className="flex items-center gap-1">
+              {colorVariants.slice(0, 4).map((cv) => (
+                <button
+                  key={cv.id}
+                  type="button"
+                  title={`${cv.color}${cv.available ? '' : ' (Out of stock)'}`}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    navigate(`/products/${product.slug}?variant=${cv.sku}`)
+                  }}
+                  className={`w-3.5 h-3.5 rounded-full border border-stone/30 shrink-0 transition-transform hover:scale-125 cursor-pointer relative ${
+                    !cv.available ? 'opacity-40' : ''
+                  }`}
+                  style={{ backgroundColor: cv.color_hex || '#c5a059' }}
+                />
+              ))}
+            </div>
+            {colorVariants.length > 4 && (
+              <span className="text-[10px] text-stone">+{colorVariants.length - 4}</span>
+            )}
+            <span className="text-[10px] text-stone tracking-wide">
+              {colorVariants.length} colors
+            </span>
+          </div>
+        )}
+
         <div className="flex items-baseline gap-2 pt-0.5">
           <span className="text-sm font-semibold tracking-tight">
             {formatINR(hasDiscount ? product.discount_price : product.price)}

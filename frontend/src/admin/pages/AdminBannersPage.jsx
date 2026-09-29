@@ -10,6 +10,8 @@ import {
   ExternalLink,
   Image as ImageIcon,
   Edit2,
+  Smartphone,
+  Monitor,
 } from 'lucide-react'
 import { useAdminBanners } from '../../hooks/admin/useAdminOperations'
 
@@ -20,6 +22,7 @@ const EMPTY_FORM = {
   cta_url: '',
   placement: 'hero',
   direct_url: '',
+  mobile_image_url: '',
 }
 
 export function AdminBannersPage() {
@@ -29,11 +32,18 @@ export function AdminBannersPage() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [selectedFiles, setSelectedFiles] = useState([])
   const [filePreviews, setFilePreviews] = useState([])
+  const [mobileFile, setMobileFile] = useState(null)
+  const [mobileFilePreview, setMobileFilePreview] = useState('')
   const [uploadProgress, setUploadProgress] = useState(null)
   const [error, setError] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
   const [editingBanner, setEditingBanner] = useState(null)
+  const [editPreviewDevice, setEditPreviewDevice] = useState('desktop')
+  const [editMobileFile, setEditMobileFile] = useState(null)
+  const [editMobilePreview, setEditMobilePreview] = useState('')
   const [editForm, setEditForm] = useState({
+    image_url: '',
+    mobile_image_url: '',
     heading: '',
     description: '',
     cta_text: '',
@@ -41,10 +51,17 @@ export function AdminBannersPage() {
     placement: 'hero',
   })
   const fileInputRef = useRef(null)
+  const mobileFileInputRef = useRef(null)
+  const editMobileFileInputRef = useRef(null)
 
   const handleOpenEdit = (banner) => {
     setEditingBanner(banner)
+    setEditPreviewDevice('desktop')
+    setEditMobileFile(null)
+    setEditMobilePreview('')
     setEditForm({
+      image_url: banner.image_url || '',
+      mobile_image_url: banner.mobile_image_url || '',
       heading: banner.heading || '',
       description: banner.description || '',
       cta_text: banner.cta_text || '',
@@ -57,10 +74,19 @@ export function AdminBannersPage() {
     e.preventDefault()
     if (!editingBanner) return
     try {
+      let finalMobileUrl = editForm.mobile_image_url?.trim() || null
+      if (editMobileFile) {
+        setUploadProgress('Uploading mobile banner...')
+        const res = await uploadImage.mutateAsync(editMobileFile)
+        finalMobileUrl = res.image_url
+      }
+
       await updateBanner.mutateAsync({
         id: editingBanner.id,
         payload: {
           ...editingBanner,
+          image_url: editForm.image_url.trim(),
+          mobile_image_url: finalMobileUrl,
           heading: editForm.heading.trim() || null,
           description: editForm.description.trim() || null,
           cta_text: editForm.cta_text.trim() || null,
@@ -72,6 +98,8 @@ export function AdminBannersPage() {
       setEditingBanner(null)
     } catch (err) {
       setError(err.response?.data?.detail || err.message || 'Failed to update banner.')
+    } finally {
+      setUploadProgress(null)
     }
   }
 

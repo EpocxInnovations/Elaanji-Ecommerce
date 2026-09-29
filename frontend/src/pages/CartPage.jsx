@@ -156,7 +156,7 @@ function CartRow({ item, updateItem, removeItem, saved }) {
       transition={{ duration: 0.3, ease: luxuryEase }}
       className="flex gap-3 sm:gap-5 border-b border-stone/10 py-5 sm:py-6 first:pt-0"
     >
-      <Link to={`/products/${item.product_slug}`} className="w-16 sm:w-24 h-24 sm:h-32 bg-beige shrink-0 overflow-hidden shadow-card">
+      <Link to={`/products/${item.product_slug}?variant=${item.variant?.sku || item.variant?.id}`} className="w-16 sm:w-24 h-24 sm:h-32 bg-beige shrink-0 overflow-hidden shadow-card">
         {item.product_image_url && (
           <img
             src={item.product_image_url}
@@ -167,13 +167,16 @@ function CartRow({ item, updateItem, removeItem, saved }) {
         )}
       </Link>
       <div className="flex-1 min-w-0">
-        <Link to={`/products/${item.product_slug}`} className="font-display text-sm sm:text-base hover:text-oxblood transition-colors line-clamp-1">
+        <Link to={`/products/${item.product_slug}?variant=${item.variant?.sku || item.variant?.id}`} className="font-display text-sm sm:text-base hover:text-oxblood transition-colors line-clamp-1">
           {item.product_name}
         </Link>
-        <p className="text-xs text-stone mt-0.5 sm:mt-1">
-          {item.variant.color}
-          {item.variant.blouse_size ? ` · Blouse: ${item.variant.blouse_size}` : ''}
-        </p>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 sm:mt-1">
+          <p className="text-xs text-stone">
+            Color: <span className="text-ink font-medium">{item.variant.color}</span>
+            {item.variant.blouse_size ? ` · Blouse: ${item.variant.blouse_size}` : ''}
+          </p>
+          <span className="text-[11px] font-mono text-stone">SKU: {item.variant.sku}</span>
+        </div>
         <p className="text-sm font-semibold mt-1.5 sm:mt-2">{formatINR(item.unit_price)}</p>
 
         {!saved && (

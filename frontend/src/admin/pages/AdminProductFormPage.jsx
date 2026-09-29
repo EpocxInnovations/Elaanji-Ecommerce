@@ -75,7 +75,10 @@ export function AdminProductFormPage() {
       saree_length_meters: Number(form.saree_length_meters),
       variants: variants.map((v) => ({
         ...v,
+        price_override: v.price_override !== undefined && v.price_override !== null && v.price_override !== '' ? Number(v.price_override) : null,
         stock_quantity: v.id ? 0 : Number(v.stock_quantity) || 0,
+        low_stock_threshold: Number(v.low_stock_threshold) || 5,
+        is_active: v.is_active !== false,
       })),
     }
 
@@ -203,15 +206,35 @@ export function AdminProductFormPage() {
         </section>
 
         <section className="space-y-4 bg-paper border border-stone/20 rounded-lg p-4 sm:p-6 shadow-sm">
-          <h2 className="text-xs sm:text-sm tracking-widest2 uppercase text-stone font-semibold">Color Variants</h2>
-          <VariantBuilder variants={variants} onChange={setVariants} blouseStitched={form.blouse_stitched} />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <h2 className="text-xs sm:text-sm tracking-widest2 uppercase text-stone font-semibold">Color Variants &amp; Variant Images</h2>
+            <span className="text-xs text-stone">Each color variant gets its own SKU, price override, stock and photos</span>
+          </div>
+          <VariantBuilder
+            variants={variants}
+            onChange={setVariants}
+            blouseStitched={form.blouse_stitched}
+            productId={id}
+            baseSku={form.sku}
+            basePrice={form.price}
+            isEditing={isEditing}
+            allImages={existing?.images || []}
+            onUploadImage={({ file, color, variantId }) =>
+              uploadImage.mutate({ productId: id, file, color, variantId })
+            }
+            onDeleteImage={(imageId) => deleteImage.mutate({ productId: id, imageId })}
+            isUploading={uploadImage.isPending}
+          />
         </section>
 
         {isEditing && existing && (
           <section className="space-y-4 bg-paper border border-stone/20 rounded-lg p-4 sm:p-6 shadow-sm">
-            <h2 className="text-xs sm:text-sm tracking-widest2 uppercase text-stone font-semibold">Images</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <h2 className="text-xs sm:text-sm tracking-widest2 uppercase text-stone font-semibold">General / Primary Images</h2>
+              <span className="text-xs text-stone">Fallback catalog photos shown when no color variant is selected</span>
+            </div>
             <ImageUploader
-              images={existing.images || []}
+              images={(existing.images || []).filter((img) => !img.variant_id && !img.color)}
               isUploading={uploadImage.isPending}
               onUpload={(file) => uploadImage.mutate({ productId: id, file })}
               onDelete={(imageId) => deleteImage.mutate({ productId: id, imageId })}

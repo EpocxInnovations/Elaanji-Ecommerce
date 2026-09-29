@@ -17,12 +17,15 @@ def upload_product_image(
     product_id: uuid.UUID,
     file: UploadFile = File(...),
     color: str | None = Form(default=None),
+    variant_id: uuid.UUID | None = Form(default=None),
     is_hover_image: bool = Form(default=False),
     db: Session = Depends(get_db),
     current_admin: User = Depends(require_admin),
 ):
     image_url = image_service.upload_image(file, folder=f"elaanji/products/{product_id}")
-    return admin_product_service.add_product_image(db, current_admin, product_id, image_url, color, is_hover_image)
+    return admin_product_service.add_product_image(
+        db, current_admin, product_id, image_url, color, is_hover_image, variant_id
+    )
 
 
 @router.post("/categories/image")

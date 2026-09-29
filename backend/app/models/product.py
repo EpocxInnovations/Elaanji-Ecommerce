@@ -170,9 +170,38 @@ class ProductVariant(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     product: Mapped["Product"] = relationship(back_populates="variants")
+    variant_images: Mapped[list["ProductImage"]] = relationship(
+        "ProductImage", foreign_keys="ProductImage.variant_id", back_populates="variant", cascade="all, delete-orphan"
+    )
     inventory_transactions: Mapped[list["InventoryTransaction"]] = relationship(  # noqa: F821
         back_populates="variant"
     )
+
+    @property
+    def color_code(self) -> Optional[str]:
+        return self.color_hex
+
+    @property
+    def price(self) -> float:
+        if self.price_override is not None:
+            return float(self.price_override)
+        if self.product:
+            return float(self.product.discount_price if self.product.discount_price else self.product.price)
+        return 0.0
+
+    @property
+    def images(self) -> list["ProductImage"]:
+        """Return variant-specific images, falling back to images matching variant.color."""
+        if self.variant_images:
+            return sorted(self.variant_images, key=lambda x: x.display_order)
+        if self.product and self.color:
+            matched = [
+                img for img in self.product.images
+                if img.color and img.color.strip().lower() == self.color.strip().lower()
+            ]
+            if matched:
+                return sorted(matched, key=lambda x: x.display_order)
+        return []
 
     @property
     def available_quantity(self) -> int:
@@ -188,13 +217,18 @@ class ProductImage(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "product_images"
 
     product_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("products.id", ondelete="CASCADE"))
+    variant_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("product_variants.id", ondelete="CASCADE"), nullable=True
+    )
     image_url: Mapped[str] = mapped_column(String(500), nullable=False)
     is_hover_image: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     display_order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     color: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)  # image tied to a color variant
 
     product: Mapped["Product"] = relationship(back_populates="images")
+    variant: Mapped[Optional["ProductVariant"]] = relationship(back_populates="variant_images")
 
     __table_args__ = (
         Index("ix_product_images_product_order", "product_id", "display_order"),
+        Index("ix_product_images_variant_id", "variant_id"),
     )

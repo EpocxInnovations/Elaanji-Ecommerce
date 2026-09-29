@@ -1,41 +1,74 @@
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, Truck, ShieldCheck, Sparkles, Feather, Layers, Award } from 'lucide-react'
-import { useProducts } from '../hooks/useProducts'
+import { ArrowRight, Truck, ShieldCheck, Sparkles, Feather, Layers, Award, Sparkle } from 'lucide-react'
+import { useProducts, useCategories } from '../hooks/useProducts'
 import { useBanners } from '../hooks/useBanners'
 import { ProductCard } from '../components/ProductCard'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 import { SplitText } from '../components/SplitText'
 import { TextRevealCard } from '../components/TextRevealCard'
 import { HeroBannerSlideshow, PromotionBannerSlideshow } from '../components/BannerSlideshow'
-import { HeroReveal } from '../components/HeroReveal'
+import { CircularGallery } from '../components/ui/CircularGallery'
 
 import { luxuryEase, staggerGridContainer, staggerGridItem } from '../utils/motion'
 
 const HOME_PRODUCTS_PARAMS = { filter: 'new-arrivals', page_size: 8 }
 
-const CATEGORIES = [
+const ALL_STORE_CATEGORIES = [
   {
-    label: 'Kanjivaram',
+    key: 'kanjivaram',
+    label: 'Kanjivaram Silk',
     description: 'Temple-woven silk heritage',
     to: '/shop?saree_type=kanjivaram',
-    tag: 'Tamil Nadu',
+    tag: 'Tamil Nadu · Heritage',
+    image: '/images/categories/kanjivaram.jpg',
     index: '01',
   },
   {
-    label: 'Banarasi',
-    description: 'Mughal-inspired brocade',
+    key: 'banarasi',
+    label: 'Banarasi Brocade',
+    description: 'Mughal-inspired zari weaves',
     to: '/shop?saree_type=banarasi',
-    tag: 'Varanasi',
+    tag: 'Varanasi · Sacred Zari',
+    image: '/images/categories/banarasi.jpg',
     index: '02',
   },
   {
-    label: 'Designer',
-    description: 'Contemporary couture weaves',
+    key: 'cotton',
+    label: 'Handloom Cotton',
+    description: 'Breathable comfort & effortless grace',
+    to: '/shop?saree_type=cotton',
+    tag: 'Artisan Handloom',
+    image: '/images/categories/cotton.jpg',
+    index: '03',
+  },
+  {
+    key: 'designer',
+    label: 'Designer Couture',
+    description: 'Contemporary party & evening draping',
     to: '/shop?saree_type=designer',
     tag: 'Modern Atelier',
-    index: '03',
+    image: '/images/categories/designer.jpg',
+    index: '04',
+  },
+  {
+    key: 'silk',
+    label: 'Pure Silk',
+    description: 'Lustrous mulberry heirlooms',
+    to: '/shop?saree_type=silk',
+    tag: 'Mulberry Weave',
+    image: '/images/categories/puresilk.jpg',
+    index: '05',
+  },
+  {
+    key: 'chanderi',
+    label: 'Chanderi & Organza',
+    description: 'Sheer feather-light festive sarees',
+    to: '/shop?saree_type=chanderi',
+    tag: 'Sheer Festive',
+    image: '/images/categories/organza.jpg',
+    index: '06',
   },
 ]
 
@@ -86,11 +119,13 @@ function SkeletonCard() {
 function SectionHeader({ eyebrow, title, subtitle, dark = false }) {
   return (
     <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-14">
-      <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-        <span className="w-8 sm:w-10 h-px bg-gradient-to-r from-transparent to-gold/60" />
-        <p className={`label-eyebrow text-[10px] sm:text-[11px] ${dark ? 'text-gold-soft/80' : ''}`}>{eyebrow}</p>
-        <span className="w-8 sm:w-10 h-px bg-gradient-to-l from-transparent to-gold/60" />
-      </div>
+      {eyebrow && (
+        <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+          <span className="w-8 sm:w-10 h-px bg-gradient-to-r from-transparent to-gold/60" />
+          <p className={`label-eyebrow text-[10px] sm:text-[11px] ${dark ? 'text-gold-soft/80' : ''}`}>{eyebrow}</p>
+          <span className="w-8 sm:w-10 h-px bg-gradient-to-l from-transparent to-gold/60" />
+        </div>
+      )}
       <h2 className={`font-display text-2xl sm:text-4xl md:text-5xl leading-tight ${dark ? 'text-paper' : 'text-ink'}`}>
         {title}
       </h2>
@@ -104,15 +139,67 @@ function SectionHeader({ eyebrow, title, subtitle, dark = false }) {
 }
 
 export function HomePage() {
+  const navigate = useNavigate()
   const { data, isLoading, isError, error } = useProducts(HOME_PRODUCTS_PARAMS, {
     staleTime: 60 * 1000,
     refetchOnMount: true,
   })
+  const { data: storeProducts } = useProducts({ page_size: 100 }, { staleTime: 60 * 1000 })
+  const { data: dbCategories } = useCategories()
   const { data: banners } = useBanners()
   const heroBanners = banners?.filter((b) => b.placement === 'hero' && b.is_active) || []
   const promoBanners = banners?.filter((b) => b.placement === 'promo' && b.is_active) || []
   const saleBanners = banners?.filter((b) => b.placement === 'sale' && b.is_active) || []
   const [activeTab, setActiveTab] = useState(0)
+
+  // Show ONLY categories that have active products available in the store
+  const availableCategories = useMemo(() => {
+    if (storeProducts?.items && storeProducts.items.length > 0) {
+      const activeKeys = new Set(
+        storeProducts.items
+          .map((p) => p.saree_type?.toLowerCase() || p.category?.slug?.toLowerCase())
+          .filter(Boolean)
+      )
+      const filtered = ALL_STORE_CATEGORIES.filter(
+        (c) => activeKeys.has(c.key) || activeKeys.has(`${c.key}-sarees`)
+      )
+      if (filtered.length > 0) return filtered
+    }
+    // Default fallback to categories currently active in database
+    return ALL_STORE_CATEGORIES.filter((c) =>
+      ['kanjivaram', 'banarasi', 'cotton', 'designer'].includes(c.key)
+    )
+  }, [storeProducts])
+
+  const categoryGalleryItems = useMemo(() => {
+    return availableCategories.map((c) => {
+      // Find matching category from DB to respect admin custom replaced image
+      const dbMatch = dbCategories?.find((cat) => {
+        const catSlug = cat.slug?.toLowerCase()
+        const key = c.key.toLowerCase()
+        return (
+          catSlug === key ||
+          catSlug === `${key}-sarees` ||
+          catSlug?.replace(/-sarees$/, '') === key ||
+          key.includes(catSlug) ||
+          cat.name?.toLowerCase().includes(key)
+        )
+      })
+
+      return {
+        image: dbMatch?.image_url || c.image,
+        text: dbMatch?.name || c.label,
+        subtext: dbMatch?.description || c.tag,
+        to: c.to,
+      }
+    })
+  }, [availableCategories, dbCategories])
+
+  const handleCategoryClick = (item) => {
+    if (item?.to) {
+      navigate(item.to)
+    }
+  }
 
 
   useEffect(() => {
@@ -129,53 +216,109 @@ export function HomePage() {
   return (
     <div>
       {/* ─── Hero Section ─── */}
-      <HeroReveal>
-        {(videoDone) =>
-          heroBanners.length > 0 ? (
-            <section className="relative w-full bg-paper overflow-hidden">
-              {/* Ambient gold glow */}
-              <div className="absolute -top-24 -right-24 w-[480px] h-[480px] rounded-full bg-gold/15 blur-[140px] pointer-events-none animate-glow-pulse" />
-              <div className="absolute bottom-0 -left-24 w-[420px] h-[420px] rounded-full bg-oxblood/10 blur-[140px] pointer-events-none" />
+      {heroBanners.length > 0 ? (
+        <section className="relative w-full bg-paper overflow-hidden">
+          {/* Ambient gold glow */}
+          <div className="absolute -top-24 -right-24 w-[480px] h-[480px] rounded-full bg-gold/15 blur-[140px] pointer-events-none animate-glow-pulse" />
+          <div className="absolute bottom-0 -left-24 w-[420px] h-[420px] rounded-full bg-oxblood/10 blur-[140px] pointer-events-none" />
 
-              {/* Full-Width Edge-to-Edge Banner Slideshow (Fade Out Effect, Zero Buffers) */}
-              <motion.div 
-                className="w-full"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-              >
-                <HeroBannerSlideshow banners={heroBanners} />
-              </motion.div>
+          {/* Full-Width Edge-to-Edge Banner Slideshow (Fade Out Effect, Zero Buffers) */}
+          <motion.div 
+            className="w-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            <HeroBannerSlideshow banners={heroBanners} />
+          </motion.div>
 
-              {/* Brand Statement with Interactive Text Reveal Transition */}
-              <div className="w-full mx-auto max-w-5xl px-4 sm:px-6 py-10 md:py-14 text-center">
+          {/* Brand Statement with Interactive Text Reveal Transition */}
+          <div className="w-full mx-auto max-w-5xl px-4 sm:px-6 py-10 md:py-14 text-center">
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="label-eyebrow mb-4 flex items-center justify-center gap-3"
+            >
+              <span className="w-8 h-px bg-gold/60" />
+              <Feather size={14} className="text-oxblood" />
+              Handloom &amp; Designer Atelier
+              <span className="w-8 h-px bg-gold/60" />
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.4, ease: luxuryEase }}
+              className="my-4"
+            >
+              <TextRevealCard text="The House of Saree" revealText="ELAANJI" />
+            </motion.div>
+
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5, ease: luxuryEase }}
+              className="mt-4 text-stone text-[15px] sm:text-base leading-relaxed max-w-xl mx-auto"
+            >
+              Handpicked Kanjivaram, Banarasi, and designer weaves curated for timeless elegance, woven with sacred heritage.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6, ease: luxuryEase }}
+              className="mt-8 flex flex-wrap items-center justify-center gap-4"
+            >
+              <Link to="/shop" className="btn-primary">
+                Shop Now
+                <ArrowRight size={16} strokeWidth={1.5} />
+              </Link>
+              <Link to="/shop?filter=new-arrivals" className="btn-secondary">
+                Explore Collection
+              </Link>
+            </motion.div>
+          </div>
+        </section>
+      ) : (
+        <section className="relative bg-paper-gradient overflow-hidden min-h-[500px] md:min-h-[600px] flex items-center">
+          {/* Ambient gold glow */}
+          <div className="absolute -top-24 -right-24 w-[480px] h-[480px] rounded-full bg-gold/15 blur-[140px] pointer-events-none animate-glow-pulse" />
+          <div className="absolute bottom-0 -left-24 w-[420px] h-[420px] rounded-full bg-oxblood/10 blur-[140px] pointer-events-none" />
+
+          {/* Vertical ornament lines */}
+          <div className="absolute inset-y-0 left-8 hidden lg:block w-px bg-gradient-to-b from-transparent via-gold/30 to-transparent" />
+          <div className="absolute inset-y-0 right-8 hidden lg:block w-px bg-gradient-to-b from-transparent via-gold/30 to-transparent" />
+
+          <div className="w-full mx-auto max-w-[1600px] px-6 sm:px-10 lg:px-12 xl:px-16 py-12 md:py-16 relative">
+            <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
+              {/* Text Column — Undisturbed, elegant width */}
+              <div className="lg:col-span-5 max-w-lg">
                 <motion.p
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
-                  className="label-eyebrow mb-4 flex items-center justify-center gap-3"
+                  transition={{ duration: 0.3 }}
+                  className="label-eyebrow mb-4 flex items-center gap-3 text-ink"
                 >
                   <span className="w-8 h-px bg-gold/60" />
                   <Feather size={14} className="text-oxblood" />
                   Handloom &amp; Designer Atelier
-                  <span className="w-8 h-px bg-gold/60" />
                 </motion.p>
 
                 <motion.div
                   initial={{ opacity: 0, scale: 0.96 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 0.4, ease: luxuryEase }}
-                  className="my-4"
+                  transition={{ duration: 0.6, ease: luxuryEase }}
+                  className="my-3"
                 >
                   <TextRevealCard text="The House of Saree" revealText="ELAANJI" />
                 </motion.div>
 
-
                 <motion.p
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.5, ease: luxuryEase }}
-                  className="mt-4 text-stone text-[15px] sm:text-base leading-relaxed max-w-xl mx-auto"
+                  transition={{ duration: 0.4, delay: 0.2, ease: luxuryEase }}
+                  className="mt-6 text-stone text-[15px] sm:text-base leading-relaxed max-w-md"
                 >
                   Handpicked Kanjivaram, Banarasi, and designer weaves curated for timeless elegance, woven with sacred heritage.
                 </motion.p>
@@ -183,8 +326,8 @@ export function HomePage() {
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.6, ease: luxuryEase }}
-                  className="mt-8 flex flex-wrap items-center justify-center gap-4"
+                  transition={{ duration: 0.4, delay: 0.35, ease: luxuryEase }}
+                  className="mt-9 flex flex-wrap items-center gap-4"
                 >
                   <Link to="/shop" className="btn-primary">
                     Shop Now
@@ -195,93 +338,41 @@ export function HomePage() {
                   </Link>
                 </motion.div>
               </div>
-            </section>
-          ) : (
-            <div className="w-full mx-auto max-w-[1600px] px-6 sm:px-10 lg:px-12 xl:px-16 py-12 md:py-16 relative">
-              <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
-                {/* Text Column — Undisturbed, elegant width */}
-                <div className="lg:col-span-5 max-w-lg">
-                  <motion.p
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.3 }}
-                    className="label-eyebrow mb-4 flex items-center gap-3 text-paper/80"
-                  >
-                    <span className="w-8 h-px bg-gold/60" />
-                    <Feather size={14} className="text-gold-soft" />
-                    Handloom &amp; Designer Atelier
-                  </motion.p>
 
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.96 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.8, delay: 0.4, ease: luxuryEase }}
-                    className="my-3"
-                  >
-                    <TextRevealCard text="The House of Saree" revealText="ELAANJI" />
-                  </motion.div>
+              {/* Hero Visual Column */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.45, ease: luxuryEase }}
+                className="hidden md:flex items-center justify-center lg:justify-end lg:col-span-7 w-full"
+              >
+                <div className="relative w-full max-w-[400px] aspect-[3/4] p-6">
+                  {/* Layered gold frames */}
+                  <div className="absolute inset-0 frame-gold" />
+                  <div className="absolute inset-4 bg-gradient-to-br from-oxblood/10 via-transparent to-gold/10 border border-gold/20" />
+                  <div className="absolute inset-8 border border-gold/15" />
 
+                  {/* Rotating ornament */}
+                  <div className="absolute inset-6 border border-dashed border-gold/20 rounded-full animate-spin-slow pointer-events-none" />
 
-                  <motion.p
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.5, ease: luxuryEase }}
-                    className="mt-6 text-paper/80 text-[15px] sm:text-base leading-relaxed max-w-md"
-                  >
-                    Handpicked Kanjivaram, Banarasi, and designer weaves curated for timeless elegance, woven with sacred heritage.
-                  </motion.p>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.6, ease: luxuryEase }}
-                    className="mt-9 flex flex-wrap items-center gap-4"
-                  >
-                    <Link to="/shop" className="btn-primary">
-                      Shop Now
-                      <ArrowRight size={16} strokeWidth={1.5} />
-                    </Link>
-                    <Link to="/shop?filter=new-arrivals" className="btn-secondary">
-                      Explore Collection
-                    </Link>
-                  </motion.div>
-                </div>
-
-                {/* Hero Visual Column */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 0.45, ease: luxuryEase }}
-                  className="hidden md:flex items-center justify-center lg:justify-end lg:col-span-7 w-full"
-                >
-                  <div className="relative w-full max-w-[400px] aspect-[3/4] p-6">
-                    {/* Layered gold frames */}
-                    <div className="absolute inset-0 frame-gold" />
-                    <div className="absolute inset-4 bg-gradient-to-br from-oxblood/10 via-transparent to-gold/10 border border-gold/20" />
-                    <div className="absolute inset-8 border border-gold/15" />
-
-                    {/* Rotating ornament */}
-                    <div className="absolute inset-6 border border-dashed border-gold/20 rounded-full animate-spin-slow pointer-events-none" />
-
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="glass-dark p-8 max-w-[260px] shadow-luxury">
-                        <span className="text-[10px] tracking-widest2 uppercase text-gold font-medium block mb-2">
-                          Heritage Atelier
-                        </span>
-                        <p className="font-display text-7xl text-gold-gradient leading-none my-3">ए</p>
-                        <div className="w-12 h-px bg-gold/50 mx-auto my-4" />
-                        <p className="text-[11px] tracking-widest2 uppercase text-paper/80">
-                          Est. 2024 · India
-                        </p>
-                      </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="glass-dark p-8 max-w-[260px] shadow-luxury">
+                      <span className="text-[10px] tracking-widest2 uppercase text-gold font-medium block mb-2">
+                        Heritage Atelier
+                      </span>
+                      <p className="font-display text-7xl text-gold-gradient leading-none my-3">ए</p>
+                      <div className="w-12 h-px bg-gold/50 mx-auto my-4" />
+                      <p className="text-[11px] tracking-widest2 uppercase text-paper/80">
+                        Est. 2024 · India
+                      </p>
                     </div>
                   </div>
-                </motion.div>
-              </div>
+                </div>
+              </motion.div>
             </div>
-          )
-        }
-      </HeroReveal>
+          </div>
+        </section>
+      )}
 
       {/* ─── Trust Strip ─── */}
       <section className="border-y border-stone/10 bg-ink-gradient text-paper">
@@ -297,55 +388,30 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ─── Shop by Category (Optimized Grid Reveal) ─── */}
-      <section className="section-container section-pad">
-        <SectionHeader
-          eyebrow="Curated Weaves"
-          title="Shop by Category"
-        />
+      {/* ─── Shop by Category (3D Circular Gallery Showcase) ─── */}
+      <section className="section-pad relative overflow-hidden bg-paper-gradient border-b border-stone/15">
+        {/* Ambient decorative glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] rounded-full bg-gold/10 blur-[160px] pointer-events-none" />
 
-        <motion.div
-          className="grid md:grid-cols-3 gap-6 md:gap-8"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-40px' }}
-          variants={staggerGridContainer}
-        >
-          {CATEGORIES.map((cat) => (
-            <motion.div key={cat.label} variants={staggerGridItem} className="transform-gpu">
-              <Link
-                to={cat.to}
-                className="group block relative bg-beige aspect-[4/5] overflow-hidden shadow-card transition-all duration-500 hover:shadow-luxury"
-              >
-                {/* Visual Gradient Layer */}
-                <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/30 to-transparent z-10" />
-                <div className="absolute inset-0 border border-gold/0 group-hover:border-gold/40 transition-colors duration-500 z-20 pointer-events-none" />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 relative z-10">
+          <SectionHeader
+            title="Shop by Category"
+            subtitle="Swipe or drag to explore our iconic saree traditions · Click any card to enter collection"
+          />
+        </div>
 
-                {/* Index */}
-                <span className="absolute top-6 right-6 font-display text-5xl text-paper/15 z-20 group-hover:text-gold-soft/40 transition-colors duration-500">
-                  {cat.index}
-                </span>
-
-                {/* Content Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 z-20 p-8 transform-gpu transition-transform duration-500 group-hover:-translate-y-2">
-                  <span className="text-[10px] tracking-widest2 uppercase text-gold-soft mb-1 block">
-                    {cat.tag}
-                  </span>
-                  <h3 className="font-display text-3xl text-paper mb-2 group-hover:text-gold-soft transition-colors duration-300">
-                    {cat.label}
-                  </h3>
-                  <p className="text-paper/70 text-sm mb-4 leading-relaxed">
-                    {cat.description}
-                  </p>
-                  <span className="inline-flex items-center gap-2 text-xs tracking-widest2 uppercase text-gold-light font-medium group-hover:gap-3 transition-all duration-300">
-                    Explore Collection
-                    <ArrowRight size={14} />
-                  </span>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </motion.div>
+        {/* 3D WebGL Circular Gallery */}
+        <div className="w-full h-[520px] sm:h-[580px] md:h-[640px] relative z-10">
+          <CircularGallery
+            items={categoryGalleryItems}
+            bend={2.6}
+            borderRadius={0.05}
+            scrollSpeed={2}
+            scrollEase={0.06}
+            onItemClick={handleCategoryClick}
+            className="w-full h-full"
+          />
+        </div>
       </section>
 
       {/* ─── Promotional Offer Banner Slideshow (Admin-Controlled) ─── */}

@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useMemo, useState, useEffect } from 'react'
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Heart, ShieldCheck, Truck, RotateCcw, ChevronDown, Minus, Plus, Check } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useProduct, useRelatedProducts } from '../hooks/useProducts'
@@ -55,6 +55,8 @@ function DetailRow({ label, value }) {
 export function ProductDetailsPage() {
   const { slug } = useParams()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const variantParam = searchParams.get('variant') || searchParams.get('color')
   const { isAuthenticated } = useAuth()
   const { data: product, isLoading } = useProduct(slug)
   const { data: related } = useRelatedProducts(slug)
@@ -68,16 +70,46 @@ export function ProductDetailsPage() {
   const [feedback, setFeedback] = useState('')
   const [quantity, setQuantity] = useState(1)
 
-  const colors = useMemo(() => {
-    if (!product) return []
-    const seen = new Map()
+  // Color variants grouped by unique color name
+  const colorVariants = useMemo(() => {
+    if (!product?.variants) return []
+    const map = new Map()
     for (const v of product.variants) {
-      if (!seen.has(v.color)) seen.set(v.color, v.color_hex)
+      if (!map.has(v.color)) {
+        map.set(v.color, {
+          color: v.color,
+          color_hex: v.color_hex || v.color_code || '#C5A059',
+          sku: v.sku,
+          price_override: v.price_override,
+          hasStock: v.available_quantity > 0 && v.is_active,
+          variant: v,
+        })
+      } else {
+        if (v.available_quantity > 0 && v.is_active) {
+          map.get(v.color).hasStock = true
+        }
+      }
     }
-    return Array.from(seen.entries())
+    return Array.from(map.values())
   }, [product])
 
-  const activeColor = selectedColor || colors[0]?.[0]
+  // Derive initial/active color respecting URL query param first, then in-stock
+  const activeColor = useMemo(() => {
+    if (selectedColor) return selectedColor
+    if (!colorVariants.length) return null
+    if (variantParam) {
+      const bySku = product?.variants?.find(
+        (v) => v.sku.toLowerCase() === variantParam.toLowerCase() || v.id === variantParam
+      )
+      if (bySku) return bySku.color
+      const byName = colorVariants.find(
+        (c) => c.color.toLowerCase() === variantParam.toLowerCase()
+      )
+      if (byName) return byName.color
+    }
+    const inStockOption = colorVariants.find((c) => c.hasStock)
+    return inStockOption ? inStockOption.color : colorVariants[0].color
+  }, [selectedColor, colorVariants, variantParam, product])
 
   const blouseSizes = useMemo(() => {
     if (!product) return []
@@ -87,19 +119,36 @@ export function ProductDetailsPage() {
   }, [product, activeColor])
 
   const matchingVariant = useMemo(() => {
-    if (!product) return null
-    return product.variants.find(
-      (v) => v.color === activeColor && (blouseSizes.length === 0 || v.blouse_size === selectedBlouseSize)
-    )
+    if (!product?.variants || !activeColor) return null
+    const matchingColor = product.variants.filter((v) => v.color === activeColor)
+    if (blouseSizes.length > 0 && selectedBlouseSize) {
+      const withSize = matchingColor.find((v) => v.blouse_size === selectedBlouseSize)
+      if (withSize) return withSize
+    }
+    return matchingColor.find((v) => v.available_quantity > 0) || matchingColor[0] || null
   }, [product, activeColor, selectedBlouseSize, blouseSizes])
 
   const colorImages = useMemo(() => {
     if (!product) return []
-    const forColor = product.images.filter((i) => i.color === activeColor)
+    if (matchingVariant?.images?.length > 0) {
+      return matchingVariant.images
+    }
+    const forColor = product.images.filter(
+      (i) => (matchingVariant && i.variant_id === matchingVariant.id) ||
+             (i.color && activeColor && i.color.trim().toLowerCase() === activeColor.trim().toLowerCase())
+    )
     return forColor.length > 0 ? forColor : product.images
-  }, [product, activeColor])
+  }, [product, matchingVariant, activeColor])
 
   const displayImage = activeImage || colorImages[0]?.image_url
+
+  const handleColorSelect = (cv) => {
+    setSelectedColor(cv.color)
+    setSelectedBlouseSize(null)
+    setActiveImage(null)
+    setFeedback('')
+    setSearchParams({ variant: cv.sku }, { replace: true })
+  }
 
   useDocumentMeta({
     title: product ? `${product.name} | Elaanji` : 'Elaanji: The House of Saree',
@@ -139,11 +188,13 @@ export function ProductDetailsPage() {
     )
   }
 
-  const hasDiscount = product.discount_price && product.discount_price < product.price
-  const price = hasDiscount ? product.discount_price : product.price
+  const basePrice = matchingVariant?.price_override != null ? Number(matchingVariant.price_override) : product.price
+  const hasDiscount = matchingVariant?.price_override != null ? false : (product.discount_price && product.discount_price < product.price)
+  const price = hasDiscount ? product.discount_price : basePrice
+  const currentSku = matchingVariant?.sku || product.sku
   const wishlisted = isAuthenticated && isWishlisted(product.id)
   const needsBlouseSize = blouseSizes.length > 0 && !selectedBlouseSize
-  const inStock = matchingVariant && matchingVariant.available_quantity > 0
+  const inStock = Boolean(matchingVariant && matchingVariant.available_quantity > 0 && matchingVariant.is_active)
 
   const handleAddToCart = () => {
     if (!isAuthenticated) {
@@ -154,10 +205,14 @@ export function ProductDetailsPage() {
       setFeedback('Please select a color' + (blouseSizes.length > 0 ? ' and blouse size.' : '.'))
       return
     }
+    if (!inStock) {
+      setFeedback('This color is currently out of stock.')
+      return
+    }
     addItem.mutate(
       { variantId: matchingVariant.id, quantity },
       {
-        onSuccess: () => showToast(`${product.name} added to cart`),
+        onSuccess: () => showToast(`${product.name} (${activeColor}) added to cart`),
         onError: (err) => showToast(err.response?.data?.detail || 'Could not add to cart.', 'error'),
       }
     )
@@ -227,14 +282,15 @@ export function ProductDetailsPage() {
         {/* ─── Product Info ─── */}
         <div className="md:py-2">
           {product.saree_type && (
-            <p className="label-eyebrow-gold mb-3">
+            <p className="label-eyebrow-gold mb-2">
               {SAREE_TYPE_LABELS[product.saree_type] || product.saree_type}
             </p>
           )}
-          <h1 className="font-display text-3xl sm:text-4xl mb-5 leading-snug">{product.name}</h1>
+          <h1 className="font-display text-3xl sm:text-4xl mb-2 leading-snug">{product.name}</h1>
+          <p className="text-[11px] font-mono tracking-widest text-stone uppercase mb-5">SKU: {currentSku}</p>
 
           {/* Price */}
-          <div className="flex items-baseline gap-3 mb-7">
+          <div className="flex items-baseline gap-3 mb-7 flex-wrap">
             <span className="text-3xl font-semibold tracking-tight">{formatINR(price)}</span>
             {hasDiscount && (
               <>
@@ -244,40 +300,69 @@ export function ProductDetailsPage() {
                 </span>
               </>
             )}
+            {matchingVariant?.price_override != null && (
+              <span className="text-[11px] bg-gold/15 text-ink-deep px-2 py-0.5 tracking-wider uppercase font-medium">
+                Color Pricing
+              </span>
+            )}
           </div>
 
           {/* Color Selector */}
-          {colors.length > 0 && (
+          {colorVariants.length > 0 && (
             <div className="mb-7">
-              <p className="text-xs tracking-widest2 uppercase text-stone mb-3">
-                Color: <span className="text-ink normal-case tracking-normal font-medium">{activeColor}</span>
-              </p>
-              <div className="flex gap-3">
-                {colors.map(([color, hex]) => (
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    key={color}
-                    onClick={() => {
-                      setSelectedColor(color)
-                      setSelectedBlouseSize(null)
-                      setActiveImage(null)
-                    }}
-                    aria-label={color}
-                    className={`relative w-10 h-10 rounded-full border-2 transition-all duration-200 cursor-pointer ${
-                      activeColor === color
-                        ? 'border-gold scale-110 shadow-gold-glow'
-                        : 'border-transparent hover:border-stone/40'
-                    }`}
-                    style={{ backgroundColor: hex || '#ccc' }}
-                  >
-                    {activeColor === color && (
-                      <span className="absolute inset-0 flex items-center justify-center">
-                        <Check size={14} className="text-paper drop-shadow" strokeWidth={2.5} />
-                      </span>
-                    )}
-                  </motion.button>
-                ))}
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs tracking-widest2 uppercase text-stone">
+                  Color:{' '}
+                  <span className="text-ink normal-case tracking-normal font-medium">{activeColor}</span>
+                  {!inStock && (
+                    <span className="ml-2 text-oxblood font-semibold tracking-normal text-[11px]">
+                      (Out of Stock)
+                    </span>
+                  )}
+                </p>
+                <span className="text-[11px] text-stone">
+                  {colorVariants.length} {colorVariants.length === 1 ? 'Color' : 'Colors'}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-3.5" role="radiogroup" aria-label="Color Variants">
+                {colorVariants.map((cv) => {
+                  const isSelected = activeColor === cv.color
+                  const isOut = !cv.hasStock
+                  return (
+                    <motion.button
+                      key={cv.color}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      aria-label={`${cv.color}${isOut ? ' - Out of Stock' : ''}`}
+                      title={`${cv.color}${isOut ? ' (Out of Stock)' : ' (In Stock)'}`}
+                      whileHover={{ scale: 1.08 }}
+                      whileTap={{ scale: 0.94 }}
+                      onClick={() => handleColorSelect(cv)}
+                      className={`relative w-10 h-10 rounded-full border transition-all duration-200 cursor-pointer flex items-center justify-center ${
+                        isSelected
+                          ? 'border-gold ring-2 ring-gold ring-offset-2 ring-offset-paper scale-105 shadow-gold-glow'
+                          : 'border-stone/30 hover:border-gold/60'
+                      } ${isOut ? 'opacity-70' : ''}`}
+                      style={{ backgroundColor: cv.color_hex }}
+                    >
+                      {/* Active check */}
+                      {isSelected && (
+                        <span className="w-4 h-4 rounded-full bg-paper/90 flex items-center justify-center shadow-sm">
+                          <Check size={11} className="text-ink" strokeWidth={3} />
+                        </span>
+                      )}
+
+                      {/* Out of Stock Diagonal Slash */}
+                      {isOut && !isSelected && (
+                        <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <span className="w-full h-0.5 bg-oxblood/80 -rotate-45" />
+                        </span>
+                      )}
+                    </motion.button>
+                  )
+                })}
               </div>
             </div>
           )}
@@ -305,15 +390,18 @@ export function ProductDetailsPage() {
             </div>
           )}
 
-          {/* Stock */}
+          {/* Stock Availability */}
           {matchingVariant && (
-            <p className={`text-xs mb-5 ${inStock ? 'text-stone' : 'text-oxblood'}`}>
-              {inStock
-                ? matchingVariant.available_quantity <= 5
-                  ? `Only ${matchingVariant.available_quantity} left`
-                  : 'In stock'
-                : 'Out of stock for this option'}
-            </p>
+            <div className="mb-6 flex items-center gap-2 text-xs">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${inStock ? (matchingVariant.available_quantity <= 5 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-600') : 'bg-oxblood'}`} />
+              <span className={inStock ? (matchingVariant.available_quantity <= 5 ? 'text-amber-800 font-medium' : 'text-stone') : 'text-oxblood font-semibold'}>
+                {inStock
+                  ? matchingVariant.available_quantity <= 5
+                    ? `Only ${matchingVariant.available_quantity} left in stock — order soon`
+                    : 'In stock · Ready to dispatch'
+                  : 'Currently out of stock in this color'}
+              </span>
+            </div>
           )}
 
           {/* Quantity + Add to Cart */}
@@ -340,10 +428,12 @@ export function ProductDetailsPage() {
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={handleAddToCart}
-              disabled={addItem.isPending || (matchingVariant && !inStock)}
-              className="btn-primary flex-1 !px-4 sm:!px-8 cursor-pointer text-center"
+              disabled={addItem.isPending || !inStock}
+              className={`btn-primary flex-1 !px-4 sm:!px-8 text-center ${
+                !inStock ? '!bg-stone/20 !text-stone !border-stone/20 cursor-not-allowed' : 'cursor-pointer'
+              }`}
             >
-              {addItem.isPending ? 'Adding…' : 'Add to Cart'}
+              {addItem.isPending ? 'Adding…' : !inStock ? 'Out of Stock' : 'Add to Bag'}
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.9 }}

@@ -63,6 +63,31 @@ def to_card_dict(product: Product) -> dict:
     hover_image = next((i for i in product.images if i.is_hover_image), None)
     available = any(v.available_quantity > 0 and v.is_active for v in product.variants)
 
+    color_variants = []
+    seen_colors = set()
+    for v in sorted(product.variants, key=lambda x: (not x.is_active, x.available_quantity <= 0)):
+        norm_color = v.color.strip().lower() if v.color else ""
+        if norm_color and norm_color not in seen_colors:
+            seen_colors.add(norm_color)
+            v_img = next(
+                (
+                    img.image_url
+                    for img in sorted(product.images, key=lambda x: x.display_order)
+                    if (img.variant_id == v.id) or (img.color and img.color.strip().lower() == v.color.strip().lower())
+                ),
+                None,
+            )
+            color_variants.append(
+                {
+                    "id": v.id,
+                    "sku": v.sku,
+                    "color": v.color,
+                    "color_hex": v.color_hex,
+                    "available": v.available_quantity > 0 and v.is_active,
+                    "image_url": v_img,
+                }
+            )
+
     return {
         "id": product.id,
         "name": product.name,
@@ -84,4 +109,5 @@ def to_card_dict(product: Product) -> dict:
         "hover_image_url": hover_image.image_url if hover_image else None,
         "status": product.status,
         "available": available,
+        "color_variants": color_variants,
     }

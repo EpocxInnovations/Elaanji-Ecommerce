@@ -15,6 +15,7 @@ class Banner(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "banners"
 
     image_url: Mapped[str] = mapped_column(String(500), nullable=False)
+    mobile_image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     heading: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     cta_text: Mapped[Optional[str]] = mapped_column(String(60), nullable=True)

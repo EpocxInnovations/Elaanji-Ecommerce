@@ -6,6 +6,19 @@ import { SAREE_TYPE_LABELS, OCCASION_LABELS } from '../utils/format'
 const SAREE_TYPES = Object.entries(SAREE_TYPE_LABELS)
 const OCCASIONS = Object.entries(OCCASION_LABELS)
 
+const POPULAR_COLORS = [
+  { name: 'Red', hex: '#B91C1C' },
+  { name: 'Green', hex: '#15803D' },
+  { name: 'Pink', hex: '#EC4899' },
+  { name: 'Maroon', hex: '#5C1A22' },
+  { name: 'Royal Blue', hex: '#1D4ED8' },
+  { name: 'Mustard Yellow', hex: '#C9962C' },
+  { name: 'Gold', hex: '#D4AF37' },
+  { name: 'Purple', hex: '#7E22CE' },
+  { name: 'Wine', hex: '#6E2430' },
+  { name: 'Black', hex: '#18181B' },
+]
+
 function FilterSection({ title, defaultOpen = true, children }) {
   const [open, setOpen] = useState(defaultOpen)
 
@@ -124,6 +137,33 @@ export function ShopFilters({ filters, onChange }) {
               label={label}
             />
           ))}
+        </div>
+      </FilterSection>
+
+      <FilterSection title="Color" defaultOpen={false}>
+        <div className="flex flex-wrap gap-2">
+          {POPULAR_COLORS.map(({ name, hex }) => {
+            const isSelected = filters.color === name
+            return (
+              <button
+                key={name}
+                type="button"
+                onClick={() => toggleValue('color', name)}
+                title={name}
+                className={`flex items-center gap-1.5 px-2.5 py-1 text-xs border rounded transition-all cursor-pointer ${
+                  isSelected
+                    ? 'border-gold bg-gold/10 text-ink font-medium shadow-sm'
+                    : 'border-stone/20 text-stone hover:border-stone/40'
+                }`}
+              >
+                <span
+                  className="w-3 h-3 rounded-full border border-stone/20 shrink-0"
+                  style={{ backgroundColor: hex }}
+                />
+                <span>{name}</span>
+              </button>
+            )
+          })}
         </div>
       </FilterSection>
 
