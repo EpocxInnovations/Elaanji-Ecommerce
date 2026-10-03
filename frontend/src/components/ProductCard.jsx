@@ -6,8 +6,9 @@ import { useWishlist } from '../hooks/useWishlist'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { bounceSpring, luxuryEase } from '../utils/motion'
+import { GlowCard } from './ui/spotlight-card'
 
-export function ProductCard({ product, priority = false }) {
+export function ProductCard({ product, priority = false, glow = true, glowColor = 'gold' }) {
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
   const { isWishlisted, addItem, removeItem, findItemId } = useWishlist()
@@ -33,9 +34,9 @@ export function ProductCard({ product, priority = false }) {
 
   const colorVariants = product.color_variants || []
 
-  return (
-    <Link to={`/products/${product.slug}`} className="group block transform-gpu">
-      <div className="relative aspect-[3/4] bg-beige overflow-hidden mb-4 shadow-card group-hover:shadow-luxury transition-shadow duration-500">
+  const innerContent = (
+    <div className="flex flex-col h-full">
+      <div className="relative aspect-[3/4] bg-beige overflow-hidden mb-3.5 rounded-xl shadow-card group-hover:shadow-luxury transition-shadow duration-500">
         {product.primary_image_url && (
           <motion.img
             layoutId={`product-image-${product.id}`}
@@ -62,17 +63,17 @@ export function ProductCard({ product, priority = false }) {
         )}
 
         {/* Gold hairline frame */}
-        <div className="absolute inset-0 border border-gold/0 group-hover:border-gold/25 transition-colors duration-500 pointer-events-none" />
+        <div className="absolute inset-0 border border-gold/0 group-hover:border-gold/25 transition-colors duration-500 pointer-events-none rounded-xl" />
 
         {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10">
           {!product.available && (
-            <span className="bg-ink/90 text-paper text-[10px] px-2.5 py-1 tracking-widest2 uppercase backdrop-blur-sm">
+            <span className="bg-ink/90 text-paper text-[10px] px-2.5 py-1 tracking-widest2 uppercase backdrop-blur-sm rounded-sm">
               Sold Out
             </span>
           )}
           {hasDiscount && product.available && (
-            <span className="bg-oxblood-gradient text-paper text-[10px] px-2.5 py-1 tracking-widest2 uppercase shadow-md">
+            <span className="bg-oxblood-gradient text-paper text-[10px] px-2.5 py-1 tracking-widest2 uppercase shadow-md rounded-sm">
               {discountPercent}% Off
             </span>
           )}
@@ -84,7 +85,7 @@ export function ProductCard({ product, priority = false }) {
           whileTap={{ scale: 0.85 }}
           onClick={handleWishlistToggle}
           aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-          className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 glass-light p-1.5 sm:p-2 z-10
+          className="absolute top-2.5 right-2.5 glass-light p-1.5 sm:p-2 z-10 rounded-full
                      opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300
                      hover:shadow-gold-glow cursor-pointer"
         >
@@ -113,47 +114,49 @@ export function ProductCard({ product, priority = false }) {
       </div>
 
       {/* Info */}
-      <div className="space-y-1.5 px-0.5">
-        {product.saree_type && (
-          <p className="text-[10px] text-gold uppercase tracking-widest2 leading-none font-medium">
-            {SAREE_TYPE_LABELS[product.saree_type] || product.saree_type}
-          </p>
-        )}
-        <h3 className="font-display text-base text-ink leading-snug line-clamp-2 group-hover:text-oxblood transition-colors duration-200">
-          {product.name}
-        </h3>
+      <div className="space-y-1.5 px-0.5 flex-1 flex flex-col justify-between">
+        <div>
+          {product.saree_type && (
+            <p className="text-[10px] text-gold uppercase tracking-widest2 leading-none font-medium mb-1">
+              {SAREE_TYPE_LABELS[product.saree_type] || product.saree_type}
+            </p>
+          )}
+          <h3 className="font-display text-sm sm:text-base text-ink leading-snug line-clamp-2 group-hover:text-oxblood transition-colors duration-200">
+            {product.name}
+          </h3>
 
-        {/* Color Swatches if product has multiple colors */}
-        {colorVariants.length > 1 && (
-          <div className="flex items-center gap-1.5 pt-0.5 pb-1">
-            <div className="flex items-center gap-1">
-              {colorVariants.slice(0, 4).map((cv) => (
-                <button
-                  key={cv.id}
-                  type="button"
-                  title={`${cv.color}${cv.available ? '' : ' (Out of stock)'}`}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    navigate(`/products/${product.slug}?variant=${cv.sku}`)
-                  }}
-                  className={`w-3.5 h-3.5 rounded-full border border-stone/30 shrink-0 transition-transform hover:scale-125 cursor-pointer relative ${
-                    !cv.available ? 'opacity-40' : ''
-                  }`}
-                  style={{ backgroundColor: cv.color_hex || '#c5a059' }}
-                />
-              ))}
+          {/* Color Swatches if product has multiple colors */}
+          {colorVariants.length > 1 && (
+            <div className="flex items-center gap-1.5 pt-1 pb-0.5">
+              <div className="flex items-center gap-1">
+                {colorVariants.slice(0, 4).map((cv) => (
+                  <button
+                    key={cv.id}
+                    type="button"
+                    title={`${cv.color}${cv.available ? '' : ' (Out of stock)'}`}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      navigate(`/products/${product.slug}?variant=${cv.sku}`)
+                    }}
+                    className={`w-3.5 h-3.5 rounded-full border border-stone/30 shrink-0 transition-transform hover:scale-125 cursor-pointer relative ${
+                      !cv.available ? 'opacity-40' : ''
+                    }`}
+                    style={{ backgroundColor: cv.color_hex || '#c5a059' }}
+                  />
+                ))}
+              </div>
+              {colorVariants.length > 4 && (
+                <span className="text-[10px] text-stone">+{colorVariants.length - 4}</span>
+              )}
+              <span className="text-[10px] text-stone tracking-wide">
+                {colorVariants.length} colors
+              </span>
             </div>
-            {colorVariants.length > 4 && (
-              <span className="text-[10px] text-stone">+{colorVariants.length - 4}</span>
-            )}
-            <span className="text-[10px] text-stone tracking-wide">
-              {colorVariants.length} colors
-            </span>
-          </div>
-        )}
+          )}
+        </div>
 
-        <div className="flex items-baseline gap-2 pt-0.5">
+        <div className="flex items-baseline gap-2 pt-1">
           <span className="text-sm font-semibold tracking-tight">
             {formatINR(hasDiscount ? product.discount_price : product.price)}
           </span>
@@ -164,6 +167,26 @@ export function ProductCard({ product, priority = false }) {
           )}
         </div>
       </div>
-    </Link>
+    </div>
+  )
+
+  if (!glow) {
+    return (
+      <Link to={`/products/${product.slug}`} className="group block transform-gpu h-full">
+        {innerContent}
+      </Link>
+    )
+  }
+
+  return (
+    <GlowCard
+      customSize
+      glowColor={glowColor}
+      className="group block h-full p-2.5 sm:p-3 rounded-2xl bg-paper/60 backdrop-blur-[2px] transition-all duration-300 hover:shadow-luxury hover:bg-paper/90"
+    >
+      <Link to={`/products/${product.slug}`} className="block transform-gpu h-full">
+        {innerContent}
+      </Link>
+    </GlowCard>
   )
 }

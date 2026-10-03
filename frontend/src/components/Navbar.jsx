@@ -4,7 +4,7 @@ import { Search, Heart, User, ShoppingBag, Menu, X, ArrowRight, ShieldCheck } fr
 import { AnimatePresence, motion } from 'framer-motion'
 import { GooeyInput } from '@/components/ui/gooey-input'
 import { useAuth } from '../context/AuthContext'
-
+import { useCustomerSidebar } from './CustomerSidebar'
 import { useCart } from '../hooks/useCart'
 import { luxuryEase, luxurySpring } from '../utils/motion'
 
@@ -19,6 +19,7 @@ const navLinks = [
 export function Navbar() {
   const { isAuthenticated, isAdmin } = useAuth()
   const { cart } = useCart()
+  const { toggle: toggleSidebar } = useCustomerSidebar()
   const navigate = useNavigate()
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -76,22 +77,26 @@ export function Navbar() {
       >
         <div className="border-b border-stone/10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4 flex items-center justify-between">
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              aria-label="Open menu"
-              className="md:hidden -ml-1 p-2 hover:text-oxblood transition-colors"
-            >
-              <Menu size={22} strokeWidth={1.5} />
-            </button>
+            {/* Sidebar Toggle & Brand Logo */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                aria-label="Open navigation sidebar"
+                className="-ml-1.5 p-2 text-ink/75 hover:text-oxblood hover:bg-stone/10 rounded-md transition-colors flex items-center cursor-pointer"
+                title="Browse saree catalog sidebar"
+              >
+                <Menu size={21} strokeWidth={1.5} />
+              </button>
 
-            {/* Logo */}
-            <Link to="/" className="group flex items-center gap-2">
-              <span className="font-display text-xl sm:text-2xl tracking-[0.14em] sm:tracking-[0.18em]">
-                ELAANJI
-              </span>
-              <span className="hidden sm:block w-5 h-px bg-gold/50 transition-all duration-300 group-hover:w-8" />
-            </Link>
+              {/* Logo */}
+              <Link to="/" className="group flex items-center gap-2">
+                <span className="font-display text-xl sm:text-2xl tracking-[0.14em] sm:tracking-[0.18em]">
+                  ELAANJI
+                </span>
+                <span className="hidden sm:block w-5 h-px bg-gold/50 transition-all duration-300 group-hover:w-8" />
+              </Link>
+            </div>
 
             {/* Desktop Nav */}
             <nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">

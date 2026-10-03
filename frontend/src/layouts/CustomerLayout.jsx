@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { AnnouncementBar } from '../components/AnnouncementBar'
 import { Navbar } from '../components/Navbar'
 import { Footer } from '../components/Footer'
+import { CustomerSidebarProvider, CustomerSidebar } from '../components/CustomerSidebar'
 
 export function CustomerLayout() {
   const location = useLocation()
@@ -14,19 +15,36 @@ export function CustomerLayout() {
   }, [location.pathname])
 
   return (
-    <div className="min-h-screen flex flex-col bg-paper bg-paper-gradient overflow-x-hidden">
-      <AnnouncementBar />
-      <Navbar />
-      <motion.main
-        key={location.pathname}
-        initial={{ opacity: 0, y: 4 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25, ease: 'easeOut' }}
-        className="flex-1 transform-gpu"
-      >
-        <Outlet />
-      </motion.main>
-      <Footer />
-    </div>
+    <CustomerSidebarProvider>
+      <div className="min-h-screen flex flex-col bg-paper overflow-x-hidden relative">
+        {/* Luxury Brand Glow Background */}
+        <div
+          className="absolute inset-0 z-0 pointer-events-none"
+          style={{
+            backgroundImage: `radial-gradient(125% 125% at 50% 10%, #FAF9F6 40%, #6E2430 100%)`,
+            backgroundSize: "100% 100%",
+            backgroundAttachment: "fixed" // keeps the glow stationary when scrolling
+          }}
+        />
+
+        {/* Content (z-10 to stay above the absolute background) */}
+        <div className="relative z-10 flex flex-col flex-1">
+          <AnnouncementBar />
+          <Navbar />
+          <CustomerSidebar />
+          <motion.main
+            key={location.pathname}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="flex-1 transform-gpu"
+          >
+            <Outlet />
+          </motion.main>
+          <Footer />
+        </div>
+      </div>
+    </CustomerSidebarProvider>
   )
 }
+
