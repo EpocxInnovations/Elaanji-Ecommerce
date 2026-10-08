@@ -69,7 +69,7 @@ export function Navbar() {
   return (
     <>
       <header
-        className={`sticky top-0 z-40 transition-all duration-500 ${
+        className={`sticky top-0 z-50 transition-all duration-500 ${
           scrolled
             ? 'bg-paper/85 backdrop-blur-xl shadow-card py-0.5'
             : 'bg-paper'
@@ -91,7 +91,10 @@ export function Navbar() {
 
               {/* Logo */}
               <Link to="/" className="group flex items-center gap-2">
-                <span className="font-display text-xl sm:text-2xl tracking-[0.14em] sm:tracking-[0.18em]">
+                <span
+                  data-brand-logo
+                  className="font-display text-xl sm:text-2xl tracking-[0.14em] sm:tracking-[0.18em]"
+                >
                   ELAANJI
                 </span>
                 <span className="hidden sm:block w-5 h-px bg-gold/50 transition-all duration-300 group-hover:w-8" />
@@ -119,7 +122,7 @@ export function Navbar() {
             </nav>
 
             {/* Icon Actions */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 navbar-actions">
               {isAdmin && (
                 <Link
                   to="/admin"

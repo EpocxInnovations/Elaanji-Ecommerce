@@ -27,6 +27,7 @@ from app.api import (
     payments,
     banners,
     seo,
+    chat,
 )
 from app.api.admin import (
     dashboard as admin_dashboard,
@@ -136,6 +137,7 @@ app.include_router(orders.router)
 app.include_router(payments.router)
 app.include_router(banners.router)
 app.include_router(seo.router)
+app.include_router(chat.router)
 
 # Include Admin Routers
 app.include_router(admin_dashboard.router)

@@ -5,6 +5,7 @@ import { AnnouncementBar } from '../components/AnnouncementBar'
 import { Navbar } from '../components/Navbar'
 import { Footer } from '../components/Footer'
 import { CustomerSidebarProvider, CustomerSidebar } from '../components/CustomerSidebar'
+import { ChatWidget } from '../components/ChatWidget'
 
 export function CustomerLayout() {
   const location = useLocation()
@@ -27,8 +28,8 @@ export function CustomerLayout() {
           }}
         />
 
-        {/* Content (z-10 to stay above the absolute background) */}
-        <div className="relative z-10 flex flex-col flex-1">
+        {/* Content */}
+        <div className="relative flex flex-col flex-1">
           <AnnouncementBar />
           <Navbar />
           <CustomerSidebar />
@@ -42,6 +43,7 @@ export function CustomerLayout() {
             <Outlet />
           </motion.main>
           <Footer />
+          <ChatWidget />
         </div>
       </div>
     </CustomerSidebarProvider>

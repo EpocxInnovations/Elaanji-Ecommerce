@@ -52,6 +52,12 @@ class Settings(BaseSettings):
     project_name: str = "Elaanji E-Commerce API"
     app_version: str = "1.0.0"
 
+    # NVIDIA NIM (free LLM + Embedding API for chatbot)
+    nvidia_api_key: str = ""
+    nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
+    nvidia_chat_model: str = "meta/llama-3.2-11b-vision-instruct"
+    nvidia_embed_model: str = "nvidia/llama-3.2-nv-embedqa-1b-v1"
+
 
 def get_settings() -> Settings:
     return Settings()

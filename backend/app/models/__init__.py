@@ -20,6 +20,7 @@ from app.models.review import Review
 from app.models.content import Banner, HomepageSection, Notification, StoreSetting
 from app.models.activity_log import AdminActivityLog
 from app.models.password_reset_otp import PasswordResetOTP
+from app.models.chat import KnowledgeChunk, ChatSession, ChatMessage
 
 __all__ = [
     "User",
@@ -49,4 +50,8 @@ __all__ = [
     "Notification",
     "StoreSetting",
     "AdminActivityLog",
+    "KnowledgeChunk",
+    "ChatSession",
+    "ChatMessage",
 ]
+

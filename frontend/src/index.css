@@ -237,3 +237,55 @@
     display: none !important;
   }
 }
+
+/* ---------- Curtain Intro Animation Support ---------- */
+html[data-intro="playing"] [data-brand-logo],
+html[data-intro="nav"] [data-brand-logo],
+html[data-intro="open"] [data-brand-logo] {
+  visibility: hidden;
+}
+
+html[data-intro="playing"] header,
+html[data-intro="playing"] .announcement-bar,
+html[data-intro="playing"] header nav,
+html[data-intro="playing"] header .navbar-actions,
+html[data-intro="playing"] header button[aria-label="Open navigation sidebar"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 1.20 - 1.45: nav links fade in on top of the still-closed curtain */
+html[data-intro="nav"] header {
+  opacity: 1;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+html[data-intro="nav"] header nav,
+html[data-intro="nav"] header .navbar-actions,
+html[data-intro="nav"] header button[aria-label="Open navigation sidebar"] {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.25s ease;
+}
+
+/* 1.58+: curtains part, navbar background and announcement bar transition in */
+html[data-intro="open"] header {
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+html[data-intro="open"] .announcement-bar {
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+html[data-intro="open"] header nav,
+html[data-intro="open"] header .navbar-actions,
+html[data-intro="open"] header button[aria-label="Open navigation sidebar"] {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.5s ease;
+}
+
+html[data-intro="landed"] [data-brand-logo] {
+  visibility: visible;
+}
+

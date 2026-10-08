@@ -28,7 +28,7 @@ export function AnnouncementBar() {
         animate={{ height: 'auto', opacity: 1 }}
         exit={{ height: 0, opacity: 0 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-ink-deep text-paper overflow-hidden relative"
+        className="bg-ink-deep text-paper overflow-hidden relative announcement-bar"
       >
         <div className="flex overflow-hidden py-2.5 relative">
           <div className="flex whitespace-nowrap animate-marquee min-w-full">

@@ -10,6 +10,7 @@ import { SplitText } from '../components/SplitText'
 import { TextRevealCard } from '../components/TextRevealCard'
 import { HeroBannerSlideshow, PromotionBannerSlideshow } from '../components/BannerSlideshow'
 import { CircularGallery } from '../components/ui/CircularGallery'
+import CurtainIntro, { useIntroReady, HERO_DELAYS, HERO_BG_SETTLE } from '../components/CurtainIntro'
 
 import { luxuryEase, staggerGridContainer, staggerGridItem } from '../utils/motion'
 
@@ -147,6 +148,7 @@ export function HomePage() {
   const { data: storeProducts } = useProducts({ page_size: 100 }, { staleTime: 60 * 1000 })
   const { data: dbCategories } = useCategories()
   const { data: banners } = useBanners()
+  const isIntroReady = useIntroReady()
   const heroBanners = banners?.filter((b) => b.placement === 'hero' && b.is_active) || []
   const promoBanners = banners?.filter((b) => b.placement === 'promo' && b.is_active) || []
   const saleBanners = banners?.filter((b) => b.placement === 'sale' && b.is_active) || []
@@ -215,6 +217,8 @@ export function HomePage() {
 
   return (
     <div>
+      <CurtainIntro />
+
       {/* ─── Hero Section ─── */}
       {heroBanners.length > 0 ? (
         <section className="relative w-full bg-paper overflow-hidden">
@@ -225,9 +229,15 @@ export function HomePage() {
           {/* Full-Width Edge-to-Edge Banner Slideshow (Fade Out Effect, Zero Buffers) */}
           <motion.div 
             className="w-full"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            initial={HERO_BG_SETTLE.initial}
+            animate={{
+              opacity: isIntroReady ? 1 : 0,
+              scale: isIntroReady ? 1 : HERO_BG_SETTLE.initial.scale,
+            }}
+            transition={{
+              opacity: { duration: 0.8 },
+              scale: HERO_BG_SETTLE.transition,
+            }}
           >
             <HeroBannerSlideshow banners={heroBanners} />
           </motion.div>
@@ -236,8 +246,8 @@ export function HomePage() {
           <div className="w-full mx-auto max-w-5xl px-4 sm:px-6 py-10 md:py-14 text-center">
             <motion.p
               initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
+              animate={isIntroReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
+              transition={{ duration: 0.6, delay: HERO_DELAYS.eyebrow }}
               className="label-eyebrow mb-4 flex items-center justify-center gap-3"
             >
               <span className="w-8 h-px bg-gold/60" />
@@ -247,9 +257,9 @@ export function HomePage() {
             </motion.p>
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.4, ease: luxuryEase }}
+              initial={{ opacity: 0, x: -36 }}
+              animate={isIntroReady ? { opacity: 1, x: 0 } : { opacity: 0, x: -36 }}
+              transition={{ duration: 0.8, delay: HERO_DELAYS.headline, ease: luxuryEase }}
               className="my-4"
             >
               <TextRevealCard text="The House of Saree" revealText="ELAANJI" />
@@ -257,8 +267,8 @@ export function HomePage() {
 
             <motion.p
               initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5, ease: luxuryEase }}
+              animate={isIntroReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+              transition={{ duration: 0.6, delay: HERO_DELAYS.subtext, ease: luxuryEase }}
               className="mt-4 text-stone text-[15px] sm:text-base leading-relaxed max-w-xl mx-auto"
             >
               Handpicked Kanjivaram, Banarasi, and designer weaves curated for timeless elegance, woven with sacred heritage.
@@ -266,8 +276,8 @@ export function HomePage() {
 
             <motion.div
               initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6, ease: luxuryEase }}
+              animate={isIntroReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+              transition={{ duration: 0.6, delay: HERO_DELAYS.buttons, ease: luxuryEase }}
               className="mt-8 flex flex-wrap items-center justify-center gap-4"
             >
               <Link to="/shop" className="btn-primary">
@@ -296,8 +306,8 @@ export function HomePage() {
               <div className="lg:col-span-5 max-w-lg">
                 <motion.p
                   initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
+                  animate={isIntroReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
+                  transition={{ duration: 0.4, delay: HERO_DELAYS.eyebrow }}
                   className="label-eyebrow mb-4 flex items-center gap-3 text-ink"
                 >
                   <span className="w-8 h-px bg-gold/60" />
@@ -306,9 +316,9 @@ export function HomePage() {
                 </motion.p>
 
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.6, ease: luxuryEase }}
+                  initial={{ opacity: 0, x: -36 }}
+                  animate={isIntroReady ? { opacity: 1, x: 0 } : { opacity: 0, x: -36 }}
+                  transition={{ duration: 0.7, delay: HERO_DELAYS.headline, ease: luxuryEase }}
                   className="my-3"
                 >
                   <TextRevealCard text="The House of Saree" revealText="ELAANJI" />
@@ -316,8 +326,8 @@ export function HomePage() {
 
                 <motion.p
                   initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.2, ease: luxuryEase }}
+                  animate={isIntroReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+                  transition={{ duration: 0.5, delay: HERO_DELAYS.subtext, ease: luxuryEase }}
                   className="mt-6 text-stone text-[15px] sm:text-base leading-relaxed max-w-md"
                 >
                   Handpicked Kanjivaram, Banarasi, and designer weaves curated for timeless elegance, woven with sacred heritage.
@@ -325,8 +335,8 @@ export function HomePage() {
 
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.35, ease: luxuryEase }}
+                  animate={isIntroReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+                  transition={{ duration: 0.5, delay: HERO_DELAYS.buttons, ease: luxuryEase }}
                   className="mt-9 flex flex-wrap items-center gap-4"
                 >
                   <Link to="/shop" className="btn-primary">
@@ -341,9 +351,15 @@ export function HomePage() {
 
               {/* Hero Visual Column */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.45, ease: luxuryEase }}
+                initial={HERO_BG_SETTLE.initial}
+                animate={{
+                  opacity: isIntroReady ? 1 : 0,
+                  scale: isIntroReady ? 1 : HERO_BG_SETTLE.initial.scale,
+                }}
+                transition={{
+                  opacity: { duration: 0.8 },
+                  scale: HERO_BG_SETTLE.transition,
+                }}
                 className="hidden md:flex items-center justify-center lg:justify-end lg:col-span-7 w-full"
               >
                 <div className="relative w-full max-w-[400px] aspect-[3/4] p-6">
