@@ -1,94 +1,106 @@
-# Garments E-Commerce — Phase 1: Foundation
+# Elaanji — Garments E-Commerce Platform
 
-This is Phase 1 of the full-stack garments e-commerce build: the database
-schema, authentication, and project scaffolding that every later phase
-(storefront, checkout, admin panel) builds on top of.
+A full-stack e-commerce platform for selling luxury Indian sarees. The platform includes a customer storefront, a secure checkout process, an AI-powered support chatbot, and a comprehensive admin panel.
 
-## What's included
+## Tech Stack
+- **Backend**: FastAPI (Python), SQLAlchemy, PostgreSQL
+- **Frontend**: React 18, Vite, Tailwind CSS, Framer Motion
+- **AI**: Local embeddings (Sentence-Transformers) + NVIDIA NIM LLM API
 
-**Backend (FastAPI + PostgreSQL)**
-- Full normalized schema — 25 tables covering users, products, variants,
-  inventory, carts, orders, payments, coupons, reviews, banners, and admin
-  activity logs — implemented as SQLAlchemy models with proper FKs, enums,
-  and timestamps.
-- Alembic migrations, generated and tested against a real Postgres instance.
-- JWT authentication: register, login, refresh, logout, forgot/reset
-  password, `/me`.
-- Role-based route protection (`customer` vs `admin`), verified with the
-  `/api/admin/ping` route.
+---
 
-**Frontend (React 18 + Vite + Tailwind, JavaScript only)**
-- Full route structure for both the customer storefront and `/admin` panel,
-  matching the spec's sitemap.
-- Working auth: register, login, logout, protected routes, admin-only routes,
-  automatic token refresh on 401.
-- Layouts: customer (announcement bar + navbar + footer) and admin (collapsible
-  sidebar with all 12 sections).
-- Design tokens (palette, type) applied consistently so later phases don't
-  restyle from scratch.
+## How to Run the Project Locally (Windows)
 
-Every route not yet built out (Shop, Product Details, Cart, Checkout, and the
-admin data screens) is clearly labeled with which phase will implement it —
-nothing is faked as working.
+Follow these steps to get the full stack running on your local Windows machine.
 
-## Running it locally
+### 1. Database Setup (PostgreSQL)
 
-### Backend
+You need to have PostgreSQL installed and running on your machine.
 
-```bash
-cd backend
-python3 -m venv venv && source venv/bin/activate
+1. Open your PostgreSQL tool (e.g., pgAdmin or psql).
+2. Create a new database named `Elaanji`.
+3. Keep your Postgres username and password handy (default is usually `postgres`).
+
+### 2. Backend Setup
+
+Open a new PowerShell terminal and navigate to the backend directory:
+
+```powershell
+cd D:\elaanji\backend
+```
+
+**a. Create and activate a virtual environment:**
+```powershell
+python -m venv venv
+.\venv\Scripts\activate
+```
+
+**b. Install dependencies:**
+```powershell
 pip install -r requirements.txt
-cp .env.example .env   # then fill in DATABASE_URL and JWT_SECRET_KEY at minimum
+```
 
-# Create the Postgres database first, then:
+**c. Configure environment variables:**
+If you don't have a `.env` file yet, copy the example file:
+```powershell
+cp .env.example .env
+```
+Open the `.env` file and update your `DATABASE_URL` with your Postgres credentials:
+```
+DATABASE_URL=postgresql+psycopg2://postgres:YOUR_PASSWORD@localhost:5432/Elaanji
+```
+*Note: Make sure to fill in your `JWT_SECRET_KEY` and NVIDIA API keys as well.*
+
+**d. Run database migrations:**
+This creates all the necessary tables in your database.
+```powershell
 alembic upgrade head
+```
+
+**e. (Optional) Seed the database:**
+To populate the store with dummy products, categories, and chatbot knowledge base:
+```powershell
+python scripts\seed_catalog.py
+python scripts\seed_knowledge_base.py
+```
+
+**f. Start the backend server:**
+```powershell
 uvicorn app.main:app --reload --port 8000
 ```
+*The API will be running at `http://localhost:8000` and the interactive docs at `http://localhost:8000/docs`.*
 
-API docs: `http://localhost:8000/docs`
+---
 
-### Frontend
+### 3. Frontend Setup
 
-```bash
-cd frontend
+Open a **second** PowerShell terminal and navigate to the frontend directory:
+
+```powershell
+cd D:\elaanji\frontend
+```
+
+**a. Install Node.js dependencies:**
+```powershell
 npm install
+```
+
+**b. Start the development server:**
+```powershell
 npm run dev
 ```
+*The storefront will be running at `http://localhost:5173`.*
 
-App: `http://localhost:5173` (proxies `/api/*` to `http://localhost:8000`)
+---
 
-### Creating an admin user
+## Creating an Admin User
 
-There's no admin-creation UI yet (that's part of Settings, Phase 6). For now,
-register a normal account through the app, then promote it directly in the
-database:
+There is no UI to create an admin account directly. To access the admin panel at `http://localhost:5173/admin`:
 
+1. Go to the storefront and sign up for a normal customer account.
+2. Open your Postgres database (pgAdmin or psql).
+3. Run the following SQL query to promote your account:
 ```sql
-UPDATE users SET role = 'admin' WHERE email = 'you@example.com';
+UPDATE users SET role = 'admin' WHERE email = 'your_email@example.com';
 ```
-
-## What's next
-
-- **Phase 2** — Storefront: product catalog, filters/search/sort, product
-  details, cart, wishlist, all wired to real endpoints.
-- **Phase 3** — Checkout, addresses, order placement/tracking, Razorpay + COD.
-- **Phase 4** — Admin: dashboard KPIs/charts, product + variant management,
-  inventory, categories.
-- **Phase 5** — Admin: order management, returns/refunds, customers, coupons,
-  banners, homepage content, reviews.
-- **Phase 6** — Reports/analytics, store settings, SEO, performance, and a
-  full responsiveness/error-state pass.
-
-## Seeding test data (Phase 2)
-
-To populate the catalog with realistic saree products for local testing:
-
-```bash
-cd backend
-python3 scripts/seed_catalog.py
-```
-
-This seeds 5 categories, 1 brand, and 4 products (Kanjivaram, Banarasi,
-Cotton, and a stitched-blouse Designer saree) with color variants, stock,
-and images. Safe to re-run — it clears and reseeds catalog tables only.
+4. Log back in on the website to see the Admin Dashboard.
