@@ -36,4 +36,5 @@ elaanji_transition1.mp4
 reference_video.mp4
 frontend/public/media/intro/raw_intro.mov
 
-
+# Agent Customizations
+.agents/
