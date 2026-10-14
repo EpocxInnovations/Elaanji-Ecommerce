@@ -1,106 +1,100 @@
-# Elaanji — Garments E-Commerce Platform
+# Elaanji — Haute Couture & Luxury Handloom E-Commerce Platform
 
-A full-stack e-commerce platform for selling luxury Indian sarees. The platform includes a customer storefront, a secure checkout process, an AI-powered support chatbot, and a comprehensive admin panel.
+<div align="center">
 
-## Tech Stack
-- **Backend**: FastAPI (Python), SQLAlchemy, PostgreSQL
-- **Frontend**: React 18, Vite, Tailwind CSS, Framer Motion
-- **AI**: Local embeddings (Sentence-Transformers) + NVIDIA NIM LLM API
+![Elaanji Banner](https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1200&q=80)
 
----
+**An opulent digital flagship for timeless Indian craftsmanship and luxury handloom sarees.**
 
-## How to Run the Project Locally (Windows)
+[![Platform Status](https://img.shields.io/badge/Status-Production%20Ready-success.svg?style=flat-square)](#)
+[![Security](https://img.shields.io/badge/Security-Enterprise%20Grade-blue.svg?style=flat-square)](#)
+[![Confidentiality](https://img.shields.io/badge/Confidentiality-Proprietary%20%26%20Private-red.svg?style=flat-square)](#)
 
-Follow these steps to get the full stack running on your local Windows machine.
-
-### 1. Database Setup (PostgreSQL)
-
-You need to have PostgreSQL installed and running on your machine.
-
-1. Open your PostgreSQL tool (e.g., pgAdmin or psql).
-2. Create a new database named `Elaanji`.
-3. Keep your Postgres username and password handy (default is usually `postgres`).
-
-### 2. Backend Setup
-
-Open a new PowerShell terminal and navigate to the backend directory:
-
-```powershell
-cd D:\elaanji\backend
-```
-
-**a. Create and activate a virtual environment:**
-```powershell
-python -m venv venv
-.\venv\Scripts\activate
-```
-
-**b. Install dependencies:**
-```powershell
-pip install -r requirements.txt
-```
-
-**c. Configure environment variables:**
-If you don't have a `.env` file yet, copy the example file:
-```powershell
-cp .env.example .env
-```
-Open the `.env` file and update your `DATABASE_URL` with your Postgres credentials:
-```
-DATABASE_URL=postgresql+psycopg2://postgres:YOUR_PASSWORD@localhost:5432/Elaanji
-```
-*Note: Make sure to fill in your `JWT_SECRET_KEY` and NVIDIA API keys as well.*
-
-**d. Run database migrations:**
-This creates all the necessary tables in your database.
-```powershell
-alembic upgrade head
-```
-
-**e. (Optional) Seed the database:**
-To populate the store with dummy products, categories, and chatbot knowledge base:
-```powershell
-python scripts\seed_catalog.py
-python scripts\seed_knowledge_base.py
-```
-
-**f. Start the backend server:**
-```powershell
-uvicorn app.main:app --reload --port 8000
-```
-*The API will be running at `http://localhost:8000` and the interactive docs at `http://localhost:8000/docs`.*
+</div>
 
 ---
 
-### 3. Frontend Setup
+## ✦ Executive Overview
 
-Open a **second** PowerShell terminal and navigate to the frontend directory:
+**Elaanji** is an enterprise-grade, omnichannel luxury e-commerce ecosystem meticulously engineered for modern connoisseurs of Indian ethnic couture. Blending centuries of artisanal heritage—including authentic *Kanjeevaram*, *Banarasi*, *Chanderi*, *Tussar*, and *Organza* weaves—with cutting-edge web architecture, Elaanji delivers a boutique shopping experience that rivals elite physical ateliers.
 
-```powershell
-cd D:\elaanji\frontend
-```
-
-**a. Install Node.js dependencies:**
-```powershell
-npm install
-```
-
-**b. Start the development server:**
-```powershell
-npm run dev
-```
-*The storefront will be running at `http://localhost:5173`.*
+Crafted by **Epocx Innovations**, this platform elevates traditional textile commerce into an immersive, intelligent digital journey.
 
 ---
 
-## Creating an Admin User
+## ✦ Signature Platform Highlights
 
-There is no UI to create an admin account directly. To access the admin panel at `http://localhost:5173/admin`:
+### 1. Cinematic Storefront Experience
+- **Frame-Accurate Curtain Reveal**: A theatrical, motion-crafted curtain intro that sets an ambiance of luxury upon arrival.
+- **Spotlight Hover Aesthetics**: Cursor-tracking luminance and micro-interactions tailored for high-end retail presentation.
+- **Dynamic Collection Spotlights**: Curated editorial lookbooks, seasonal drops, and master weaver highlights.
 
-1. Go to the storefront and sign up for a normal customer account.
-2. Open your Postgres database (pgAdmin or psql).
-3. Run the following SQL query to promote your account:
-```sql
-UPDATE users SET role = 'admin' WHERE email = 'your_email@example.com';
+### 2. Intelligent Artisan Commerce
+- **Multifaceted Color & Variant Matrix**: Dynamic swatch-driven selection with variant-specific image galleries and live inventory counters.
+- **AI-Powered Personal Shopping Stylist**: Natural language conversational assistant utilizing semantic vector embeddings to understand drape preferences, occasion pairing, and weave histories.
+- **Curated Filtering & Discovery**: Granular attribute filtering across weave styles, fabric weight, zaree purity, and heritage origins.
+
+### 3. Customer-Centric Retailing
+- **Seamless Checkout & Payments**: Multi-stage streamlined checkout supporting cards, UPI, net banking, and COD with automated tax and shipping calculations.
+- **Personalized Member Suite**: Saved luxury wishlists, address books, real-time order tracking, and order history.
+- **Promotions & Privileges**: Tiered promotional coupon engine, private VIP offers, and festive announcements.
+
+### 4. Enterprise Administrative Ecosystem
+- **Omnichannel Operations Hub**: Unified management of inventory matrices, SKU variations, order fulfillment workflows, and return authorizations.
+- **Dynamic Merchandising**: Visual category trees, hero banner management, and promotional flash event scheduling.
+- **Actionable Business Intelligence**: Comprehensive sales analytics, conversion metrics, customer acquisition trends, and inventory health reports.
+
+---
+
+## ✦ Technology Architecture
+
+The Elaanji platform is built on modern, cloud-native principles designed for extreme responsiveness, fault tolerance, and security:
+
+```mermaid
+graph TD
+    Client["Luxury Storefront & Admin Portal<br/>(React 18 · Vite · Tailwind CSS · Framer Motion)"]
+    API["Enterprise API Gateway<br/>(FastAPI · Python 3.11 · Async Architecture)"]
+    AI["Conversational Intelligence Engine<br/>(Vector Embeddings · Semantic RAG)"]
+    DB[("Relational Data Layer<br/>(PostgreSQL · SQLAlchemy · Alembic)")]
+    Media["Content & Asset Delivery CDN"]
+
+    Client -->|HTTPS / REST API| API
+    API -->|Embeddings & Inference| AI
+    API -->|ACID Transactions| DB
+    Client -->|High-Res Visuals| Media
 ```
-4. Log back in on the website to see the Admin Dashboard.
+
+- **Frontend Core**: React 18, Vite, Tailwind CSS, Framer Motion, Lucide Icons
+- **Backend Core**: FastAPI (Asynchronous Python), SQLAlchemy ORM, Pydantic v2
+- **Data Persistence**: PostgreSQL with full ACID transaction guarantees and automated Alembic schema evolution
+- **Security & Identity**: Stateless JWT authentication, PBKDF2 cryptographic password hashing, role-based access control (RBAC), and strict CORS boundary enforcement
+- **AI Concierge**: Semantic vector retrieval paired with large language model generation for contextual product recommendations
+
+---
+
+## ✦ Security & Compliance
+
+Elaanji adheres to rigorous security and data protection standards:
+- **Role-Based Access Control (RBAC)**: Strict segregation between customer, staff, and administrative privileges.
+- **Data Encryption**: All data in transit is protected via TLS 1.3 encryption.
+- **Safe State Management**: Sanitized input validation and parameterized database interactions preventing injection and XSS vectors.
+- **Audit Trails**: Detailed operational and order lifecycle audit logs.
+
+---
+
+## ✦ Confidentiality & Intellectual Property
+
+> [!IMPORTANT]
+> **Proprietary Software Notice**
+> 
+> This codebase, including all design assets, component architectures, algorithms, and business logic, is the exclusive proprietary property of **Epocx Innovations** and **Elaanji**.
+> 
+> Unauthorized copying, cloning, reverse engineering, redistribution, or deployment of any portion of this system without explicit written authorization is strictly prohibited.
+
+---
+
+<div align="center">
+
+&copy; 2026 **Elaanji** & **Epocx Innovations**. All Rights Reserved.
+
+</div>

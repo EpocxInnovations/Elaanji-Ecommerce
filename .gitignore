@@ -38,3 +38,6 @@ frontend/public/media/intro/raw_intro.mov
 
 # Agent Customizations
 .agents/
+
+# Internal Confidential Documentation
+ADMIN_DOCUMENTATION.md
