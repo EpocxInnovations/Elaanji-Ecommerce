@@ -59,13 +59,12 @@ class IPv4SMTP_SSL(smtplib.SMTP_SSL):
 
 
 import json
-import os
 import urllib.request
 
 
 def send_via_resend_api(to_email: str, otp: str, html_body: str, text_body: str) -> bool:
     """Sends email via Resend HTTPS REST API (Port 443). Bypasses outbound SMTP port blocks."""
-    resend_key = os.environ.get("RESEND_API_KEY", "")
+    resend_key = settings.resend_api_key
     if not resend_key:
         return False
     try:
@@ -98,16 +97,11 @@ def send_via_resend_api(to_email: str, otp: str, html_body: str, text_body: str)
 
 def send_password_reset_otp_email(to_email: str, otp: str) -> bool:
     """
-    Handles 6-digit OTP code for password reset.
-    Always logs the generated random 6-digit code to the server console.
-    """
-    print(f"\n========================================================", flush=True)
-    print(f"[CONSOLE OTP CODE] Random 6-digit OTP for {to_email}: {otp}", flush=True)
-    print(f"========================================================\n", flush=True)
-    logger.warning("========================================================")
-    logger.warning("[CONSOLE OTP CODE] Random 6-digit OTP for %s: %s", to_email, otp)
-    logger.warning("========================================================")
+    Sends a password-reset OTP through a configured email provider.
 
+    OTP values are deliberately never logged or returned to the caller. The
+    plain value exists only long enough to compose and send the email.
+    """
     current_year = datetime.now().year
 
 
@@ -202,20 +196,13 @@ If you did not request a password reset, you can safely ignore this email.
 """
 
     # 1. Try Resend HTTPS REST API if key is present
-    if os.environ.get("RESEND_API_KEY"):
+    if settings.resend_api_key:
         if send_via_resend_api(to_email, otp, html_body, text_body):
             return True
 
     # 2. Check if SMTP is configured
     if not settings.smtp_host:
-        logger.warning(
-            "SMTP_HOST is not configured. OTP email delivery skipped for recipient: %s. [RENDER LOG OTP CODE: %s]",
-            to_email,
-            otp,
-        )
-        print(f"\n========================================================", flush=True)
-        print(f"[RENDER LOG OTP CODE] OTP for {to_email}: {otp}", flush=True)
-        print(f"========================================================\n", flush=True)
+        logger.error("Password-reset email delivery is not configured")
         return False
 
     # 3. Try standard SMTP with SSL Context
@@ -257,10 +244,6 @@ If you did not request a password reset, you can safely ignore this email.
         return True
     except Exception as e:
         logger.error("Failed to send OTP email via SMTP to %s: %s", to_email, str(e))
-        logger.warning("========================================================")
-        logger.warning("[RENDER LOG OTP CODE FOR %s]: %s", to_email, otp)
-        logger.warning("========================================================")
-        print(f"\n[RENDER LOG OTP CODE] OTP for {to_email}: {otp}\n", flush=True)
         return False
 
 

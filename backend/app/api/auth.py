@@ -1,7 +1,7 @@
 """
 /api/auth/* — registration, login, token refresh, and the logged-in user's
-own profile. Password reset issues a short-lived token in place of an actual
-email send, since no mail provider is wired up in this scaffold yet.
+own profile. Password-reset verification codes are delivered through the
+configured email provider.
 """
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -218,14 +218,11 @@ def forgot_password(request: Request, payload: ForgotPasswordRequest, db: Sessio
         db.commit()
 
         # Send OTP email via SMTP or Resend API
-        sent_success = send_password_reset_otp_email(user.email, raw_otp)
+        send_password_reset_otp_email(user.email, raw_otp)
 
-        response_data = {"message": "If an account exists with this email, a verification code has been sent."}
-        if not sent_success:
-            # Attach dev_otp if SMTP delivery is blocked by host firewall
-            response_data["dev_otp"] = raw_otp
-
-        return response_data
+    # Always return the same response. In particular, never expose an OTP
+    # when delivery fails and never reveal whether an account exists.
+    return {"message": "If an account exists with this email, a verification code has been sent."}
 
 
 

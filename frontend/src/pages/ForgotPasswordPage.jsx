@@ -76,15 +76,11 @@ export function ForgotPasswordPage() {
 
     setIsSubmitting(true)
     try {
-      const res = await authApi.forgotPassword({ email: email.trim() })
+      await authApi.forgotPassword({ email: email.trim() })
 
       setStep('otp')
       setCooldown(60)
-      if (res?.dev_otp) {
-        showToast(`Demo/Dev OTP Code: ${res.dev_otp}`, { duration: 10000 })
-      } else {
-        showToast('A 6-digit verification code has been sent to your email.')
-      }
+      showToast('A 6-digit verification code has been sent to your email.')
     } catch (err) {
       if (err.response?.status === 429) {
         setError(err.response?.data?.detail || 'Please wait before requesting another code.')
@@ -102,14 +98,10 @@ export function ForgotPasswordPage() {
     setError('')
     setIsSubmitting(true)
     try {
-      const res = await authApi.forgotPassword({ email: email.trim() })
+      await authApi.forgotPassword({ email: email.trim() })
       setOtpDigits(['', '', '', '', '', ''])
       setCooldown(60)
-      if (res?.dev_otp) {
-        showToast(`Demo/Dev OTP Code: ${res.dev_otp}`, { duration: 10000 })
-      } else {
-        showToast('A new 6-digit code has been sent to your email.')
-      }
+      showToast('A new 6-digit code has been sent to your email.')
       setTimeout(() => otpInputRefs.current[0]?.focus(), 100)
     } catch (err) {
 

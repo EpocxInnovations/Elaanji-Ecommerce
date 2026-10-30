@@ -41,6 +41,7 @@ class Settings(BaseSettings):
     smtp_password: str = ""
     smtp_from_email: str = "noreply@elaanji.com"
     smtp_from_name: str = "Elaanji"
+    resend_api_key: str = ""
 
     # Store defaults (overridden at runtime by store_settings table once seeded)
     free_shipping_threshold: float = 999
