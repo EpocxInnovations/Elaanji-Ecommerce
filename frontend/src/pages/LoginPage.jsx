@@ -257,10 +257,13 @@ export function LoginPage() {
                   initial={{ scale: 0.6, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: 'spring', duration: 0.8 }}
-                  className="mx-auto w-12 h-12 rounded-full border border-gold/40 bg-gold-gradient-soft/10 flex items-center justify-center relative overflow-hidden shadow-gold-glow"
+                  className="mx-auto w-16 h-16 rounded-full ring-2 ring-gold/40 shadow-gold-glow flex items-center justify-center relative overflow-hidden shrink-0"
                 >
-                  <Feather className="w-5 h-5 text-gold-soft relative z-10" />
-                  <div className="absolute inset-0 bg-gradient-to-br from-gold/20 to-transparent opacity-60" />
+                  <img
+                    src="/brand/logo-badge.png"
+                    alt="Elaanji Brand Logo"
+                    className="w-full h-full object-cover"
+                  />
                 </motion.div>
 
                 <motion.h1

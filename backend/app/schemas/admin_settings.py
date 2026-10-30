@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 class StoreInfoSettings(BaseModel):
     store_name: str = "Elaanji"
-    logo_url: Optional[str] = None
+    logo_url: Optional[str] = "/brand/logo.png"
     support_email: Optional[str] = None
     support_phone: Optional[str] = None
     address: Optional[str] = None

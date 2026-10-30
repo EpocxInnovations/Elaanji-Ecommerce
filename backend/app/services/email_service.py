@@ -171,7 +171,7 @@ def send_password_reset_otp_email(to_email: str, otp: str) -> bool:
 </head>
 <body>
   <div class="container">
-    <div class="logo">ELAANJI</div>
+    <div class="logo">ELAANJI<div style="font-size: 10px; letter-spacing: 3px; color: #A16207; margin-top: 5px; font-weight: normal;">THE HOUSE OF SAREES</div></div>
     <div class="title">Password Reset Code</div>
     <p class="message">Your password reset verification code is:</p>
     <div class="otp-box">{otp}</div>

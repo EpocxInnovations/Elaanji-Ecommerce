@@ -90,7 +90,12 @@ export function Navbar() {
               </button>
 
               {/* Logo */}
-              <Link to="/" className="group flex items-center gap-2">
+              <Link to="/" className="group flex items-center gap-2.5 sm:gap-3">
+                <img
+                  src="/brand/logo-badge.png"
+                  alt="Elaanji Brand Logo"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover shadow-sm ring-1 ring-gold/40 group-hover:ring-gold transition-all shrink-0"
+                />
                 <span
                   data-brand-logo
                   className="font-display text-xl sm:text-2xl tracking-[0.14em] sm:tracking-[0.18em]"
@@ -247,7 +252,14 @@ export function Navbar() {
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-paper/15 pb-6">
-              <span className="font-display text-2xl tracking-[0.18em] text-paper">ELAANJI</span>
+              <div className="flex items-center gap-2.5">
+                <img
+                  src="/brand/logo-badge.png"
+                  alt="Elaanji Brand Logo"
+                  className="w-8 h-8 rounded-full object-cover ring-1 ring-gold/40 shrink-0"
+                />
+                <span className="font-display text-2xl tracking-[0.18em] text-paper">ELAANJI</span>
+              </div>
               <button
                 onClick={() => setMobileMenuOpen(false)}
                 aria-label="Close menu"

@@ -1,7 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#14120F"/>
-  <rect x="2" y="2" width="60" height="60" rx="12" fill="none" stroke="#C5A880" stroke-width="1.5" stroke-opacity="0.6"/>
-  <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="38" font-weight="600" fill="#C5A880" letter-spacing="-1">
+  <circle cx="32" cy="32" r="31" fill="#9C0208"/>
+  <circle cx="32" cy="32" r="28.5" fill="none" stroke="#D4A853" stroke-width="1.5"/>
+  <circle cx="32" cy="32" r="26" fill="none" stroke="#E5C88F" stroke-width="0.75" stroke-opacity="0.7"/>
+  <text x="32" y="41" dominant-baseline="middle" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="32" font-weight="700" fill="#F5ECD7" letter-spacing="-0.5">
     E
   </text>
 </svg>

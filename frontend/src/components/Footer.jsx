@@ -33,7 +33,17 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-12">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <h3 className="font-display text-2xl tracking-[0.18em] mb-3">ELAANJI</h3>
+            <div className="flex items-center gap-3 mb-3">
+              <img
+                src="/brand/logo-badge.png"
+                alt="Elaanji Brand Logo"
+                className="w-12 h-12 rounded-full object-cover ring-1 ring-gold/40 shadow-gold-glow shrink-0"
+              />
+              <div>
+                <h3 className="font-display text-2xl tracking-[0.18em] leading-tight text-paper">ELAANJI</h3>
+                <span className="text-[9px] tracking-widest2 uppercase text-gold-soft/80 block">The House of Sarees</span>
+              </div>
+            </div>
             <div className="w-10 h-px bg-gold/50 mb-4" />
             <p className="text-sm text-paper/60 leading-relaxed max-w-[240px]">
               Handpicked sarees for every occasion: crafted with tradition, delivered with care.
@@ -150,7 +160,7 @@ export function Footer() {
 
       {/* Copyright */}
       <div className="border-t border-paper/10 py-5 text-center text-xs text-paper/40 tracking-wide">
-        © {new Date().getFullYear()} ELAANJI · The House of Saree. All rights reserved.
+        © {new Date().getFullYear()} ELAANJI · The House of Sarees. All rights reserved.
       </div>
     </footer>
   )

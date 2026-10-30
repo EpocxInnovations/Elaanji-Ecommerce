@@ -100,15 +100,17 @@ export function CustomerSidebar() {
               {/* Header */}
               <Sidebar001Header className="flex items-center justify-between">
                 <Link to="/" onClick={() => setIsOpen(false)} className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-md bg-ink text-gold flex items-center justify-center font-display text-lg shadow-sm">
-                    ए
-                  </div>
+                  <img
+                    src="/brand/logo-badge.png"
+                    alt="Elaanji Brand Logo"
+                    className="w-9 h-9 rounded-full object-cover ring-1 ring-gold/40 shadow-sm shrink-0"
+                  />
                   <div>
                     <span className="font-display text-lg tracking-[0.15em] text-ink block leading-none">
                       ELAANJI
                     </span>
                     <span className="text-[10px] uppercase tracking-widest2 text-stone block mt-0.5">
-                      The House of Saree
+                      The House of Sarees
                     </span>
                   </div>
                 </Link>

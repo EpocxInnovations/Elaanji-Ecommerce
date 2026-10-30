@@ -31,9 +31,13 @@ function BrandPanel({ title, subtitle }) {
 
       <div className="text-center max-w-md relative">
         <div className="mb-8">
-          <div className="flex items-center justify-center gap-4 mb-8">
+          <div className="flex items-center justify-center gap-4 mb-6">
             <span className="w-12 h-px bg-gradient-to-r from-transparent to-gold/60" />
-            <Feather size={16} className="text-gold-soft" />
+            <img
+              src="/brand/logo-badge.png"
+              alt="Elaanji Brand Logo"
+              className="w-14 h-14 rounded-full object-cover ring-2 ring-gold/40 shadow-gold-glow"
+            />
             <span className="w-12 h-px bg-gradient-to-l from-transparent to-gold/60" />
           </div>
           <h2 className="font-display text-5xl leading-tight mb-4 text-paper">{title}</h2>

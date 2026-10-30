@@ -83,9 +83,16 @@ export function AdminSidebar() {
       {/* Desktop sidebar */}
       <aside className="hidden md:flex md:flex-col w-64 shrink-0 border-r border-stone/20 bg-paper h-screen sticky top-0 py-6 overflow-y-auto no-scrollbar">
         <div className="px-6 mb-6 flex items-center justify-between">
-          <div>
-            <span className="font-display text-xl tracking-wider text-ink">ELAANJI</span>
-            <p className="text-[10px] text-stone tracking-widest2 uppercase mt-0.5 font-semibold">Admin Panel</p>
+          <div className="flex items-center gap-3">
+            <img
+              src="/brand/logo-badge.png"
+              alt="Elaanji Admin"
+              className="w-9 h-9 rounded-full object-cover ring-1 ring-gold/40 shadow-sm shrink-0"
+            />
+            <div>
+              <span className="font-display text-xl tracking-wider text-ink block leading-none">ELAANJI</span>
+              <p className="text-[10px] text-stone tracking-widest2 uppercase mt-1 font-semibold">Admin Panel</p>
+            </div>
           </div>
         </div>
         <SidebarLinks />
@@ -101,9 +108,16 @@ export function AdminSidebar() {
           >
             <Menu size={22} />
           </button>
-          <div>
-            <span className="font-display text-lg tracking-wide text-ink">ELAANJI</span>
-            <span className="text-[10px] text-gold font-mono uppercase ml-2 tracking-wider">Admin</span>
+          <div className="flex items-center gap-2">
+            <img
+              src="/brand/logo-badge.png"
+              alt="Elaanji Admin"
+              className="w-7 h-7 rounded-full object-cover ring-1 ring-gold/40 shrink-0"
+            />
+            <div>
+              <span className="font-display text-lg tracking-wide text-ink">ELAANJI</span>
+              <span className="text-[10px] text-gold font-mono uppercase ml-2 tracking-wider">Admin</span>
+            </div>
           </div>
         </div>
 
@@ -128,9 +142,16 @@ export function AdminSidebar() {
           <div className="relative w-72 max-w-[85vw] bg-paper h-full py-6 overflow-y-auto z-10 shadow-2xl no-scrollbar flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between px-6 mb-6">
-                <div>
-                  <span className="font-display text-xl tracking-wider text-ink">ELAANJI</span>
-                  <p className="text-[10px] text-stone tracking-widest2 uppercase mt-0.5">Admin Panel</p>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="/brand/logo-badge.png"
+                    alt="Elaanji Admin"
+                    className="w-8 h-8 rounded-full object-cover ring-1 ring-gold/40 shadow-sm shrink-0"
+                  />
+                  <div>
+                    <span className="font-display text-xl tracking-wider text-ink block leading-none">ELAANJI</span>
+                    <p className="text-[10px] text-stone tracking-widest2 uppercase mt-1">Admin Panel</p>
+                  </div>
                 </div>
                 <button
                   onClick={() => setIsMobileOpen(false)}
